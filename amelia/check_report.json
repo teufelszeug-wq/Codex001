@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-14T08:09:27+09:00",
+  "reports": [
+    {
+      "scene": "C01-S06",
+      "status": "今回の統合改稿・初稿",
+      "characters_excluding_whitespace_and_headings": 6034,
+      "blocked_terms": [],
+      "structural_check": "本文、参加者、場所の参照を確認"
+    }
+  ],
+  "limitation": "文字列と参照の検査のみ。心理・歴史・因果・完成品質は別途読解が必要。"
+}
