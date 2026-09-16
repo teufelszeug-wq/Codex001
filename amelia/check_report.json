@@ -1,10 +1,17 @@
 {
-  "checked_at": "2026-09-14T08:09:27+09:00",
+  "checked_at": "2026-09-16T21:23:39+09:00",
   "reports": [
     {
       "scene": "C01-S06",
       "status": "今回の統合改稿・初稿",
       "characters_excluding_whitespace_and_headings": 6034,
+      "blocked_terms": [],
+      "structural_check": "本文、参加者、場所の参照を確認"
+    },
+    {
+      "scene": "C01-S07",
+      "status": "統合改稿C・初稿",
+      "characters_excluding_whitespace_and_headings": 3179,
       "blocked_terms": [],
       "structural_check": "本文、参加者、場所の参照を確認"
     }
