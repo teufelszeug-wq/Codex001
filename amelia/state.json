@@ -1,0 +1,58 @@
+{
+  "series_id": "amelia",
+  "schema_version": "2.0",
+  "updated": "2026-09-14",
+  "active_branch": "C",
+  "authority": "添付5資料の継承事項と、明示した今回の作業案。非公開の過去DBではない",
+  "current_scene": "C01-S06",
+  "chapter": {"number": 1, "status": "未完成", "minimum_target_chars": 100000, "standard_target_chars": [150000, 200000]},
+  "scene_log": [
+    {"id": "A01-ROYAL", "status": "旧正式・原文取得", "source": "R3", "location": "王宮の謁見の間", "end": "婚約破棄、立っていようとするアメリア"},
+    {"id": "A01-AFTER", "status": "旧初稿・原文取得", "source": "R3", "location": "王宮控室", "end": "フィーアに連れられ帰還へ。食堂本文はない"},
+    {"id": "B01-S01", "status": "旧初稿・原文取得", "source": "R4", "location": "冬の聖堂の回廊"},
+    {"id": "B01-S02-S04", "status": "作成記録・要約のみ", "source": "R4", "missing_attachment_id": "file-KkrtXunwbSVwmZhzQVxVGB"},
+    {"id": "B01-S05", "status": "作成記録・要約のみ", "source": "R4", "missing_attachment_id": "file-LQLzAbTn9NZvzxL64WUJpc", "end": "裁定室の扉前"},
+    {"id": "C01-S06", "status": "今回の統合改稿・初稿", "path": "manuscript/C01-S06_裁定室の午前.md", "source": "D001-D005", "start": "D0午前、裁定室の扉前", "end": "入室後、正午の王宮召喚を知る。預り票作成中、ノートは本人所持", "location": "L01", "participants": ["P01", "P02", "P04", "P05", "P07", "P08"], "events": ["施療した事実を本人が認める", "申請と受付記録の食い違いを指摘", "原簿ではなく抄録だと知る", "第三者確認を求めたことが調書へ追記される", "ノートの預託を命じられ受領票を求める", "王太子が正午の王宮にいると知る"], "unresolved": ["原簿の所在と内容", "預託と封印", "午後の職務", "未開封書簡の内容", "王家側の目的"]}
+  ],
+  "cards": [
+    {"id": "P01", "type": "character", "name": "アメリア・リュミエール", "status": "基本像継承／現在状態はC案", "sources": ["R1", "R2", "R3", "R4", "R5"], "age": 17, "appearance": {"hair": "銀髪ストレートロング", "eyes": "紫", "height_cm_provisional": 161, "height_source": "R5復元報告", "training_stage": "本格修行前"}, "location": "L01", "possessions": ["E01"], "engagement": "継続中", "office": "正式処分なし", "residence": "大聖堂、解除前", "knows": ["施療した", "申請を取り次いでもらった", "受付記録にないと指摘された", "原簿は部屋にない", "正午に王宮、王太子もいる"], "does_not_know": ["偽警告", "政変計画", "婚約破棄の予定", "黒幕", "鍛錬と加護の関係"]},
+    {"id": "P02", "type": "character", "name": "長机の左の男", "status": "今回作業案", "source": "D003", "first_scene": "C01-S06", "shown": ["指輪", "審理用抄録を読む", "記録保管を問いただす"], "author_only": "聖堂会計の実務責任者、隠蔽の共犯", "proper_name": null},
+    {"id": "P03", "type": "character", "name": "都市官僚", "status": "今回作業案・未登場", "source": "D003", "author_only": "偽警告と政変計画の主導者", "proper_name": null},
+    {"id": "P04", "type": "character", "name": "審理を主宰する司祭", "status": "今回作業案", "source": "D003", "first_scene": "C01-S06", "shown": ["中央席", "アメリアが以前から知る声", "第三者確認の追記と預り票を認める"], "author_only": "報告を信じる、偽造の共犯ではない", "proper_name": null},
+    {"id": "P05", "type": "character", "name": "若い司祭", "status": "B要約由来、Cで具体化", "source": "R4/D003", "first_scene": "C01-S06", "shown": ["申請と記録の違いを指摘", "調書への追記と時刻記入を求める"], "author_only": "改革派、全貌は知らない", "proper_name": null},
+    {"id": "P06", "type": "character", "name": "王太子", "status": "婚約者1人の方針継承、Cの固有名保留", "sources": ["R2", "R3", "R4"], "proper_name": null, "legacy_name": "レオンハルト（A原文）", "author_only": "警告を本物と信じる。別離を選ぶ責任がある"},
+    {"id": "P07", "type": "character", "name": "書記", "status": "今回作業案", "source": "D003", "first_scene": "C01-S06", "shown": ["審理記録", "本人の申立てと第三者確認を記録", "預り票を作成中"], "proper_name": null},
+    {"id": "P08", "type": "character", "name": "使者", "status": "B要約由来、Cで具体化", "source": "R4/D003", "first_scene": "C01-S06", "shown": ["裁定室へ案内", "王宮からの予定確認を伝達"], "proper_name": null},
+    {"id": "P09", "type": "character", "name": "許可を取り次いだ見習い", "status": "B要約由来、Cで言及のみ", "source": "R4", "proper_name": null, "identity_note": "リオナ・フィーアと未統合"},
+    {"id": "P10", "type": "character", "name": "フィーア", "status": "A原文確認、C未登場", "source": "R3", "shown_in_A": ["栗色の髪", "アメリアの友人", "控室へ迎えに来る", "食事を勧める"]},
+    {"id": "L01", "type": "location", "name": "大聖堂・裁定室", "status": "今回作業案", "source": "D001", "first_scene": "C01-S06", "parent": "大聖堂", "season": "冬", "local_coordinates": "入口を南とする等の絶対化はしない。相対配置のみ", "layout": {"south": "窓・中庭側", "front_from_entrance": "長机、中央P04、左P02、反対側P05", "right_from_entrance": "書記机", "before_long_table": "机なしの背なし椅子、アメリアが着席", "wall": "火鉢"}, "area_m2": null, "city_coordinates": null, "walk_time_from_previous": null, "npc_count": "審理中5人、使者は出入り", "sensory": ["炭火", "冷たい足元", "荷車の音", "甘い木のような匂い"]},
+    {"id": "E01", "type": "evidence", "name": "小型施療ノート", "status": "継承物をCで具体化", "source": "R4/D004", "first_scene": "C01-S06", "holder": "P01", "shown": ["綴じ紐", "傷んだ表紙の角", "申請と未回答の記録", "自室に過去分あり"], "planned": "預託、受領票、部分返却問題", "proof_limit": "本人記録だけで陰謀を立証しない"},
+    {"id": "E02", "type": "evidence", "name": "審理用抄録", "status": "今回作業案", "source": "D003", "first_scene": "C01-S06", "holder": "P02", "shown": ["原簿はここにない", "施療を無申請として列挙"], "planned": "原簿との比較"},
+    {"id": "E03", "type": "evidence", "name": "申請原簿", "status": "今回作業案・未取得", "source": "D003", "holder": null, "planned": "取次証言と控えで確認"},
+    {"id": "E04", "type": "evidence", "name": "偽の警告文", "status": "方針継承・C本文未登場", "sources": ["R2", "R4"], "planned": "王太子側の書類と発出記録を照合"},
+    {"id": "E05", "type": "evidence", "name": "記録預り票", "status": "今回作業案・本文で作成中", "source": "D004", "first_scene": "C01-S06", "holder": "P07", "shown": ["一冊と時刻を記す手続き"], "not_yet": "署名・交付・封印"},
+    {"id": "E06", "type": "evidence", "name": "納入・施療記録", "status": "今回作業案・未登場", "source": "D003"},
+    {"id": "E07", "type": "evidence", "name": "甘い木のような書簡周辺の匂い", "status": "今回作業案・感覚的な手掛かり", "source": "D003", "first_scene": "C01-S06", "shown": ["司祭の封書付近", "本人は由来を思い出せない"], "identity_note": "封書をE04と同定しない", "proof_limit": "香りは単独の証拠にならない"},
+    {"id": "CLOTH01", "type": "costume", "name": "午前の聖女服", "status": "既存装飾からCで部分具体化", "source": "R1/D005", "first_scene": "C01-S06", "shown": ["袖口の淡金の刺繍"], "unknown": ["正午の礼装との相違", "ヴェール", "追放後に着替える時点"]}
+  ],
+  "emotional_trajectory": [
+    {"scene": "C01-S06", "start": "不安だが、知った司祭の声で安心", "middle": "説明が記録へ届かない戸惑い、責任を感じる、手元の根拠を失う恐怖", "end": "王太子なら最後まで聞いてくれるという期待", "carry_forward": ["ノートを失う不安", "聖堂への信頼のひび", "夕方の患者との約束", "恋人への信頼はまだある"]}
+  ],
+  "literary_signature_log": [
+    {"id": "LS01", "rule": "アメリア限定視点。他人の動機は作者ファイルに分離"},
+    {"id": "LS02", "rule": "年齢らしさを語りで断定せず、恋心と日常の小さな気掛かりで示す"},
+    {"id": "LS03", "rule": "公式敬語から自然な敬語への揺れ。古風敬語の常用はしない"},
+    {"id": "LS04", "rule": "婚約破棄の決意フレーズは前の審理で消費しない"}
+  ],
+  "change_log": [
+    {"id": "D001", "status": "今回作業案", "change": "午前の聖堂審理→正午の王宮→帰還後の最終処分というC系統を作る。A/Bは保持"},
+    {"id": "D002", "status": "監査訂正", "change": "A婚約破棄の旧正式稿と控室本文を確認。BのS2〜S5は原文未取得とする"},
+    {"id": "D003", "status": "今回作業案", "change": "権限、共犯の役割、記録改変、秘密警告、処分と刑事捜査の区別を設計"},
+    {"id": "D004", "status": "今回作業案", "change": "現行小型ノートと過去分を区別。受領票と回収範囲の食い違いを後の物証へ"},
+    {"id": "D005", "status": "新規執筆", "change": "C01-S06を作成。新人物の氏名、女神固有名、国名を保留して継続"}
+  ],
+  "image_assets": [],
+  "image_status": "文字のビジュアル設定のみ。生成画像の現物・履歴未取得",
+  "quarantine": ["二人の恋愛婚約者案", "灰の都", "灰猫亭", "三本釘", "石角詰所", "緑紐", "折れ灯", "Skjól, kyrrt.", "Heilsa, blítt.", "Ljósflæði", "Hreinsun", "Umbreyta"],
+  "next": "C01-S07 預けるもの。ノート交付と暫定処分。C前半も今後拡充。章完成扱いにしない"
+}
