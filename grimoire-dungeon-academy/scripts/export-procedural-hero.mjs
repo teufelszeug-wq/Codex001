@@ -8,7 +8,7 @@ function writePPM(file,surface,bg=[52,55,66]){const header=Buffer.from(`P6\n${su
 function makeSurface(width,height,bg=0xff343742){return{width,height,pixels:new Uint32Array(width*height).fill(bg)}}
 function blit(dst,surf,ox,oy){for(let y=0;y<surf.height;y++)for(let x=0;x<surf.width;x++){const c=surf.pixels[y*surf.width+x]>>>0;if((c>>>24)===0)continue;dst.pixels[(oy+y)*dst.width+ox+x]=c;}}
 
-for(const [motion,meta] of Object.entries(MOTION_LIBRARY)){const frames=gen.generateMotionSet(motion);frames.forEach((s,i)=>writePPM(path.join(outDir,`${motion}-${i}.ppm`),s));}
+for(const motion of Object.keys(MOTION_LIBRARY)){const frames=gen.generateMotionSet(motion);frames.forEach((s,i)=>writePPM(path.join(outDir,`${motion}-${i}.ppm`),s));}
 
 const motionNames=Object.keys(MOTION_LIBRARY);const motionSheet=makeSurface(96*6,96*motionNames.length);motionNames.forEach((motion,row)=>{const frames=gen.generateMotionSet(motion);for(let col=0;col<6;col++)blit(motionSheet,frames[Math.min(col,frames.length-1)],col*96,row*96);});writePPM(path.join(outDir,'all-motions-sheet.ppm'),motionSheet);
 

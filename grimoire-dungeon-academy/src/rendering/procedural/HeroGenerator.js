@@ -279,7 +279,7 @@ export class HeroGenerator {
 
   #drawProp(s,spec,pose){const S=spec.style;if(pose.states.prop==='item'){drawDiamond(s,48,83,3,S.magic);s.set(48,78,S.goldLight);}else if(pose.states.prop==='inspect'){s.rect(61,58,4,6,S.outline);s.rect(62,59,2,4,S.goldLight);}else if(pose.states.prop==='door'){s.rect(73,46,2,18,S.gold);s.set(72,56,S.goldLight);}}
 
-  #drawFallen(layers,spec,pose){
+  #drawFallen(layers,spec,_pose){
     const S=spec.style,s=layers.torso;
     drawOutlinedEllipse(s,45,72,16,12,S.hair,S.outline); drawOutlinedEllipse(s,48,73,13,10,S.skin,S.outline);
     drawOutlinedPolygon(s,[[47,72],[67,68],[76,74],[66,82],[45,82]],S.uniform,S.outline); s.line(56,72,69,76,S.gold);

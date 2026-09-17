@@ -1,6 +1,5 @@
 node_modules/
 dist/
-.DS_Store
-*.log
-.vscode/
-.idea/
+test-results/
+*.zip
+.env*

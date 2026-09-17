@@ -26,3 +26,13 @@
 - Added generated motion library: idle, walk, cast prep, cast, release, dash, jump, landing, damage, fallen, recovery, pickup, inspect, open door, sit.
 - Added CanvasTexture atlas upload and Phaser animation registration.
 - Game casting now plays generated cast-prep / cast / release animations.
+
+## 0.1.4 - 2026-09-17
+- Preserve v0.1.3 procedural heroine implementation and history.
+- Fix browser boot with Vite and local bundled runtime dependencies.
+- Fix infinite casting wait by playing combat motions once.
+- Save complete floor snapshots, explored cells, enemy HP/death and turns.
+- Serialize equipment changes through the turn lock; add WAIT, target selection and robe changes.
+- Add B2F completion; fix duplicate spawns and out-of-bounds FOV records.
+- Preload Japanese glyphs before Canvas text rendering.
+- Add regression/browser/offline tests and Windows prebuilt launcher.

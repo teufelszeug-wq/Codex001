@@ -15,7 +15,7 @@ export class CharacterRenderer {
   generateHeroTextures(robeId='academy',grimoireId='dark',options={}){
     const robe=robePalette(robeId),grimoire=getGrimoire(grimoireId),spec=cloneHeroSpec(DEFAULT_HERO_SPEC);
     spec.style.uniform=argb(robe.body);spec.style.uniformShadow=argb(robe.shadow);spec.style.gold=argb(robe.trim);spec.style.cape=argb(robe.cape);spec.style.bookRune=argb(grimoire.color);spec.style.bookEdge=argb(grimoire.edge);
-    this.heroOptions={hairStyle:'longStraight',outfit:'academy',paletteVariant:'default',weaponType:'grimoire',weight:'medium',...options};
+    this.heroOptions={hairStyle:'longStraight',outfit:robeId==='astral'?'archmage':robeId==='azure'?'robe':'academy',paletteVariant:'default',weaponType:'grimoire',weight:'medium',...options};
     const generator=new HeroGenerator(spec),common={...this.heroOptions,element:grimoire.element};
 
     for(const dir of ['down','left','right','up']){

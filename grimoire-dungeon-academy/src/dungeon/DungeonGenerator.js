@@ -1,4 +1,4 @@
-const ROT = globalThis.ROT;
+import * as ROT from 'rot-js';
 import { hashSeed } from '../core/RNG.js';
 
 export class DungeonGenerator {
@@ -13,13 +13,10 @@ export class DungeonGenerator {
     const center = room => ({ x: Math.floor((room.getLeft()+room.getRight())/2), y: Math.floor((room.getTop()+room.getBottom())/2) });
     const start = center(rooms[0]);
     const stairs = center(rooms[rooms.length - 1]);
-    const candidates = rooms.slice(1,-1).map(center);
-    const enemies = [];
-    const count = Math.min(4 + floor, Math.max(2, candidates.length));
-    for (let i=0;i<count;i++) {
-      const base = candidates[i % Math.max(1,candidates.length)] ?? stairs;
-      enemies.push({ x:base.x, y:base.y, type:(i + floor) % 2 === 0 ? 'slime' : 'skeleton' });
-    }
+    const candidates=[];
+    for(let y=1;y<this.height-1;y++)for(let x=1;x<this.width-1;x++)if(tiles[y][x]===0&&Math.abs(x-start.x)+Math.abs(y-start.y)>6&&(x!==stairs.x||y!==stairs.y))candidates.push({x,y});
+    const shuffled=ROT.RNG.shuffle(candidates),enemies=[];
+    for(let i=0;i<Math.min(4+floor,shuffled.length);i++)enemies.push({...shuffled[i],type:(i+floor)%2===0?'slime':'skeleton'});
     return { tiles, rooms, start, stairs, enemies };
   }
 }

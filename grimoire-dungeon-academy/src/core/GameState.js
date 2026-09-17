@@ -1,5 +1,9 @@
 export class GameState {
   constructor(data = {}) {
+    this.version = 2;
+    this.turn = data.turn ?? 0;
+    this.status = data.status ?? 'playing';
+    this.snapshot = data.snapshot ?? null;
     this.name = data.name ?? 'ノア';
     this.level = data.level ?? 1;
     this.exp = data.exp ?? 0;

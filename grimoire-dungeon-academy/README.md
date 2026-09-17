@@ -1,72 +1,67 @@
-# Grimoire Dungeon Academy (GDA)
+# Grimoire Dungeon Academy
 
-iPhone Safari / PWA と Windows ブラウザ向けの、魔導書切替型ターン制2DローグライクRPG。
+グリモア・ダンジョン・アカデミー v0.1.4。既存 v0.1.3-dev の96×96手続き生成キャラクターを継承した、ターン制ローグライクの地下実習版です。
 
-## 縦切り版で実装済み
-- タイトル / 新規ゲーム / CONTINUE
-- 名前自由入力 + プリセット
-- rot.js Diggerによるランダムダンジョン
-- FOV / 探索済みマップ
-- 32px SD主人公をコード描画（黒髪ロング・ジト目・紺×金）
-- 正面/左右/背面 × 歩行6フレーム、待機A、通常歩行B、詠唱準備C
-- スライム / スケルトン + A*追跡
-- 闇 / 炎 / 光の魔導書3冊を装備切替
-- 魔法攻撃、属性倍率、MP、EXP、レベルアップ
-- B1F 学園地下 → B2F 図書館迷宮（以降テーマ循環）
-- localStorageセーブ（位置も保存）
-- PCキーボード + スマホ画面ボタン
-- PWA manifest / 本番ビルド用オフラインService Worker
+## 今回の修正
 
-## 必要環境
-- Node.js 20以上（依存パッケージのインストール不要）
-- 初回PWAインストール時のみネット接続（Phaser 3.90.0 / rot.js 2.2.1を固定CDNから取得してキャッシュ）
+- CSSの直接importと `import.meta.env` が素のブラウザで失敗していた起動経路を、Viteによるビルドへ統一。
+- Phaser 3.90.0 / rot.js 2.2.1 / 日本語フォントを同梱。実行時CDN通信を廃止。
+- ループ詠唱でターンが永久ロックされる不具合を修正。詠唱準備→詠唱1周期→発動→待機。
+- セーブにマップ・敵の残HP/死亡・探索済みマス・ターン数を追加。旧セーブは読み込み可能。
+- 敵の重複配置、保存例外、行動中の魔導書切替、範囲外の探索座標を修正。
+- WAITでMP回復、対象選択、支給ローブ3種類の変更、B2F出口の実習修了画面。
 
-## 開発
-```bash
+## Windowsで起動
+
+Node.js 20.19以上を使用。
+
+```powershell
+npm ci
 npm run dev
 ```
-ブラウザで `http://localhost:4173` を開く。
 
-## テスト / 構文確認 / ビルド
-```bash
+表示されたlocalhost URLを開きます。ソースを編集すると反映されます。
+
+```powershell
 npm test
+npm run lint
 npm run check
 npm run build
+npm run preview
 ```
 
+配布ZIPにはビルド済み `dist/` も含みます。ZIPを展開して `START_GAME.cmd` を実行すると、Node.jsのみで起動できます。HTMLファイルのダブルクリックではなくHTTPで開いてください。
+
 ## 操作
-PC: WASD / 矢印=移動、Space/Enter=魔法、Q=魔導書、P=セーブ。
-スマホ: 画面下の方向/Cast/Book/Saveボタン。
+
+| 操作 | PC | スマホ |
+|---|---|---|
+| 移動 | WASD・矢印 | 方向ボタン |
+| 魔法 | Space・Enter | CAST |
+| 魔導書変更 | Q | BOOK |
+| 待機・MP+3 | . | WAIT |
+| 対象切替 | Tab | 対象ボタン・敵をタップ |
+| ローブ変更 | R | ROBE |
+| 保存 | P | SAVE |
+
+移動・魔法・待機・装備変更は1ターン。壁への入力は消費しません。行動終了時に自動保存します。階段へ移動するとB2Fに進み、B2Fの階段で実習修了です。闇・炎・光の魔導書と、学園制服・蒼き魔法衣・星辰のローブを実習用に支給しています。
 
 ## iPhone PWA
-1. `npm run build`
-2. `dist/` をHTTPSの静的ホスティング（GitHub Pages等）へ配置
-3. iPhone Safariで開く
-4. 共有 → ホーム画面に追加
 
-## ライブラリ
-- Phaser 3.90.0（固定）
-- rot.js 2.2.1（固定）
+`dist/` をHTTPSで配信し、Safariの共有メニューから「ホーム画面に追加」。初回は通信が必要です。Service Workerの全ファイル保存が完了した後はオフラインで起動できます。Windowsの `http://192.168...` への接続ではHTTPS要件を満たさず、PWAのオフライン機能は検証できません。
 
-## Procedural 96x96 heroine engine (development branch)
+セーブは端末・ブラウザごとです。ブラウザのデータ削除や保存領域の消去で失われます。
 
-The heroine is now generated from code and data rather than a finished PNG sprite sheet. The procedural pipeline is:
+## 開発の正本と履歴
 
-`HeroSpec -> Pixel primitives -> Rig/anchors -> Pose/Motion LUT -> Direction layer order -> 1px correction patches -> 96x96 PixelSurface -> Phaser CanvasTexture cache`
+GitHub: `teufelszeug-wq/Codex001` の `grimoire-dungeon-academy/`。
+元資料: `Grimoire_Dungeon_Academy_v0.1.3-dev_source_with_git.zip`、基準コミット `7c252fc`。
+このZIPのGit履歴から直接修正しています。配布ZIPの `git-history.bundle` に以前のコミットも収録。`git clone git-history.bundle restored-gda` で復元できます。
 
-Source modules live in `src/rendering/procedural/`. Walk frames are generated for four directions with six frames each. Idle and cast-preparation poses plus grimoire element palette variants are generated through the same pipeline. The game uploads generated frames once (boot/equipment change) and uses cached Phaser textures during play.
+## 検証と残りの範囲
 
-Run `node scripts/export-procedural-hero.mjs <output-dir>` to export PPM preview frames without any browser or image dependency.
+`docs/VALIDATION.md` に実施したテスト、`docs/RESEARCH.md` に技術調査と判断を記録。
 
-## Procedural heroine engine (96x96)
-The heroine is generated from code/data rather than stored as a finished sprite sheet. `HeroSpec` controls appearance/equipment, `HeroMotion` supplies integer-grid pose algorithms, `HeroGenerator` rasterizes layered body/hair/outfit/weapon/magic parts, and `PhaserHeroTextureAdapter` caches generated frames as Phaser CanvasTexture atlases.
+これは地下実習版です。9属性すべての戦闘、ショップ、罠、イベント、持ち物画面、ストーリー、B3F以降の攻略は未完成です。生成できるアニメーションとゲーム中に接続済みのアニメーションは異なります。髪型・パレット・武器・重量の生成機構は維持していますが、ゲーム内の選択画面はまだありません。
 
-Current variation hooks:
-- Hair: `longStraight`, `bob`, `ponytail`
-- Outfit: `academy`, `robe`, `archmage`
-- Palette: `default`, `emerald`, `crimson`, `ivory`
-- Equipment weight: `light`, `medium`, `heavy`
-- Weapon type: `grimoire`, `staff`
-- Elements: dark, fire, ice, lightning, light, arcane, wind, star
-
-Generated motions: idle, 4-direction walk (6 frames), cast prep, cast, release, dash, jump, landing, damage, fallen, recovery, pickup, inspect, open door, and sit.
+iPhone実機Safariでの最終確認とHTTPS公開は別途必要です。Chromiumのモバイル相当検証を実機テストと同一視しません。
