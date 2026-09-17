@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "series": [
+    {"id":"amelia", "title":"アメリアシリーズ", "root":"amelia", "status":"system_build", "source_status":"five_attachments_and_current_drafts"},
+    {"id":"takeshi-ramen", "title":"タケシの異世界ラーメンシリーズ", "title_status":"working_title", "root":null, "status":"awaiting_sources", "source_status":"user_supplied_title_only"},
+    {"id":"irene-ojosama", "title":"イレーネのポンコツお嬢様シリーズ", "title_status":"working_title", "root":null, "status":"awaiting_sources", "source_status":"user_supplied_title_only"}
+  ]
+}

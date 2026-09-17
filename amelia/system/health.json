@@ -1,0 +1,53 @@
+{
+  "series_id": "amelia",
+  "checked_at": "2026-09-17T21:41:06.305Z",
+  "revision": "8259e3f7b429af641c2589e8c791eca9ba188a577f14b931bfd511cbfe7aadb3",
+  "validation": {
+    "passed": true,
+    "series_id": "amelia",
+    "errors": [],
+    "warnings": [],
+    "counts": [
+      {
+        "scene": "C01-S06",
+        "characters": 6034,
+        "sha256": "2bd2ab9c7353116b8a1b9787dd45a707ec7502f74c29c21dca6e412c5fc289af"
+      },
+      {
+        "scene": "C01-S07",
+        "characters": 3179,
+        "sha256": "c050798d4b5adafd5467b78e8279053bc12120270de7599d20f556aa023a92cb"
+      }
+    ],
+    "limitation": "Structural checks only; psychological, temporal and causal truth still requires editorial review."
+  },
+  "paused": true,
+  "current_scene": "C01-S07",
+  "records": {
+    "cards_by_type": {
+      "character": 10,
+      "location": 2,
+      "evidence": 7,
+      "costume": 1
+    },
+    "scenes": 7,
+    "manuscripts": 2,
+    "emotional_trajectory": 2,
+    "literary_rules": 4,
+    "decisions": 7,
+    "images": 0
+  },
+  "capabilities": {
+    "structural_validation": "implemented",
+    "council_request_and_collection": "implemented",
+    "external_workers": {
+      "configured_roles": [],
+      "live_connection_verified": false
+    },
+    "semantic_causality_validation": "editorial_review_required",
+    "automatic_canon_update": "not_implemented",
+    "map_event_simulation": "not_implemented",
+    "automatic_remote_sync": "not_implemented"
+  },
+  "note": "Record counts and configuration do not prove that a module ran. Live connections require separate evidence."
+}

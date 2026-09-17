@@ -1,0 +1,11 @@
+{
+  "project": "amelia",
+  "updated": "2026-09-16",
+  "phase": "system_build",
+  "manuscript_generation_enabled": false,
+  "last_saved_scene": "C01-S07",
+  "reason": "ユーザー指定：執筆を続ける前にシステムを完成させる",
+  "deployment_mode": "conversation_and_external_worker",
+  "allowed_work": ["システム設計", "実装", "既存データの整備", "テスト", "GitHubとNotionへのシステム資料保存"],
+  "resume_condition": "システム完成条件の検証後、ユーザーの執筆再開指示を受ける"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "series_id": "amelia",
+  "title": "アメリアシリーズ",
+  "state": "state.json",
+  "control": "system/control.json",
+  "manuscript_dir": "manuscript",
+  "pov_character": "P01",
+  "context_files": ["02_作品設定と執筆運用.md", "03_追放事件ファイル.md"],
+  "roles": ["coordinator", "writer", "editor", "continuity", "world", "emotion", "character", "proofreader", "visual", "socrates", "machiavelli", "keynes"],
+  "workers": {},
+  "blocked_terms": ["七つ数え", "7つ数え", "イレーネ", "タケシ", "灰の都", "灰猫亭", "三本釘", "石角詰所", "緑紐", "折れ灯", "Skjól", "Heilsa", "Ljósflæði", "Hreinsun", "Umbreyta", "TODO", "TBD", "{{file:"],
+  "destinations": {
+    "github": {"repository": "teufelszeug-wq/Codex001", "branch": "main", "prefix": "amelia/"},
+    "notion": {"parent_page_id": "3dc76efc-4029-81f1-904d-e5bc381cd9fd"}
+  }
+}

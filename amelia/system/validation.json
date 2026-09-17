@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "series_id": "amelia",
+  "errors": [],
+  "warnings": [],
+  "counts": [
+    {
+      "scene": "C01-S06",
+      "characters": 6034,
+      "sha256": "2bd2ab9c7353116b8a1b9787dd45a707ec7502f74c29c21dca6e412c5fc289af"
+    },
+    {
+      "scene": "C01-S07",
+      "characters": 3179,
+      "sha256": "c050798d4b5adafd5467b78e8279053bc12120270de7599d20f556aa023a92cb"
+    }
+  ],
+  "limitation": "Structural checks only; psychological, temporal and causal truth still requires editorial review.",
+  "checked_at": "2026-09-17T21:24:53.513Z"
+}

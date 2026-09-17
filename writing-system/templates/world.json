@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "series_id": null,
+  "status": "template_not_canon",
+  "genres": [],
+  "creation_mode": "guided",
+  "countries": [],
+  "languages": [],
+  "writing_systems": [],
+  "units": [],
+  "currencies": [],
+  "religions": [],
+  "magic_rules": [],
+  "institutions": [],
+  "earth_terms": {"mode":"review_only", "allowed":[], "flagged":[], "replacement_proposals":[]},
+  "entry_contract": {"id":"stable ID", "value":"setting", "status":"proposal|confirmed|rejected|unknown", "sources":[], "decision_id":null},
+  "note":"未入力は不明。実在語や他シリーズの値で自動補完しない。"
+}

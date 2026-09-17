@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "series_id": null,
+  "meeting_id": null,
+  "base_revision": null,
+  "target_scene": null,
+  "execution_mode": "conversation_single_assistant_multiple_perspectives",
+  "agenda": [],
+  "sources": [],
+  "perspectives": [
+    {"role":"premise_review", "opinion":null},
+    {"role":"strategy", "opinion":null},
+    {"role":"system_design", "opinion":null},
+    {"role":"editor", "opinion":null}
+  ],
+  "alternatives": [],
+  "objections": [],
+  "decisions": [],
+  "pending": [],
+  "owner": null,
+  "approval_source": null
+}
