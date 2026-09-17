@@ -1,0 +1,5 @@
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'); const port=Number(process.env.PORT||4173);
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.webmanifest':'application/manifest+json'};
+const server=http.createServer((req,res)=>{ let pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname); if(pathname==='/')pathname='/index.html'; const rel=pathname.replace(/^\/+/, ''); let file=path.resolve(root,rel); if(!file.startsWith(root)){res.writeHead(403);return res.end('Forbidden');} fs.stat(file,(err,st)=>{ if(err||!st.isFile()){file=path.join(root,'index.html');} fs.readFile(file,(e,data)=>{if(e){res.writeHead(404);return res.end('Not found');} res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});res.end(data);});}); });
+server.listen(port,'0.0.0.0',()=>console.log(`GDA dev server: http://localhost:${port}`));

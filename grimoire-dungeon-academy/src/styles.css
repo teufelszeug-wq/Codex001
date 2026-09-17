@@ -1,0 +1,12 @@
+:root { color-scheme: dark; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #090b15; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #app { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #090b15; touch-action: none; }
+canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+input.gda-name-input {
+  width: 260px; padding: 12px 14px; border: 2px solid #c7a85b; border-radius: 8px;
+  background: #141a32; color: #fff7d6; font: 18px ui-monospace, monospace; outline: none; text-align: center;
+}
+button.gda-dom-button {
+  margin-top: 12px; padding: 11px 18px; border: 1px solid #c7a85b; border-radius: 8px;
+  background: #28335e; color: white; font: 16px ui-monospace, monospace;
+}

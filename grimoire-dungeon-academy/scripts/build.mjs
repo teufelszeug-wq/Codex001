@@ -1,0 +1,9 @@
+import fs from 'node:fs'; import path from 'node:path';
+const dist='dist'; fs.rmSync(dist,{recursive:true,force:true}); fs.mkdirSync(dist,{recursive:true});
+const copy=(src,dst)=>{ const st=fs.statSync(src); if(st.isDirectory()){fs.mkdirSync(dst,{recursive:true}); for(const n of fs.readdirSync(src))copy(path.join(src,n),path.join(dst,n));} else {fs.mkdirSync(path.dirname(dst),{recursive:true});fs.copyFileSync(src,dst);} };
+copy('index.html',path.join(dist,'index.html')); copy('src',path.join(dist,'src')); copy('public',dist);
+const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);
+const files=walk(dist).map(p=>'./'+p.replace(/^dist[\\/]/,'').replaceAll('\\','/')).filter(p=>!p.endsWith('service-worker.js'));
+const external=['https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js','https://cdn.jsdelivr.net/npm/rot-js@2.2.1/dist/rot.min.js'];
+const sw=`const CACHE='gda-prod-v1';\nconst PRECACHE=${JSON.stringify(files)};\nconst EXTERNAL=${JSON.stringify(external)};\nself.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([...PRECACHE,...EXTERNAL])).then(()=>self.skipWaiting())));\nself.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));\nself.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));return r;}).catch(()=>caches.match('./index.html'))));});\n`;
+fs.writeFileSync(path.join(dist,'service-worker.js'),sw); console.log(`Built ${files.length} local files + ${external.length} pinned vendor URLs.`);
