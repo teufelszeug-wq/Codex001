@@ -2,13 +2,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {initialize,council,finishCouncil} from './project.mjs';
 import {health,snapshot} from './health.mjs';
+import {proposeChange,approveChange,applyChange,rollbackChange} from './changes.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'health') {
+  if(command === 'propose-change') {
+    const input=read(inside(root,args[0]));console.log(JSON.stringify(proposeChange(root,input.state,input.metadata),null,2));
+  } else if(command === 'approve-change' || command === 'rollback-change') {
+    const approval=read(inside(root,args[1]));
+    console.log(JSON.stringify((command==='approve-change'?approveChange:rollbackChange)(root,args[0],approval),null,2));
+  } else if(command === 'apply-change') {
+    console.log(JSON.stringify(applyChange(root,args[0]),null,2));
+  } else if(command === 'health') {
     const report=health(root);atomic(inside(root,'system/health.json'),report);console.log(JSON.stringify(report,null,2));
     if(!report.validation.passed)process.exitCode=1;
   } else if(command === 'export') {

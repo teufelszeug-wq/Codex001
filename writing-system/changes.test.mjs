@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {initialize,council,finishCouncil} from './project.mjs';
+import {read,inside,atomic} from './engine.mjs';
+import {proposeChange,approveChange,applyChange,rollbackChange} from './changes.mjs';
+function fixture(t){const w=fs.mkdtempSync(path.join(os.tmpdir(),'novel-change-'));t.after(()=>fs.rmSync(w,{recursive:true,force:true}));const root=initialize(w,'sample','sample');const m=council(root,'test setting review');finishCouncil(root,m.id,m.requests.map(r=>({...r,output:'test review'})),{execution_mode:'conversation_single_assistant',summary:'test decision',objections:[],pending:[]});const next=read(inside(root,'state.json'));next.change_log.push({id:'D-test',status:'proposal',change:'test setting'});next.next='test setting workflow';return {root,next,meta:{meeting_id:m.id,reason:'test reason',decision_ids:['D-test']}};}
+const approval={actor:'test-author',source:'test-only explicit approval'};
+test('unapproved change never replaces state',t=>{const f=fixture(t),r=proposeChange(f.root,f.next,f.meta);assert.throws(()=>applyChange(f.root,r.id),/approval/);assert.notEqual(read(inside(f.root,'state.json')).next,f.next.next);});
+test('approved change applies idempotently and rolls back',t=>{const f=fixture(t),old=read(inside(f.root,'state.json')),r=proposeChange(f.root,f.next,f.meta);approveChange(f.root,r.id,approval);assert.equal(applyChange(f.root,r.id).status,'applied');assert.equal(applyChange(f.root,r.id).status,'applied');assert.equal(read(inside(f.root,'state.json')).next,f.next.next);rollbackChange(f.root,r.id,approval);assert.deepEqual(read(inside(f.root,'state.json')),old);});
+test('invalid and paused scene changes do not affect live state',t=>{const f=fixture(t);f.next.current_scene='nonexistent';assert.throws(()=>proposeChange(f.root,f.next,f.meta),/paused/);f.next.current_scene=null;f.next.cards.push({id:'bad'});assert.throws(()=>proposeChange(f.root,f.next,f.meta),/validation/);assert.equal(read(inside(f.root,'state.json')).cards.length,0);});
+test('stale approval rejected',t=>{const f=fixture(t),r=proposeChange(f.root,f.next,f.meta),s=read(inside(f.root,'state.json'));s.next='other change';atomic(inside(f.root,'state.json'),s);assert.throws(()=>approveChange(f.root,r.id,approval),/stale/);});
+test('rollback preserves later changes',t=>{const f=fixture(t),r=proposeChange(f.root,f.next,f.meta);approveChange(f.root,r.id,approval);applyChange(f.root,r.id);const s=read(inside(f.root,'state.json'));s.next='later';atomic(inside(f.root,'state.json'),s);assert.throws(()=>rollbackChange(f.root,r.id,approval),/later/);});
+test('altered payload cannot reuse approval',t=>{const f=fixture(t),r=proposeChange(f.root,f.next,f.meta);approveChange(f.root,r.id,approval);const p=inside(f.root,'system/changes/'+r.id+'/record.json'),v=read(p);v.payload.reason='tampered';atomic(p,v);assert.throws(()=>applyChange(f.root,r.id),/altered/);});
+test('interrupted receipt after state replacement can finalize',t=>{const f=fixture(t),r=proposeChange(f.root,f.next,f.meta);approveChange(f.root,r.id,approval);const p=inside(f.root,'system/changes/'+r.id+'/record.json'),v=read(p);v.status='applying';atomic(p,v);atomic(inside(f.root,'state.json'),f.next);assert.equal(applyChange(f.root,r.id).status,'applied');});
+test('concurrent writer lock prevents changes',t=>{const f=fixture(t);fs.writeFileSync(inside(f.root,'system/change.lock'),'test');assert.throws(()=>proposeChange(f.root,f.next,f.meta),/EEXIST/);});
