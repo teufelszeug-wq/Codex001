@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const encode = v => JSON.stringify(v,null,2)+'\n';
 function recordPath(root,id){if(!/^[a-f0-9-]{36}$/.test(id))throw Error('invalid change id');return inside(root,'system/changes/'+id+'/record.json');}
-function locked(root,fn){
+export function locked(root,fn){
   const file=inside(root,'system/change.lock');
   fs.mkdirSync(path.dirname(file),{recursive:true});
   const fd=fs.openSync(file,'wx');

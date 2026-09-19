@@ -3,13 +3,22 @@ import path from 'node:path';
 import {initialize,council,finishCouncil} from './project.mjs';
 import {health,snapshot} from './health.mjs';
 import {proposeChange,approveChange,applyChange,rollbackChange} from './changes.mjs';
+import {proposeTransaction,approveTransaction,recoverTransaction} from './transactions.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'propose-change') {
+  if(command === 'propose-bundle') {
+    const input=read(inside(root,args[0]));console.log(JSON.stringify(proposeTransaction(root,input.changes,input.metadata),null,2));
+  } else if(command === 'approve-bundle') {
+    console.log(JSON.stringify(approveTransaction(root,args[0],read(inside(root,args[1]))),null,2));
+  } else if(command === 'apply-bundle' || command === 'recover-bundle') {
+    const direction=command==='apply-bundle'?'finish':args[1];
+    const approval=direction==='rollback'?read(inside(root,args[2])):null;
+    console.log(JSON.stringify(recoverTransaction(root,args[0],direction,approval),null,2));
+  } else if(command === 'propose-change') {
     const input=read(inside(root,args[0]));console.log(JSON.stringify(proposeChange(root,input.state,input.metadata),null,2));
   } else if(command === 'approve-change' || command === 'rollback-change') {
     const approval=read(inside(root,args[1]));

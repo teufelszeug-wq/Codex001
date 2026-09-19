@@ -23,6 +23,7 @@ export function atomic(file, value) {
 }
 export function openSeries(root) {
   root = fs.realpathSync(root);
+  if (fs.existsSync(inside(root,'system/transaction-active.json'))) throw Error('unfinished transaction: recover before reading series');
   const config = read(inside(root, 'system/series.json'));
   if (config.schema_version !== 1 || !/^[a-z][a-z0-9-]*$/.test(config.series_id)) throw Error('invalid series config');
   const control = read(inside(root, config.control));
@@ -93,12 +94,15 @@ export function validate(root) {
   return {passed: errors.length === 0, series_id: config.series_id, errors, warnings, counts,
     limitation: 'Structural checks only; psychological, temporal and causal truth still requires editorial review.'};
 }
-export function fingerprint(root) {
+export function managedFiles(root) {
   const {config} = openSeries(root);
   const contextFiles = config.context_files ?? [];
   const optional = ['system/world.json','system/sources.json'].filter(name=>fs.existsSync(inside(root,name)));
   const names = [...new Set(['system/series.json', config.state, config.control, ...optional, ...contextFiles, ...files(root, config.manuscript_dir)])].sort();
-  return hash(JSON.stringify(names.map(name => [name, hash(fs.readFileSync(inside(root, name)))])));
+  return names;
+}
+export function fingerprint(root) {
+  return hash(JSON.stringify(managedFiles(root).map(name => [name, hash(fs.readFileSync(inside(root, name)))])));
 }
 export function request(root, role, task) {
   const s = openSeries(root), report = validate(root);

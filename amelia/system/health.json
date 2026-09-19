@@ -1,6 +1,6 @@
 {
   "series_id": "amelia",
-  "checked_at": "2026-09-17T21:48:51.029Z",
+  "checked_at": "2026-09-18T03:35:29.957Z",
   "revision": "8259e3f7b429af641c2589e8c791eca9ba188a577f14b931bfd511cbfe7aadb3",
   "validation": {
     "passed": true,
@@ -47,7 +47,7 @@
     "semantic_causality_validation": "editorial_review_required",
     "automatic_canon_update": "not_implemented",
     "approved_single_state_change": "implemented",
-    "multi_file_transaction": "not_implemented",
+    "multi_file_transaction": "journaled_with_read_guard",
     "map_event_simulation": "not_implemented",
     "automatic_remote_sync": "not_implemented"
   },
