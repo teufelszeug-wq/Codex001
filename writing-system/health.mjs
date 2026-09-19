@@ -13,6 +13,7 @@ export function health(root){
       external_workers:{configured_roles:configured,live_connection_verified:false},
       semantic_causality_validation:'editorial_review_required',automatic_canon_update:'not_implemented',
       approved_single_state_change:'implemented',multi_file_transaction:'journaled_with_read_guard',
+      sync_journal:'implemented_mock_verified',
       map_event_simulation:'not_implemented',automatic_remote_sync:'not_implemented'},
     note:'Record counts and configuration do not prove that a module ran. Live connections require separate evidence.'};
 }

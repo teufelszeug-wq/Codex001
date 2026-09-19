@@ -4,13 +4,18 @@ import {initialize,council,finishCouncil} from './project.mjs';
 import {health,snapshot} from './health.mjs';
 import {proposeChange,approveChange,applyChange,rollbackChange} from './changes.mjs';
 import {proposeTransaction,approveTransaction,recoverTransaction} from './transactions.mjs';
+import {prepareSync,syncStatus} from './sync.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'propose-bundle') {
+  if(command === 'prepare-sync') {
+    console.log(JSON.stringify(await prepareSync(root,read(inside(root,args[0]))),null,2));
+  } else if(command === 'sync-status') {
+    console.log(JSON.stringify(syncStatus(root,args[0]),null,2));
+  } else if(command === 'propose-bundle') {
     const input=read(inside(root,args[0]));console.log(JSON.stringify(proposeTransaction(root,input.changes,input.metadata),null,2));
   } else if(command === 'approve-bundle') {
     console.log(JSON.stringify(approveTransaction(root,args[0],read(inside(root,args[1]))),null,2));
