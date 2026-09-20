@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {initialize} from './project.mjs';
+import {read,atomic,inside} from './engine.mjs';
+import {progress} from './progress.mjs';
+function fixture(t){const w=fs.mkdtempSync(path.join(os.tmpdir(),'novel-progress-'));t.after(()=>fs.rmSync(w,{recursive:true,force:true}));const root=initialize(w,'count-test','count');const p=inside(root,'state.json'),s=read(p);s.active_branch='C';s.chapter={number:1,minimum_target_chars:100};s.scene_log=[];return {root,s,save:()=>atomic(p,s),text:(name,content)=>{fs.writeFileSync(inside(root,'manuscript/'+name),content);return 'manuscript/'+name;}};}
+test('progress separates draft, approved, missing and planned across branches',t=>{const f=fixture(t);f.s.scene_log=[{id:'C01-S01',status:'draft',path:f.text('a.md','あ😀\r\nい')},{id:'C01-S02',status:'approved',path:f.text('b.md','確定')},{id:'C01-S03',status:'planned'},{id:'C01-S04',status:'summary only'},{id:'A01-S01',status:'approved',path:f.text('old.md','旧稿')}];f.save();const before=fs.readFileSync(inside(f.root,'state.json'),'utf8'),r=progress(f.root),c=r.chapters.find(x=>x.active);assert.equal(c.draft_chars,3);assert.equal(c.approved_chars,2);assert.equal(c.approved_remaining_to_minimum,98);assert.deepEqual(c.planned,['C01-S03']);assert.deepEqual(c.missing_text,['C01-S04']);assert.equal(fs.readFileSync(inside(f.root,'state.json'),'utf8'),before);});
+test('superseded revision excluded and duplicate current scene rejected',t=>{const f=fixture(t);f.s.scene_log=[{id:'C01-old',logical_scene_id:'S1',current_revision:false,status:'draft',path:f.text('old.md','旧')},{id:'C01-new',logical_scene_id:'S1',status:'draft',path:f.text('new.md','新')}];f.save();assert.equal(progress(f.root).chapters[0].draft_chars,1);f.s.scene_log[0].current_revision=true;f.save();assert.throws(()=>progress(f.root),/multiple current/);});
+test('duplicate physical file is rejected',t=>{const f=fixture(t),p=f.text('a.md','本文');f.s.scene_log=[{id:'C01-S1',status:'draft',path:p},{id:'C01-S2',status:'draft',path:p}];f.save();assert.throws(()=>progress(f.root),/counted twice/);});
+test('unknown status and missing chapter are not counted as approved',t=>{const f=fixture(t);f.s.scene_log=[{id:'C01-S1',status:'maybe complete',path:f.text('a.md','不明')},{id:'unclassified',status:'draft'}];f.save();const r=progress(f.root);assert.equal(r.chapters[0].approved_chars,0);assert.equal(r.chapters[0].unknown_status_chars,2);assert.equal(r.unclassified.length,1);assert.equal(r.chapters[0].chapter_complete,false);});

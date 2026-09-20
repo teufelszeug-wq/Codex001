@@ -10,6 +10,6 @@ function collect(relative){for(const entry of fs.readdirSync(path.join(root,rela
   else if(/\.(mjs|md|json)$/.test(entry.name)||entry.name==='.gitignore')names.push(p);
 }}
 collect('writing-system');
-names.push('writing-system/research/2026-09-18_旧システム監査.md','amelia/system/control.json','amelia/system/series.json','amelia/system/health.json','amelia/system/validation.json','amelia/state.json','amelia/AGENTS.md');
+names.push('writing-system/開発進捗.html','writing-system/research/2026-09-18_旧システム監査.md','amelia/system/control.json','amelia/system/series.json','amelia/system/health.json','amelia/system/validation.json','amelia/state.json','amelia/AGENTS.md');
 const files=names.sort().map(p=>({path:p,mode:'100644',type:'blob',content:fs.readFileSync(path.join(root,p),'utf8')}));
 process.stdout.write(JSON.stringify(files));

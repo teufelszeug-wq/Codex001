@@ -6,3 +6,4 @@
 - GitHubはCodex001のmain。ルートREADMEとdevelop、他作品は変更しない。
 - 会話方式も外部ワーカー方式も同じ検査を通す。ワーカー出力は提案であり正本ではない。
 - システムの完成、AI接続済み、同期済みは試験・読み戻しの証跡がある範囲だけ報告する。
+- 開発進捗が変わったら development-status.json を証拠に合わせて更新し、node writing-system/dashboard.mjs で開発進捗.htmlを再生成する。実装数を完成率として表示しない。
