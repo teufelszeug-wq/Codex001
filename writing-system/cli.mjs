@@ -6,13 +6,20 @@ import {proposeChange,approveChange,applyChange,rollbackChange} from './changes.
 import {proposeTransaction,approveTransaction,recoverTransaction} from './transactions.mjs';
 import {prepareSync,syncStatus,sendSync,reconcileSync} from './sync.mjs';
 import {githubAdapter} from './github-sync.mjs';
+import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'send-github' || command === 'reconcile-github' || command === 'read-github') {
+  if(command === 'brief-template') {
+    console.log(JSON.stringify(briefTemplate(root,args[0]),null,2));
+  } else if(command === 'save-brief') {
+    console.log(JSON.stringify(saveBrief(root,read(inside(root,args[0]))),null,2));
+  } else if(command === 'brief-council') {
+    console.log(JSON.stringify(briefCouncil(root,args[0]),null,2));
+  } else if(command === 'send-github' || command === 'reconcile-github' || command === 'read-github') {
     const {config}=openSeries(root);
     const adapter=githubAdapter(config.destinations.github,{token:process.env.WRITING_GITHUB_TOKEN??''});
     const result=command==='read-github'?await adapter.read(args[0]):await (command==='send-github'?sendSync:reconcileSync)(root,args[0],adapter);

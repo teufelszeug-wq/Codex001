@@ -3,6 +3,6 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": {"test": "node --test test.mjs project.test.mjs health.test.mjs changes.test.mjs transactions.test.mjs sync.test.mjs github-sync.test.mjs progress.test.mjs dashboard.test.mjs", "dashboard": "node dashboard.mjs", "dashboard:serve": "node dashboard.mjs --serve"},
+  "scripts": {"test": "node --test test.mjs project.test.mjs health.test.mjs changes.test.mjs transactions.test.mjs sync.test.mjs github-sync.test.mjs progress.test.mjs dashboard.test.mjs brief.test.mjs", "dashboard": "node dashboard.mjs", "dashboard:serve": "node dashboard.mjs --serve"},
   "engines": {"node": ">=22"}
 }
