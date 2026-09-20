@@ -5,8 +5,9 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {openSeries,fingerprint} from './engine.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
+import {recordedOperation} from './operation-receipt.mjs';
 export function planningServer(root){
-  const {config}=openSeries(root),token=crypto.randomUUID(),receipts=new Map();
+  const {config}=openSeries(root),token=crypto.randomUUID();
   const html=fs.readFileSync(new URL('./企画入力.html',import.meta.url),'utf8');
   const server=http.createServer(async(req,res)=>{
     const origin='http://127.0.0.1:'+server.address().port;
@@ -20,15 +21,15 @@ export function planningServer(root){
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000)throw Error('入力が長すぎます。');chunks.push(chunk);}
       const input=JSON.parse(Buffer.concat(chunks).toString('utf8'));
       if(!/^[a-f0-9-]{36}$/.test(input.operation_id??''))throw Error('操作IDが不正です。');
-      const key=input.operation_id,payload=JSON.stringify({route:req.url,input});
-      if(receipts.has(key)){const previous=receipts.get(key);if(previous.payload!==payload)throw Error('同じ操作IDの内容が変わっています。');reply(200,previous.result);return;}
-      if(receipts.size>=1000)throw Error('保存記録が上限です。サーバーを再起動してください。');
       if(input.base!==fingerprint(root))throw Error('作品の設定が変わりました。入力を控えて画面を開き直してください。');
+      if(req.url==='/api/save'&&input.brief?.series_id!==config.series_id)throw Error('作品IDが一致しません。');
+      const result=recordedOperation(root,input.operation_id,{route:req.url,input},()=>{
       let result;
       if(req.url==='/api/save'){const record=saveBrief(root,input.brief);result={id:record.id,status:record.status,unanswered:record.payload.unanswered};}
       else{const meeting=briefCouncil(root,input.brief_id);result={id:meeting.id,status:meeting.status,roles:meeting.requests.map(x=>x.role)};}
-      receipts.set(key,{payload,result});reply(200,result);
-    }catch(e){reply(400,{error:e.message});}
+      return result;
+      });reply(200,result);
+    }catch(e){reply(e.uncertain?409:400,{error:e.message,uncertain:!!e.uncertain});}
   });
   return server;
 }
