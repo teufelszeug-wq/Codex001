@@ -1,10 +1,10 @@
 {
   "updated": "2026-09-21",
   "phase": "共通基盤を実装済み。制作環境全体は構築中",
-  "tests": "既存機能52件 ／ 章進捗・画面6件 ／ 企画4件 ／ 操作記録・HTTP5件が通過（別実行・一部重複）",
-  "last_verified_commit": "b53b0b6107ca18529b43646036468f311ae044ca",
+  "tests": "既存機能52件 ／ 章進捗・画面6件 ／ 企画4件 ／ 履歴・操作記録・HTTP8件が通過（別実行・一部重複）",
+  "last_verified_commit": "53c1aa0b20b29f708b99666987a1d8c2a572e0d0",
   "items": [
-    {"name":"新シリーズの企画と会議への引き渡し","status":"partial","detail":"3段階の入力画面と作品別保存を実装。操作記録を永続化し、新しいサーバーでも同じ操作を重複実行しない。結果不明は照合待ち。実ブラウザー操作は未検証。","evidence":"企画から会議へ.md"},
+    {"name":"新シリーズの企画と会議への引き渡し","status":"partial","detail":"保存済み企画の再読込と操作履歴を追加。古い基準版・不整合・照合待ちを区別。自動復旧と実ブラウザー操作検証は残件。","evidence":"企画から会議へ.md"},
     {"name":"作品の分離・新シリーズ作成","status":"verified","detail":"空の作品領域を作成。他シリーズの設定をコピーしない。","evidence":"project.test.mjs"},
     {"name":"三人の知性を含む制作会議","status":"verified","detail":"依頼・全員の返答・結論を記録。会話内の役別検討と外部実行を区別。","evidence":"project.mjs"},
     {"name":"構造検査・執筆停止","status":"verified","detail":"作品ID、古い版、参照、禁則を検査。停止中の執筆依頼を拒否。","evidence":"test.mjs"},

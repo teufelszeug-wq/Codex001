@@ -6,6 +6,7 @@ import {pathToFileURL} from 'node:url';
 import {openSeries,fingerprint} from './engine.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
 import {recordedOperation} from './operation-receipt.mjs';
+import {planningHistory} from './planning-history.mjs';
 export function planningServer(root){
   const {config}=openSeries(root),token=crypto.randomUUID();
   const html=fs.readFileSync(new URL('./企画入力.html',import.meta.url),'utf8');
@@ -15,6 +16,10 @@ export function planningServer(root){
     if(req.headers.host!==new URL(origin).host||req.headers.origin&&req.headers.origin!==origin){reply(403,{error:'この画面から操作してください。'});return;}
     if(req.method==='GET'&&req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(html);return;}
     if(req.method==='GET'&&req.url==='/api/init'){reply(200,{token,series_id:config.series_id,title:config.title,root:path.resolve(root),base:fingerprint(root),templates:['quick','guided','full'].map(mode=>briefTemplate(root,mode))});return;}
+    if(req.method==='GET'&&req.url==='/api/history'){
+      if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
+      try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
+    }
     if(req.method!=='POST'||!['/api/save','/api/council'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
     if(req.headers['x-planning-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'画面を開き直してください。'});return;}
     try{
