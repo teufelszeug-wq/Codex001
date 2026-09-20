@@ -4,14 +4,20 @@ import {initialize,council,finishCouncil} from './project.mjs';
 import {health,snapshot} from './health.mjs';
 import {proposeChange,approveChange,applyChange,rollbackChange} from './changes.mjs';
 import {proposeTransaction,approveTransaction,recoverTransaction} from './transactions.mjs';
-import {prepareSync,syncStatus} from './sync.mjs';
+import {prepareSync,syncStatus,sendSync,reconcileSync} from './sync.mjs';
+import {githubAdapter} from './github-sync.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'prepare-sync') {
+  if(command === 'send-github' || command === 'reconcile-github' || command === 'read-github') {
+    const {config}=openSeries(root);
+    const adapter=githubAdapter(config.destinations.github,{token:process.env.WRITING_GITHUB_TOKEN??''});
+    const result=command==='read-github'?await adapter.read(args[0]):await (command==='send-github'?sendSync:reconcileSync)(root,args[0],adapter);
+    console.log(JSON.stringify(result,null,2));
+  } else if(command === 'prepare-sync') {
     console.log(JSON.stringify(await prepareSync(root,read(inside(root,args[0]))),null,2));
   } else if(command === 'sync-status') {
     console.log(JSON.stringify(syncStatus(root,args[0]),null,2));
