@@ -7,9 +7,25 @@
 <label>ジャンルと配分（任意・合計100）</label><div id="genres"></div><button type="button" id="add">ジャンルを追加</button>
 <p id="message" role="alert"></p><button id="save" disabled>企画案として保存</button><button type="button" id="council" disabled>保存した企画を会議へ渡す</button></form>
 <section class="panel"><h2>保存・会議の結果</h2><div id="result" role="status">まだ保存していません。</div><p>会議への引き渡しは依頼の作成です。各担当の検討と回答は、このタスクまたは設定済みの外部AIで行います。</p></section>
-<section class="panel"><h2>保存済み企画と操作記録</h2><p>開くだけでは保存されません。編集後の保存は新しい企画案として残ります。照合待ちの操作は、このタスクで記録の確認を依頼してください。</p><button type="button" id="refresh" disabled>履歴を更新</button><p id="historyMessage" role="status"></p><div id="history"></div></section></main>
+<section class="panel"><h2>保存済み企画と操作記録</h2><p>開くだけでは保存されません。編集後の保存は新しい企画案として残ります。照合待ちの操作は、このタスクで記録の確認を依頼してください。</p><button type="button" id="refresh" disabled>履歴を更新</button><p id="historyMessage" role="status"></p><div id="history"></div></section>
+<form id="reviewForm" class="panel" hidden><h2>会議の回答と結論を保存</h2><p id="reviewMeeting"></p><p>実際に行った検討の回答を入力してください。保存後も提案の扱いです。途中の入力は、この画面を閉じると失われます。</p><div id="reviewFields"></div>
+<label for="executionMode">実際の検討方式</label><select id="executionMode" required><option value="">選択してください</option><option value="conversation_single_assistant">単独AIによる会話内の役別検討</option><option value="external_workers">外部ワーカーによる検討</option></select>
+<label for="resolutionSummary">会議の結論（提案）</label><textarea id="resolutionSummary" required></textarea><label for="objections">異論（1行に1件・なければ空欄）</label><textarea id="objections"></textarea><label for="pending">保留事項（1行に1件・なければ空欄）</label><textarea id="pending"></textarea><button>回答と結論を提案として保存</button></form></main>
 <script>
 const $=id=>document.getElementById(id);let context,briefId=null,busy=false,uncertain=false;const answers={};
+let selectedMeeting=null;
+function editMeeting(meeting,roleNames){
+  if(busy||uncertain||meeting.stale||meeting.status!=='awaiting_reviews')return;
+  if(selectedMeeting&&!confirm('現在の会議入力を置き換えます。未保存の回答は失われます。続けますか？'))return;
+  selectedMeeting=meeting.id;$('reviewMeeting').textContent='会議ID：'+meeting.id;$('reviewFields').replaceChildren();
+  for(const review of meeting.reviews){const label=document.createElement('label'),area=document.createElement('textarea');area.id='review-'+review.role;area.dataset.reviewRole=review.role;area.required=true;label.htmlFor=area.id;label.textContent=roleNames[review.role];$('reviewFields').append(label,area);}
+  for(const id of ['executionMode','resolutionSummary','objections','pending'])$(id).value='';$('reviewForm').hidden=false;$('reviewForm').scrollIntoView({behavior:'smooth'});
+}
+$('reviewForm').onsubmit=e=>{e.preventDefault();if(!selectedMeeting)return;action(async()=>{
+  const lines=id=>$(id).value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const result=await send('/api/finish-council',{meeting_id:selectedMeeting,reviews:[...document.querySelectorAll('[data-review-role]')].map(x=>({role:x.dataset.reviewRole,output:x.value})),resolution:{execution_mode:$('executionMode').value,summary:$('resolutionSummary').value,objections:lines('objections'),pending:lines('pending')}});
+  $('result').textContent='会議の回答と結論を提案として保存しました。\n会議ID：'+result.id;selectedMeeting=null;$('reviewForm').hidden=true;
+});};
 function collect(){document.querySelectorAll('[data-answer]').forEach(x=>answers[x.dataset.answer]=x.value);}
 function invalidate(){briefId=null;$('council').disabled=true;}
 function render(){collect();$('questions').replaceChildren();const t=context.templates.find(x=>x.mode===$('mode').value);for(const q of t.questions){const label=document.createElement('label'),area=document.createElement('textarea');label.textContent=q.question;label.htmlFor='q-'+q.id;area.id=label.htmlFor;area.dataset.answer=q.id;area.value=answers[q.id]||'';$('questions').append(label,area);}invalidate();}
@@ -41,6 +57,7 @@ async function refreshHistory(){
       line(modeNames[meeting.execution_mode]);line('議題：'+meeting.agenda);
       for(const review of meeting.reviews)line(roleNames[review.role]+'：\n'+(review.output??'この会議の最終記録には回答未収録'));
       if(meeting.resolution){line('結論（未確定）：'+meeting.resolution.summary);line('異論：'+meeting.resolution.objections.join('\n'));line('保留：'+meeting.resolution.pending.join('\n'));}
+      if(meeting.status==='awaiting_reviews'&&!meeting.stale){const button=document.createElement('button');button.type='button';button.textContent='回答と結論を入力';button.disabled=busy||uncertain;button.onclick=()=>editMeeting(meeting,roleNames);box.append(button);}
       $('history').append(box);
     }
     for(const issue of data.issues){const p=document.createElement('p');p.textContent=issue.kind+'/'+issue.file+'：'+issue.message;$('history').append(p);}
