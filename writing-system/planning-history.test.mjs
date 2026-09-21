@@ -4,12 +4,28 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import {initialize} from './project.mjs';
+import {initialize,council,finishCouncil} from './project.mjs';
 import {briefTemplate,saveBrief} from './brief.mjs';
 import {recordedOperation} from './operation-receipt.mjs';
 import {planningHistory} from './planning-history.mjs';
 import {fingerprint} from './engine.mjs';
 function setup(t){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'history-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));return initialize(dir,'history-test','試験');}
+test('council history distinguishes requests from completed role reviews and stays read-only',t=>{
+  const root=setup(t),before=fingerprint(root),meeting=council(root,'会議履歴の試験');
+  let h=planningHistory(root);assert.equal(h.councils[0].execution_mode,'requests_only');assert.ok(h.councils[0].reviews.every(r=>r.output===null));assert.equal(h.councils[0].resolution,null);
+  const replies=meeting.requests.map(r=>({request_id:r.request_id,series_id:r.series_id,base:r.base,role:r.role,output:'試験の回答 '+r.role}));
+  finishCouncil(root,meeting.id,replies,{execution_mode:'conversation_single_assistant',summary:'試験の提案',objections:['未検証あり'],pending:['実接続']});
+  const file=path.join(root,'system/councils',meeting.id+'.json'),saved=fs.readFileSync(file,'utf8');
+  h=planningHistory(root);assert.equal(h.councils[0].status,'reviewed_proposal');assert.equal(h.councils[0].reviews.length,5);assert.ok(h.councils[0].reviews.every(r=>r.output));assert.equal(h.councils[0].resolution.pending[0],'実接続');assert.equal(fingerprint(root),before);assert.equal(fs.readFileSync(file,'utf8'),saved);
+});
+test('foreign, duplicate and altered council records are hidden as issues',t=>{
+  const root=setup(t),a=council(root,'foreign private agenda'),b=council(root,'duplicate'),c=council(root,'altered');
+  a.series_id='another';b.requests[1]=b.requests[0];
+  for(const m of [a,b])fs.writeFileSync(path.join(root,'system/councils',m.id+'.json'),JSON.stringify(m));
+  const replies=c.requests.map(r=>({request_id:r.request_id,series_id:r.series_id,base:r.base,role:r.role,output:'test'}));
+  const completed=finishCouncil(root,c.id,replies,{execution_mode:'external_workers',summary:'test',objections:[],pending:[]});completed.replies[0].output='altered';fs.writeFileSync(path.join(root,'system/councils',c.id+'.json'),JSON.stringify(completed));
+  const h=planningHistory(root);assert.equal(h.councils.length,0);assert.equal(h.issues.length,3);assert.ok(!JSON.stringify(h).includes('foreign private agenda'));
+});
 test('history reads proposals and uncertain receipts without replay or canon changes',t=>{
   const root=setup(t),before=fingerprint(root),id=crypto.randomUUID();
   const brief=recordedOperation(root,id,{},()=>saveBrief(root,{...briefTemplate(root),source_ref:'test',answers:{premise:'draft'}}));

@@ -34,8 +34,17 @@ async function refreshHistory(){
     $('historyMessage').textContent=(data.truncated?'各種200件まで表示しています。':'')+(data.base!==context.base?'作品の設定が変わっています。入力を控えて画面を開き直してください。':'');
     for(const record of data.briefs){const p=document.createElement('p'),button=document.createElement('button');p.textContent='企画 '+record.id+' / '+record.created_at+(record.stale?' / 古い基準版':' / 企画案');button.textContent='この企画を開く';button.type='button';button.disabled=uncertain||busy;button.onclick=()=>loadBrief(record);p.append(button);$('history').append(p);}
     for(const record of data.operations){const p=document.createElement('p');p.textContent='操作 '+record.id+' / '+(record.status==='completed'?'完了記録あり':'照合待ち（再実行しない）')+(record.result_id?' / 結果ID：'+record.result_id:'');$('history').append(p);}
+    const roleNames={socrates:'ソクラテス役',machiavelli:'マキャヴェッリ役',keynes:'ケインズ役',editor:'編集者',continuity:'整合性担当'};
+    const modeNames={requests_only:'依頼のみ・回答未回収',conversation_single_assistant:'単独AIによる会話内の役別検討',external_workers:'外部ワーカー方式（記録された実行方式）'};
+    for(const meeting of data.councils||[]){const box=document.createElement('details'),heading=document.createElement('summary');heading.textContent='会議 '+meeting.id+' / '+(meeting.status==='reviewed_proposal'?'回答・結論あり（提案）':'回答待ち')+(meeting.stale?' / 古い基準版':'');box.append(heading);
+      const line=text=>{const p=document.createElement('p');p.style.whiteSpace='pre-wrap';p.textContent=text;box.append(p);};
+      line(modeNames[meeting.execution_mode]);line('議題：'+meeting.agenda);
+      for(const review of meeting.reviews)line(roleNames[review.role]+'：\n'+(review.output??'この会議の最終記録には回答未収録'));
+      if(meeting.resolution){line('結論（未確定）：'+meeting.resolution.summary);line('異論：'+meeting.resolution.objections.join('\n'));line('保留：'+meeting.resolution.pending.join('\n'));}
+      $('history').append(box);
+    }
     for(const issue of data.issues){const p=document.createElement('p');p.textContent=issue.kind+'/'+issue.file+'：'+issue.message;$('history').append(p);}
-    if(!data.briefs.length&&!data.operations.length&&!data.issues.length)$('historyMessage').textContent+='保存記録はまだありません。';
+    if(!data.briefs.length&&!data.operations.length&&!data.councils?.length&&!data.issues.length)$('historyMessage').textContent+='保存記録はまだありません。';
   }catch{$('historyMessage').textContent='履歴を読み込めませんでした。保存操作は行っていません。';}finally{$('refresh').disabled=false;}
 }
 $('refresh').onclick=refreshHistory;
