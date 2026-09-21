@@ -9,6 +9,7 @@ import {recordedOperation} from './operation-receipt.mjs';
 import {planningHistory} from './planning-history.mjs';
 import {councilSubmission} from './council-submission.mjs';
 import {finishCouncil} from './project.mjs';
+import {saveCouncilDraft} from './council-draft.mjs';
 export function planningServer(root){
   const {config}=openSeries(root),token=crypto.randomUUID();
   const html=fs.readFileSync(new URL('./企画入力.html',import.meta.url),'utf8');
@@ -22,7 +23,7 @@ export function planningServer(root){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
     }
-    if(req.method!=='POST'||!['/api/save','/api/council','/api/finish-council'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
+    if(req.method!=='POST'||!['/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
     if(req.headers['x-planning-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'画面を開き直してください。'});return;}
     try{
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000)throw Error('入力が長すぎます。');chunks.push(chunk);}
@@ -30,10 +31,12 @@ export function planningServer(root){
       if(!/^[a-f0-9-]{36}$/.test(input.operation_id??''))throw Error('操作IDが不正です。');
       if(input.base!==fingerprint(root))throw Error('作品の設定が変わりました。入力を控えて画面を開き直してください。');
       if(req.url==='/api/save'&&input.brief?.series_id!==config.series_id)throw Error('作品IDが一致しません。');
-      const submission=req.url==='/api/finish-council'?councilSubmission(root,input):null;
+      const isDraft=req.url==='/api/save-council-draft';
+      const submission=req.url==='/api/finish-council'||isDraft?councilSubmission(root,input,{draft:isDraft}):null;
       const result=recordedOperation(root,input.operation_id,{route:req.url,input},()=>{
       let result;
       if(req.url==='/api/save'){const record=saveBrief(root,input.brief);result={id:record.id,status:record.status,unanswered:record.payload.unanswered};}
+      else if(isDraft){const record=saveCouncilDraft(root,input);result={id:record.id,status:record.status,meeting_id:input.meeting_id};}
       else if(submission){const meeting=finishCouncil(root,input.meeting_id,submission.replies,submission.resolution);result={id:meeting.id,status:meeting.status,execution_mode:meeting.execution_mode};}
       else{const meeting=briefCouncil(root,input.brief_id);result={id:meeting.id,status:meeting.status,roles:meeting.requests.map(x=>x.role)};}
       return result;

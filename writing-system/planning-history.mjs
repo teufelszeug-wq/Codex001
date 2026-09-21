@@ -3,8 +3,8 @@ import {inside,read,hash,openSeries,fingerprint} from './engine.mjs';
 // Read only. Incomplete operations are evidence for manual review, never replayed here.
 export function planningHistory(root){
   const {config}=openSeries(root),base=fingerprint(root);
-  const result={base,briefs:[],operations:[],councils:[],issues:[],truncated:false};
-  for(const kind of ['briefs','operations','councils']){
+  const result={base,briefs:[],operations:[],councils:[],drafts:[],issues:[],truncated:false};
+  for(const kind of ['briefs','operations','councils','council-drafts']){
     const dir=inside(root,'system/'+kind);
     if(!fs.existsSync(dir))continue;
     const names=fs.readdirSync(dir).filter(n=>n.endsWith('.json')).sort();
@@ -18,6 +18,12 @@ export function planningHistory(root){
           if(record.payload?.series_id!==config.series_id||record.status!=='proposal'||record.digest!==hash(JSON.stringify(record.payload)))throw Error();
           if(!['quick','guided','full'].includes(record.payload.mode)||!record.payload.answers||!Array.isArray(record.payload.genres))throw Error();
           result.briefs.push({...record,stale:record.payload.base!==base});
+        }else if(kind==='council-drafts'){
+          if(record.status!=='draft'||record.payload?.series_id!==config.series_id||record.digest!==hash(JSON.stringify(record.payload))||!/^[a-f0-9-]{36}$/.test(record.payload.meeting_id??'')||!Array.isArray(record.payload.reviews)||record.payload.reviews.length!==5)throw Error();
+          const roles=['socrates','machiavelli','keynes','editor','continuity'];
+          if(new Set(record.payload.reviews.map(r=>r.role)).size!==5||record.payload.reviews.some(r=>!roles.includes(r.role)||typeof r.output!=='string'))throw Error();
+          const r=record.payload.resolution;if(!r||!['','conversation_single_assistant','external_workers'].includes(r.execution_mode)||typeof r.summary!=='string'||!Array.isArray(r.objections)||!Array.isArray(r.pending)||[...r.objections,...r.pending].some(x=>typeof x!=='string'))throw Error();
+          result.drafts.push({...record,stale:record.payload.base!==base});
         }else if(kind==='councils'){
           if(record.series_id!==config.series_id||!['awaiting_reviews','reviewed_proposal'].includes(record.status)||typeof record.agenda!=='string'||!Array.isArray(record.requests)||record.requests.length!==5)throw Error();
           const roles=['socrates','machiavelli','keynes','editor','continuity'];

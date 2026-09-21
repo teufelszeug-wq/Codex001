@@ -8,19 +8,23 @@
 <p id="message" role="alert"></p><button id="save" disabled>企画案として保存</button><button type="button" id="council" disabled>保存した企画を会議へ渡す</button></form>
 <section class="panel"><h2>保存・会議の結果</h2><div id="result" role="status">まだ保存していません。</div><p>会議への引き渡しは依頼の作成です。各担当の検討と回答は、このタスクまたは設定済みの外部AIで行います。</p></section>
 <section class="panel"><h2>保存済み企画と操作記録</h2><p>開くだけでは保存されません。編集後の保存は新しい企画案として残ります。照合待ちの操作は、このタスクで記録の確認を依頼してください。</p><button type="button" id="refresh" disabled>履歴を更新</button><p id="historyMessage" role="status"></p><div id="history"></div></section>
-<form id="reviewForm" class="panel" hidden><h2>会議の回答と結論を保存</h2><p id="reviewMeeting"></p><p>実際に行った検討の回答を入力してください。保存後も提案の扱いです。途中の入力は、この画面を閉じると失われます。</p><div id="reviewFields"></div>
+<form id="reviewForm" class="panel" hidden><h2>会議の回答と結論を保存</h2><p id="reviewMeeting"></p><p>実際に行った検討の回答を入力してください。途中の内容は「下書き保存」で残せます。未保存の入力は画面を閉じると失われます。</p><button type="button" id="saveDraft">途中の回答を下書き保存</button><p id="draftResult" role="status"></p><div id="reviewFields"></div>
 <label for="executionMode">実際の検討方式</label><select id="executionMode" required><option value="">選択してください</option><option value="conversation_single_assistant">単独AIによる会話内の役別検討</option><option value="external_workers">外部ワーカーによる検討</option></select>
 <label for="resolutionSummary">会議の結論（提案）</label><textarea id="resolutionSummary" required></textarea><label for="objections">異論（1行に1件・なければ空欄）</label><textarea id="objections"></textarea><label for="pending">保留事項（1行に1件・なければ空欄）</label><textarea id="pending"></textarea><button>回答と結論を提案として保存</button></form></main>
 <script>
 const $=id=>document.getElementById(id);let context,briefId=null,busy=false,uncertain=false;const answers={};
 let selectedMeeting=null;
-function editMeeting(meeting,roleNames){
+function editMeeting(meeting,roleNames,draft=null){
   if(busy||uncertain||meeting.stale||meeting.status!=='awaiting_reviews')return;
   if(selectedMeeting&&!confirm('現在の会議入力を置き換えます。未保存の回答は失われます。続けますか？'))return;
   selectedMeeting=meeting.id;$('reviewMeeting').textContent='会議ID：'+meeting.id;$('reviewFields').replaceChildren();
   for(const review of meeting.reviews){const label=document.createElement('label'),area=document.createElement('textarea');area.id='review-'+review.role;area.dataset.reviewRole=review.role;area.required=true;label.htmlFor=area.id;label.textContent=roleNames[review.role];$('reviewFields').append(label,area);}
-  for(const id of ['executionMode','resolutionSummary','objections','pending'])$(id).value='';$('reviewForm').hidden=false;$('reviewForm').scrollIntoView({behavior:'smooth'});
+  for(const id of ['executionMode','resolutionSummary','objections','pending'])$(id).value='';
+  if(draft){for(const review of draft.payload.reviews)$('review-'+review.role).value=review.output;const r=draft.payload.resolution;$('executionMode').value=r.execution_mode;$('resolutionSummary').value=r.summary;$('objections').value=r.objections.join('\n');$('pending').value=r.pending.join('\n');}
+  $('draftResult').textContent=draft?'下書きを開きました：'+draft.id:'まだ下書き保存していません。';$('reviewForm').hidden=false;$('reviewForm').scrollIntoView({behavior:'smooth'});
 }
+function reviewInput(){const lines=id=>$(id).value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);return {meeting_id:selectedMeeting,reviews:[...document.querySelectorAll('[data-review-role]')].map(x=>({role:x.dataset.reviewRole,output:x.value})),resolution:{execution_mode:$('executionMode').value,summary:$('resolutionSummary').value,objections:lines('objections'),pending:lines('pending')}};}
+$('saveDraft').onclick=()=>{if(!selectedMeeting)return;action(async()=>{const result=await send('/api/save-council-draft',reviewInput());$('draftResult').textContent='下書きを保存しました：'+result.id+'（会議は回答待ちのままです）';});};
 $('reviewForm').onsubmit=e=>{e.preventDefault();if(!selectedMeeting)return;action(async()=>{
   const lines=id=>$(id).value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
   const result=await send('/api/finish-council',{meeting_id:selectedMeeting,reviews:[...document.querySelectorAll('[data-review-role]')].map(x=>({role:x.dataset.reviewRole,output:x.value})),resolution:{execution_mode:$('executionMode').value,summary:$('resolutionSummary').value,objections:lines('objections'),pending:lines('pending')}});
@@ -58,6 +62,10 @@ async function refreshHistory(){
       for(const review of meeting.reviews)line(roleNames[review.role]+'：\n'+(review.output??'この会議の最終記録には回答未収録'));
       if(meeting.resolution){line('結論（未確定）：'+meeting.resolution.summary);line('異論：'+meeting.resolution.objections.join('\n'));line('保留：'+meeting.resolution.pending.join('\n'));}
       if(meeting.status==='awaiting_reviews'&&!meeting.stale){const button=document.createElement('button');button.type='button';button.textContent='回答と結論を入力';button.disabled=busy||uncertain;button.onclick=()=>editMeeting(meeting,roleNames);box.append(button);}
+      for(const draft of (data.drafts||[]).filter(d=>d.payload.meeting_id===meeting.id)){
+        line('回答の下書き：'+draft.id+' / '+draft.created_at+(draft.stale?' / 古い基準版':''));
+        if(meeting.status==='awaiting_reviews'&&!meeting.stale&&!draft.stale){const button=document.createElement('button');button.type='button';button.textContent='この下書きから再開';button.disabled=busy||uncertain;button.onclick=()=>editMeeting(meeting,roleNames,draft);box.append(button);}
+      }
       $('history').append(box);
     }
     for(const issue of data.issues){const p=document.createElement('p');p.textContent=issue.kind+'/'+issue.file+'：'+issue.message;$('history').append(p);}
