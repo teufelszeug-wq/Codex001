@@ -1,8 +1,8 @@
 {
   "updated": "2026-09-21",
   "phase": "共通基盤を実装済み。制作環境全体は構築中",
-  "tests": "既存機能52件 ／ 章進捗・画面6件 ／ 企画4件 ／ 会議・履歴・HTTP14件が通過（別実行・一部重複）",
-  "last_verified_commit": "e24d68dccdc1a9550a54aad6b3aa26d72090bd80",
+  "tests": "既存機能52件 ／ 章進捗・画面6件 ／ 企画4件 ／ 会議・履歴・HTTP14件 ／ 外部会議関連6件が通過（別実行・一部重複）",
+  "last_verified_commit": "47521e2be23e4cf845430b1736cd4de4525b8bdd",
   "items": [
     {"name":"新シリーズの企画と会議への引き渡し","status":"partial","detail":"保存済み企画の再読込と操作履歴を追加。古い基準版・不整合・照合待ちを区別。自動復旧と実ブラウザー操作検証は残件。","evidence":"企画から会議へ.md"},
     {"name":"作品の分離・新シリーズ作成","status":"verified","detail":"空の作品領域を作成。他シリーズの設定をコピーしない。","evidence":"project.test.mjs"},
@@ -14,7 +14,7 @@
     {"name":"Notion連携","status":"partial","detail":"接続ツールで保存・読み戻し済み。無人の自動同期は未対応。","evidence":"同期管理と照合.md"},
     {"name":"過去資料の統合","status":"partial","detail":"続きの進行方法80ターン、アメリアシリーズ集約43ターン取得。旧画像合成コードv1.1〜v4.0の本文を確認し再構築要件へ整理。ZIP・画像現物・省略部分の監査は継続中。","evidence":"research/2026-09-18_旧システム監査.md"},
     {"name":"章別の執筆進捗","status":"partial","detail":"読取専用の集計を追加。旧版・仮稿・確定稿・本文未取得を分離。追加4試験通過。","evidence":"progress.test.mjs"},
-    {"name":"実AIサービスとの接続","status":"pending","detail":"外部プロセスとの通信基盤まで。AIを接続したレビュー試験は未実施。","evidence":"設計と完成条件.md"},
+    {"name":"実AIサービスとの接続","status":"pending","detail":"既存会議の依頼IDを保って外部プロセスへ送信・回答回収する経路を追加。模擬ワーカーで検証済み。実AIの接続先は確認待ち、実通信は未検証。","evidence":"外部会議の実行.md"},
     {"name":"企画・世界設定・執筆の操作画面","status":"partial","detail":"企画・会議の閲覧と提案保存に、途中回答の下書き保存・版選択再開を追加。HTTP保存は検証済み。新作品作成・世界設定・改稿の画面と実ブラウザー検証は残件。","evidence":"企画履歴の確認.md"},
     {"name":"世界地図・動線・高度な意味検査","status":"pending","detail":"要件を照合中。地理・時間・因果を総合的に検証する機能は未完成。","evidence":"research/2026-09-18_旧システム監査.md"},
     {"name":"他シリーズへの適用","status":"pending","detail":"タケシ／イレーネは仮称のみ。元資料の照合と2作品以上の独立運用試験が必要。","evidence":"series-registry.json"},

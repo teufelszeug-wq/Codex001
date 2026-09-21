@@ -7,13 +7,18 @@ import {proposeTransaction,approveTransaction,recoverTransaction} from './transa
 import {prepareSync,syncStatus,sendSync,reconcileSync} from './sync.mjs';
 import {githubAdapter} from './github-sync.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
+import {runCouncilReview,councilReplies} from './council-worker.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'brief-template') {
+  if(command === 'run-council-review') {
+    console.log(JSON.stringify(await runCouncilReview(root,args[0],args[1]),null,2));
+  } else if(command === 'council-replies') {
+    console.log(JSON.stringify(councilReplies(root,args[0]),null,2));
+  } else if(command === 'brief-template') {
     console.log(JSON.stringify(briefTemplate(root,args[0]),null,2));
   } else if(command === 'save-brief') {
     console.log(JSON.stringify(saveBrief(root,read(inside(root,args[0]))),null,2));
