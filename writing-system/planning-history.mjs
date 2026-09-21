@@ -29,7 +29,7 @@ export function planningHistory(root){
           const roles=['socrates','machiavelli','keynes','editor','continuity'];
           const ids=new Set();
           for(const req of record.requests){
-            if(req.series_id!==config.series_id||req.base!==record.base||!roles.includes(req.role)||ids.has(req.request_id)||!req.request_id)throw Error();
+            if(req.series_id!==config.series_id||req.base!==record.base||!roles.includes(req.role)||ids.has(req.request_id)||!/^[a-f0-9-]{36}$/.test(req.request_id??''))throw Error();
             ids.add(req.request_id);
           }
           if(new Set(record.requests.map(r=>r.role)).size!==5)throw Error();
@@ -40,8 +40,21 @@ export function planningHistory(root){
             const seen=new Set();
             for(const reply of record.replies){const req=record.requests.find(r=>r.request_id===reply.request_id);if(!req||seen.has(reply.request_id)||['series_id','base','role'].some(k=>req[k]!==reply[k])||typeof reply.output!=='string'||!reply.output.trim())throw Error();seen.add(reply.request_id);}
             replies=record.replies;
-          }else if(record.execution_mode!=='requests_only')throw Error();
-          result.councils.push({id,status:record.status,agenda:record.agenda,stale:record.base!==base,execution_mode:record.execution_mode,reviews:record.requests.map(req=>({role:req.role,output:replies.find(r=>r.request_id===req.request_id)?.output??null})),resolution:record.status==='reviewed_proposal'?record.resolution:null});
+          }else{
+            if(record.execution_mode!=='requests_only')throw Error();
+            for(const req of record.requests){const file=inside(root,'system/inbox/'+req.request_id+'.json');if(!fs.existsSync(file))continue;const reply=read(file);if(['request_id','series_id','base','role'].some(k=>reply[k]!==req[k])||reply.status!=='proposal'||typeof reply.output!=='string'||!reply.output.trim())throw Error();replies.push(reply);}
+          }
+          const reviews=record.requests.map(req=>{
+            const output=replies.find(r=>r.request_id===req.request_id)?.output??null;
+            let attempt_status=null;
+            const file=inside(root,'system/worker-runs/'+req.request_id+'.json');
+            if(record.status==='awaiting_reviews'&&fs.existsSync(file)){
+              const attempt=read(file);if(attempt.series_id!==config.series_id||attempt.meeting_id!==id||attempt.request_id!==req.request_id||attempt.role!==req.role||!['started','received','needs_review'].includes(attempt.status))throw Error();
+              attempt_status=attempt.status;
+            }
+            return {role:req.role,output,source:output?(record.status==='reviewed_proposal'?'final_record':'inbox'):null,attempt_status};
+          });
+          result.councils.push({id,status:record.status,agenda:record.agenda,stale:record.base!==base,execution_mode:record.execution_mode,collected_count:replies.length,reviews,resolution:record.status==='reviewed_proposal'?record.resolution:null});
         }else{
           if(record.series_id!==config.series_id||!['started','completed'].includes(record.status))throw Error();
           result.operations.push({id,status:record.status,started_at:record.started_at,completed_at:record.completed_at,result_id:record.status==='completed'&&typeof record.result?.id==='string'?record.result.id:null});

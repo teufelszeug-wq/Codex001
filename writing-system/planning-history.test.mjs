@@ -8,8 +8,15 @@ import {initialize,council,finishCouncil} from './project.mjs';
 import {briefTemplate,saveBrief} from './brief.mjs';
 import {recordedOperation} from './operation-receipt.mjs';
 import {planningHistory} from './planning-history.mjs';
-import {fingerprint} from './engine.mjs';
+import {fingerprint,accept} from './engine.mjs';
 function setup(t){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'history-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));return initialize(dir,'history-test','試験');}
+test('history shows partial collected answers without claiming completed council or live workers',t=>{
+  const root=setup(t),meeting=council(root,'partial reviews'),before=fingerprint(root),req=meeting.requests[0],waiting=meeting.requests[1];
+  accept(root,req,{request_id:req.request_id,series_id:req.series_id,base:req.base,role:req.role,output:'collected opinion'});
+  const runs=path.join(root,'system/worker-runs');fs.mkdirSync(runs,{recursive:true});fs.writeFileSync(path.join(runs,waiting.request_id+'.json'),JSON.stringify({series_id:meeting.series_id,meeting_id:meeting.id,request_id:waiting.request_id,role:waiting.role,status:'started'}));
+  const h=planningHistory(root),m=h.councils[0];assert.equal(m.collected_count,1);assert.equal(m.status,'awaiting_reviews');assert.equal(m.resolution,null);assert.equal(m.reviews[0].source,'inbox');assert.equal(m.reviews[0].output,'collected opinion');assert.equal(m.reviews[1].attempt_status,'started');assert.equal(m.reviews[1].output,null);assert.equal(fingerprint(root),before);
+  const file=path.join(root,'system/inbox',req.request_id+'.json'),r=JSON.parse(fs.readFileSync(file,'utf8'));r.series_id='foreign';fs.writeFileSync(file,JSON.stringify(r));const checked=planningHistory(root);assert.equal(checked.councils.length,0);assert.ok(checked.issues.some(x=>x.kind==='councils'));assert.ok(!JSON.stringify(checked).includes('collected opinion'));
+});
 test('council history distinguishes requests from completed role reviews and stays read-only',t=>{
   const root=setup(t),before=fingerprint(root),meeting=council(root,'会議履歴の試験');
   let h=planningHistory(root);assert.equal(h.councils[0].execution_mode,'requests_only');assert.ok(h.councils[0].reviews.every(r=>r.output===null));assert.equal(h.councils[0].resolution,null);

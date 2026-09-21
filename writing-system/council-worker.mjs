@@ -36,8 +36,9 @@ export async function runCouncilReview(root,id,role){
     accept(root,req,response);
     atomic(file,{...record,status:'received',completed_at:new Date().toISOString()});
     return {status:'received',request_id:req.request_id};
-  }catch{
-    atomic(file,{...record,status:'needs_review',completed_at:new Date().toISOString()});
-    throw Error('worker result not confirmed; inspect attempt before retry');
+  }catch(error){
+    const failure_reason=error.message==='worker timeout'?'timeout':error.message==='worker returned invalid JSON'?'invalid_response':error.message.startsWith('worker failed with exit ')||error.message==='worker could not start'||error.message==='worker input failed'?'process_failed':'validation_or_storage';
+    atomic(file,{...record,status:'needs_review',failure_reason,completed_at:new Date().toISOString()});
+    throw Error('worker result not confirmed ('+failure_reason+'); inspect attempt before retry');
   }
 }
