@@ -10,7 +10,7 @@ import {planningHistory} from './planning-history.mjs';
 import {councilSubmission} from './council-submission.mjs';
 import {finishCouncil} from './project.mjs';
 import {saveCouncilDraft} from './council-draft.mjs';
-import {worldFields,validateWorldPlan,saveWorldPlan,worldPlans} from './world-plan.mjs';
+import {worldFields,validateWorldPlan,saveWorldPlan,worldPlans,worldPlanForCouncil,worldCouncil} from './world-plan.mjs';
 export function planningServer(root){
   const {config}=openSeries(root),token=crypto.randomUUID();
   const html=fs.readFileSync(new URL('./企画入力.html',import.meta.url),'utf8');
@@ -29,7 +29,7 @@ export function planningServer(root){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
     }
-    if(req.method!=='POST'||!['/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
+    if(req.method!=='POST'||!['/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
     if(req.headers['x-planning-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'画面を開き直してください。'});return;}
     try{
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000)throw Error('入力が長すぎます。');chunks.push(chunk);}
@@ -39,10 +39,12 @@ export function planningServer(root){
       if(req.url==='/api/save'&&input.brief?.series_id!==config.series_id)throw Error('作品IDが一致しません。');
       const isDraft=req.url==='/api/save-council-draft';
       if(req.url==='/api/save-world-plan')validateWorldPlan(root,input.world);
+      if(req.url==='/api/world-council')worldPlanForCouncil(root,input.world_plan_id);
       const submission=req.url==='/api/finish-council'||isDraft?councilSubmission(root,input,{draft:isDraft}):null;
       const result=recordedOperation(root,input.operation_id,{route:req.url,input},()=>{
       let result;
-      if(req.url==='/api/save-world-plan'){const record=saveWorldPlan(root,input.world);result={id:record.id,status:record.status};}
+      if(req.url==='/api/world-council'){const meeting=worldCouncil(root,input.world_plan_id);result={id:meeting.id,status:meeting.status,execution_mode:meeting.execution_mode,world_plan_id:input.world_plan_id};}
+      else if(req.url==='/api/save-world-plan'){const record=saveWorldPlan(root,input.world);result={id:record.id,status:record.status};}
       else if(req.url==='/api/save'){const record=saveBrief(root,input.brief);result={id:record.id,status:record.status,unanswered:record.payload.unanswered};}
       else if(isDraft){const record=saveCouncilDraft(root,input);result={id:record.id,status:record.status,meeting_id:input.meeting_id};}
       else if(submission){const meeting=finishCouncil(root,input.meeting_id,submission.replies,submission.resolution);result={id:meeting.id,status:meeting.status,execution_mode:meeting.execution_mode};}
