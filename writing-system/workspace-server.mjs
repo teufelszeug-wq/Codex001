@@ -35,6 +35,13 @@ export function workspaceServer(workspace){
     if(req.headers.host!==new URL(origin).host||req.headers.origin&&req.headers.origin!==origin){reply(403,{error:'作品一覧の画面から操作してください。'});return;}
     if(req.method==='GET'&&req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(html);return;}
     try{
+      if(req.method==='GET'&&req.url==='/progress'){
+        try{
+          const snapshot=fs.readFileSync(new URL('./開発進捗.html',import.meta.url),'utf8');
+          res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});
+          res.end(snapshot.replace('<main>','<main><p><a href="/">← 作品一覧へ戻る</a></p>'));
+        }catch{reply(503,{error:'進捗の保存版を読み込めません。開発記録と画面の生成状態を確認してください。'});}return;
+      }
       if(req.method==='GET'&&req.url==='/api/init'){reply(200,{token,...inventory()});return;}
       if(req.method!=='POST'||!['/api/create','/api/open'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
       if(req.headers['x-workspace-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'作品一覧を開き直してください。'});return;}
