@@ -9,13 +9,17 @@ import {githubAdapter} from './github-sync.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
 import {runCouncilReview,councilReplies} from './council-worker.mjs';
 import {previewWorldEntries,proposeWorldEntries} from './world-entries.mjs';
+import {manuscriptForReview,manuscriptCouncil} from './manuscript-review.mjs';
 import {read, atomic, inside, openSeries, validate, request, accept, worker} from './engine.mjs';
 
 const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'preview-world-entries' || command === 'propose-world-entries') {
+  if(command === 'read-manuscript-review' || command === 'manuscript-council') {
+    const input=read(inside(root,args[0]));
+    console.log(JSON.stringify((command==='read-manuscript-review'?manuscriptForReview:manuscriptCouncil)(root,input),null,2));
+  } else if(command === 'preview-world-entries' || command === 'propose-world-entries') {
     const input=read(inside(root,args[0]));
     console.log(JSON.stringify((command==='preview-world-entries'?previewWorldEntries:proposeWorldEntries)(root,input),null,2));
   } else if(command === 'run-council-review') {

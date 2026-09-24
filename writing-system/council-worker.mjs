@@ -5,8 +5,10 @@ export function councilRequests(root,id){
   if(!/^[a-f0-9-]{36}$/.test(id??''))throw Error('invalid meeting id');
   const {config}=openSeries(root),meeting=read(inside(root,'system/councils/'+id+'.json'));
   if(meeting.id!==id||meeting.series_id!==config.series_id||meeting.base!==fingerprint(root))throw Error('wrong series or stale meeting');
-  if(!Array.isArray(meeting.requests)||meeting.requests.length!==5||new Set(meeting.requests.map(r=>r.role)).size!==5||new Set(meeting.requests.map(r=>r.request_id)).size!==5)throw Error('invalid meeting requests');
-  for(const req of meeting.requests)if(req.series_id!==config.series_id||req.base!==meeting.base||!['socrates','machiavelli','keynes','editor','continuity'].includes(req.role)||!/^[a-f0-9-]{36}$/.test(req.request_id??''))throw Error('invalid meeting request');
+  const roles=['socrates','machiavelli','keynes','editor','continuity'];
+  if(meeting.kind==='manuscript_review')roles.push('character');
+  if(!Array.isArray(meeting.requests)||meeting.requests.length!==roles.length||new Set(meeting.requests.map(r=>r.role)).size!==roles.length||new Set(meeting.requests.map(r=>r.request_id)).size!==roles.length)throw Error('invalid meeting requests');
+  for(const req of meeting.requests)if(req.series_id!==config.series_id||req.base!==meeting.base||!roles.includes(req.role)||!/^[a-f0-9-]{36}$/.test(req.request_id??''))throw Error('invalid meeting request');
   return {config,meeting};
 }
 export function councilReplies(root,id){

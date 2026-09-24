@@ -3,6 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": {"test": "node --test test.mjs project.test.mjs health.test.mjs changes.test.mjs transactions.test.mjs sync.test.mjs github-sync.test.mjs progress.test.mjs dashboard.test.mjs brief.test.mjs planning-server.test.mjs operation-receipt.test.mjs planning-history.test.mjs council-worker.test.mjs workspace-server.test.mjs world-plan.test.mjs world-entries.test.mjs world-candidates.test.mjs", "workspace": "node workspace-server.mjs ..", "dashboard": "node dashboard.mjs", "dashboard:serve": "node dashboard.mjs --serve"},
-  "engines": {"node": ">=22"}
+  "scripts": {
+    "test": "node --test test.mjs project.test.mjs health.test.mjs changes.test.mjs transactions.test.mjs sync.test.mjs github-sync.test.mjs progress.test.mjs dashboard.test.mjs brief.test.mjs planning-server.test.mjs operation-receipt.test.mjs planning-history.test.mjs council-worker.test.mjs workspace-server.test.mjs world-plan.test.mjs world-entries.test.mjs world-candidates.test.mjs manuscript-review.test.mjs",
+    "workspace": "node workspace-server.mjs ..",
+    "dashboard": "node dashboard.mjs",
+    "dashboard:serve": "node dashboard.mjs --serve"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }
