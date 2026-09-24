@@ -5,6 +5,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {openSeries,fingerprint,read,inside,hash} from './engine.mjs';
 import {worldCategories,previewWorldEntries,proposeWorldEntries} from './world-entries.mjs';
+import {worldCandidates} from './world-candidates.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
 import {recordedOperation} from './operation-receipt.mjs';
 import {planningHistory} from './planning-history.mjs';
@@ -22,6 +23,11 @@ export function planningServer(root){
     if(req.method==='GET'&&req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(html.replace('</style>','</style><nav><a href="/world" target="_blank" rel="noopener">世界設定案を整理する ↗</a></nav>'));return;}
     if(req.method==='GET'&&req.url==='/world'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./世界設定.html',import.meta.url),'utf8').replace('<body>','<body><nav><a href="/world-entries" target="_blank" rel="noopener">項目ごとの変更と差分を確認する ↗</a></nav>'));return;}
     if(req.method==='GET'&&req.url==='/world-entries'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./世界設定の項目入力.html',import.meta.url),'utf8'));return;}
+    if(req.method==='GET'&&req.url==='/world-candidates'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./世界設定の候補.html',import.meta.url),'utf8'));return;}
+    if(req.method==='GET'&&req.url==='/api/world-candidates'){
+      if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
+      try{reply(200,worldCandidates(root));}catch{reply(409,{error:'候補を読み込めません。更新中または中断した処理がないか確認してください。'});}return;
+    }
     if(req.method==='GET'&&req.url==='/api/world-entries'){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{const world=read(inside(root,'system/world.json'));if(world.series_id!==config.series_id)throw Error();reply(200,{world,categories:worldCategories.map(id=>({id,label:worldFields[id]})),meetings:planningHistory(root).councils.filter(m=>m.status==='reviewed_proposal'&&!m.stale).map(m=>({id:m.id,agenda:m.agenda}))});}catch{reply(400,{error:'現在の設定または会議を読み込めません。'});}return;
@@ -30,7 +36,7 @@ export function planningServer(root){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,{fields:worldFields,...worldPlans(root)});}catch{reply(400,{error:'作品の更新状態を確認してください。'});}return;
     }
-    if(req.method==='GET'&&req.url==='/api/init'){reply(200,{token,series_id:config.series_id,title:config.title,root:path.resolve(root),base:fingerprint(root),templates:['quick','guided','full'].map(mode=>briefTemplate(root,mode))});return;}
+    if(req.method==='GET'&&req.url==='/api/init'){try{reply(200,{token,series_id:config.series_id,title:config.title,root:path.resolve(root),base:fingerprint(root),templates:['quick','guided','full'].map(mode=>briefTemplate(root,mode))});}catch{reply(409,{error:'作品を読み込めません。更新中または中断した処理を確認してください。'});}return;}
     if(req.method==='GET'&&req.url==='/api/history'){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
