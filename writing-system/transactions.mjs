@@ -56,6 +56,7 @@ export function proposeTransaction(root,changes,{reason,meeting_id,decision_ids}
 }
 export function approveTransaction(root,id,approval){return locked(root,()=>{
   const r=load(root,id);if(r.status!=='proposed')throw Error('not proposed');
+  if(approval?.expected_digest&&approval.expected_digest!==r.digest)throw Error('reviewed candidate changed');
   if(!approval?.actor?.trim()||!approval?.source?.trim())throw Error('approval source required');
   if(fingerprint(root)!==r.payload.base)throw Error('stale transaction');
   r.approval={...approval,digest:r.digest,at:new Date().toISOString()};r.status='approved';atomic(journal(root,id),r);return r;
@@ -74,6 +75,7 @@ function assertNoConflict(root,r){
 export function recoverTransaction(root,id,direction='finish',approval=null){return locked(root,()=>{
   if(!['finish','rollback'].includes(direction))throw Error('invalid recovery direction');
   const r=load(root,id),marker=inside(root,'system/transaction-active.json');
+  if(approval?.expected_digest&&approval.expected_digest!==r.digest)throw Error('reviewed candidate changed');
   checkPaths(root,r.payload.config,r.payload.entries);
   if(!r.approval||r.approval.digest!==r.digest)throw Error('approval required');
   if(direction==='rollback'&&(!approval?.actor?.trim()||!approval?.source?.trim()))throw Error('rollback source required');

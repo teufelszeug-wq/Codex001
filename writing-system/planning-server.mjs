@@ -6,6 +6,7 @@ import {pathToFileURL} from 'node:url';
 import {openSeries,fingerprint,read,inside,hash} from './engine.mjs';
 import {worldCategories,previewWorldEntries,proposeWorldEntries} from './world-entries.mjs';
 import {worldCandidates} from './world-candidates.mjs';
+import {worldCandidateAction} from './world-candidate-actions.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
 import {recordedOperation} from './operation-receipt.mjs';
 import {planningHistory} from './planning-history.mjs';
@@ -41,11 +42,13 @@ export function planningServer(root){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
     }
-    if(req.method!=='POST'||!['/api/preview-world-entries','/api/propose-world-entries','/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
+    if(req.method!=='POST'||!['/api/world-candidate-action','/api/preview-world-entries','/api/propose-world-entries','/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
     if(req.headers['x-planning-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'画面を開き直してください。'});return;}
     try{
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000)throw Error('入力が長すぎます。');chunks.push(chunk);}
       const input=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      // Candidate actions use the transaction journal for replay; applying changes the base.
+      if(req.url==='/api/world-candidate-action'){reply(200,worldCandidateAction(root,input));return;}
       if(!/^[a-f0-9-]{36}$/.test(input.operation_id??''))throw Error('操作IDが不正です。');
       if(input.base!==fingerprint(root))throw Error('作品の設定が変わりました。入力を控えて画面を開き直してください。');
       if(req.url==='/api/save'&&input.brief?.series_id!==config.series_id)throw Error('作品IDが一致しません。');
