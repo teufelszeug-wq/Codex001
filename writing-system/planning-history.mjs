@@ -19,23 +19,36 @@ export function planningHistory(root){
           if(!['quick','guided','full'].includes(record.payload.mode)||!record.payload.answers||!Array.isArray(record.payload.genres))throw Error();
           result.briefs.push({...record,stale:record.payload.base!==base});
         }else if(kind==='council-drafts'){
-          if(record.status!=='draft'||record.payload?.series_id!==config.series_id||record.digest!==hash(JSON.stringify(record.payload))||!/^[a-f0-9-]{36}$/.test(record.payload.meeting_id??'')||!Array.isArray(record.payload.reviews)||record.payload.reviews.length!==5)throw Error();
+          if(record.status!=='draft'||record.payload?.series_id!==config.series_id||record.digest!==hash(JSON.stringify(record.payload))||!/^[a-f0-9-]{36}$/.test(record.payload.meeting_id??'')||!Array.isArray(record.payload.reviews)||![5,6].includes(record.payload.reviews.length))throw Error();
+          const parent=read(inside(root,'system/councils/'+record.payload.meeting_id+'.json'));
+          if(parent.id!==record.payload.meeting_id||parent.series_id!==config.series_id||parent.base!==record.payload.base)throw Error();
           const roles=['socrates','machiavelli','keynes','editor','continuity'];
-          if(new Set(record.payload.reviews.map(r=>r.role)).size!==5||record.payload.reviews.some(r=>!roles.includes(r.role)||typeof r.output!=='string'))throw Error();
+          if(parent.kind==='manuscript_review')roles.push('character');
+          if(record.payload.reviews.length!==roles.length)throw Error();
+          if(new Set(record.payload.reviews.map(r=>r.role)).size!==roles.length||record.payload.reviews.some(r=>!roles.includes(r.role)||typeof r.output!=='string'))throw Error();
           const r=record.payload.resolution;if(!r||!['','conversation_single_assistant','external_workers'].includes(r.execution_mode)||typeof r.summary!=='string'||!Array.isArray(r.objections)||!Array.isArray(r.pending)||[...r.objections,...r.pending].some(x=>typeof x!=='string'))throw Error();
           result.drafts.push({...record,stale:record.payload.base!==base});
         }else if(kind==='councils'){
-          if(record.series_id!==config.series_id||!['awaiting_reviews','reviewed_proposal'].includes(record.status)||typeof record.agenda!=='string'||!Array.isArray(record.requests)||record.requests.length!==5)throw Error();
+          if(record.series_id!==config.series_id||!['awaiting_reviews','reviewed_proposal'].includes(record.status)||typeof record.agenda!=='string'||!Array.isArray(record.requests))throw Error();
           const roles=['socrates','machiavelli','keynes','editor','continuity'];
+          if(record.kind==='manuscript_review')roles.push('character');
+          if(record.requests.length!==roles.length)throw Error();
+          let manuscript=null;
+          if(record.kind==='manuscript_review'){
+            const m=record.manuscript;
+            if(!m||m.series_id!==config.series_id||m.base!==record.base||typeof m.text!=='string'||m.sha256!==hash(m.text)||typeof m.scene_id!=='string'||typeof m.path!=='string'||!m.path.startsWith(config.manuscript_dir+'/'))throw Error();
+            inside(root,m.path);
+            manuscript={scene_id:m.scene_id,path:m.path,status:m.status,source:m.source,sha256:m.sha256,text:m.text};
+          }
           const ids=new Set();
           for(const req of record.requests){
             if(req.series_id!==config.series_id||req.base!==record.base||!roles.includes(req.role)||ids.has(req.request_id)||!/^[a-f0-9-]{36}$/.test(req.request_id??''))throw Error();
             ids.add(req.request_id);
           }
-          if(new Set(record.requests.map(r=>r.role)).size!==5)throw Error();
+          if(new Set(record.requests.map(r=>r.role)).size!==roles.length)throw Error();
           let replies=[];
           if(record.status==='reviewed_proposal'){
-            if(!['conversation_single_assistant','external_workers'].includes(record.execution_mode)||record.resolution?.execution_mode!==record.execution_mode||typeof record.resolution?.summary!=='string'||!Array.isArray(record.resolution.objections)||!Array.isArray(record.resolution.pending)||!Array.isArray(record.replies)||record.replies.length!==5)throw Error();
+            if(!['conversation_single_assistant','external_workers'].includes(record.execution_mode)||record.resolution?.execution_mode!==record.execution_mode||typeof record.resolution?.summary!=='string'||!Array.isArray(record.resolution.objections)||!Array.isArray(record.resolution.pending)||!Array.isArray(record.replies)||record.replies.length!==roles.length)throw Error();
             if(record.result_digest!==JSON.stringify({replies:record.replies,resolution:record.resolution}))throw Error();
             const seen=new Set();
             for(const reply of record.replies){const req=record.requests.find(r=>r.request_id===reply.request_id);if(!req||seen.has(reply.request_id)||['series_id','base','role'].some(k=>req[k]!==reply[k])||typeof reply.output!=='string'||!reply.output.trim())throw Error();seen.add(reply.request_id);}
@@ -54,7 +67,7 @@ export function planningHistory(root){
             }
             return {role:req.role,output,source:output?(record.status==='reviewed_proposal'?'final_record':'inbox'):null,attempt_status};
           });
-          result.councils.push({id,status:record.status,agenda:record.agenda,stale:record.base!==base,execution_mode:record.execution_mode,collected_count:replies.length,reviews,resolution:record.status==='reviewed_proposal'?record.resolution:null});
+          result.councils.push({id,kind:record.kind??'planning',manuscript,status:record.status,agenda:record.agenda,stale:record.base!==base,execution_mode:record.execution_mode,collected_count:replies.length,reviews,resolution:record.status==='reviewed_proposal'?record.resolution:null});
         }else{
           if(record.series_id!==config.series_id||!['started','completed'].includes(record.status))throw Error();
           result.operations.push({id,status:record.status,started_at:record.started_at,completed_at:record.completed_at,result_id:record.status==='completed'&&typeof record.result?.id==='string'?record.result.id:null});
