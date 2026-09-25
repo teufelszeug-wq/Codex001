@@ -7,6 +7,7 @@ import {openSeries,fingerprint,read,inside,hash} from './engine.mjs';
 import {worldCategories,previewWorldEntries,proposeWorldEntries} from './world-entries.mjs';
 import {worldCandidates} from './world-candidates.mjs';
 import {worldCandidateAction} from './world-candidate-actions.mjs';
+import {manuscriptForReview,prepareManuscriptCouncil,manuscriptCouncil} from './manuscript-review.mjs';
 import {briefTemplate,saveBrief,briefCouncil} from './brief.mjs';
 import {recordedOperation} from './operation-receipt.mjs';
 import {planningHistory} from './planning-history.mjs';
@@ -21,7 +22,12 @@ export function planningServer(root){
     const origin='http://127.0.0.1:'+server.address().port;
     const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
     if(req.headers.host!==new URL(origin).host||req.headers.origin&&req.headers.origin!==origin){reply(403,{error:'この画面から操作してください。'});return;}
-    if(req.method==='GET'&&req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(html.replace('</style>','</style><nav><a href="/world" target="_blank" rel="noopener">世界設定案を整理する ↗</a></nav>'));return;}
+    if(req.method==='GET'&&req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(html.replace('</style>','</style><nav><a href="/world" target="_blank" rel="noopener">世界設定案を整理する ↗</a> / <a href="/manuscript-review">本文を読んで会議を作る</a></nav>'));return;}
+    if(req.method==='GET'&&req.url==='/manuscript-review'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./本文レビュー.html',import.meta.url),'utf8'));return;}
+    if(req.method==='GET'&&req.url==='/api/manuscripts'){
+      if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
+      try{const s=openSeries(root);reply(200,{series_id:s.config.series_id,base:fingerprint(root),scenes:s.state.scene_log.filter(x=>x.path).map(x=>({id:x.id,status:x.status,path:x.path})),paused:!s.control.manuscript_generation_enabled});}catch{reply(409,{error:'原稿一覧を読み込めません。'});}return;
+    }
     if(req.method==='GET'&&req.url==='/world'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./世界設定.html',import.meta.url),'utf8').replace('<body>','<body><nav><a href="/world-entries" target="_blank" rel="noopener">項目ごとの変更と差分を確認する ↗</a></nav>'));return;}
     if(req.method==='GET'&&req.url==='/world-entries'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./世界設定の項目入力.html',import.meta.url),'utf8'));return;}
     if(req.method==='GET'&&req.url==='/world-candidates'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./世界設定の候補.html',import.meta.url),'utf8'));return;}
@@ -42,16 +48,18 @@ export function planningServer(root){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
     }
-    if(req.method!=='POST'||!['/api/world-candidate-action','/api/preview-world-entries','/api/propose-world-entries','/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
+    if(req.method!=='POST'||!['/api/read-manuscript','/api/manuscript-council','/api/world-candidate-action','/api/preview-world-entries','/api/propose-world-entries','/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
     if(req.headers['x-planning-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'画面を開き直してください。'});return;}
     try{
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000)throw Error('入力が長すぎます。');chunks.push(chunk);}
       const input=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      if(req.url==='/api/read-manuscript'){reply(200,manuscriptForReview(root,input));return;}
       // Candidate actions use the transaction journal for replay; applying changes the base.
       if(req.url==='/api/world-candidate-action'){reply(200,worldCandidateAction(root,input));return;}
       if(!/^[a-f0-9-]{36}$/.test(input.operation_id??''))throw Error('操作IDが不正です。');
       if(input.base!==fingerprint(root))throw Error('作品の設定が変わりました。入力を控えて画面を開き直してください。');
       if(req.url==='/api/save'&&input.brief?.series_id!==config.series_id)throw Error('作品IDが一致しません。');
+      if(req.url==='/api/manuscript-council'){if(input.confirmed!==true||input.review?.base!==input.base)throw Error('本文を確認し直してください。');prepareManuscriptCouncil(root,input.review);}
       const isDraft=req.url==='/api/save-council-draft';
       if(req.url==='/api/save-world-plan')validateWorldPlan(root,input.world);
       if(req.url==='/api/world-council')worldPlanForCouncil(root,input.world_plan_id);
@@ -65,7 +73,8 @@ export function planningServer(root){
       const submission=req.url==='/api/finish-council'||isDraft?councilSubmission(root,input,{draft:isDraft}):null;
       const result=recordedOperation(root,input.operation_id,{route:req.url,input},()=>{
       let result;
-      if(req.url==='/api/propose-world-entries'){const staged=proposeWorldEntries(root,input.edit);result={id:staged.transaction.id,status:staged.transaction.status,digest:staged.transaction.digest,diff:staged.diff,decision_id:staged.decision_id};}
+      if(req.url==='/api/manuscript-council'){const m=manuscriptCouncil(root,input.review);result={id:m.id,status:m.status,execution_mode:m.execution_mode,roles:m.requests.map(r=>r.role)};}
+      else if(req.url==='/api/propose-world-entries'){const staged=proposeWorldEntries(root,input.edit);result={id:staged.transaction.id,status:staged.transaction.status,digest:staged.transaction.digest,diff:staged.diff,decision_id:staged.decision_id};}
       else if(req.url==='/api/world-council'){const meeting=worldCouncil(root,input.world_plan_id);result={id:meeting.id,status:meeting.status,execution_mode:meeting.execution_mode,world_plan_id:input.world_plan_id};}
       else if(req.url==='/api/save-world-plan'){const record=saveWorldPlan(root,input.world);result={id:record.id,status:record.status};}
       else if(req.url==='/api/save'){const record=saveBrief(root,input.brief);result={id:record.id,status:record.status,unanswered:record.payload.unanswered};}

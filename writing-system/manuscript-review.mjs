@@ -17,7 +17,7 @@ export function manuscriptForReview(root,{series_id,scene_id,base}={}) {
   return {series_id,base:current,scene_id,path:scene.path,status:scene.status,source:scene.source,sha256:hash(text),text};
 }
 
-export function manuscriptCouncil(root,input) {
+export function prepareManuscriptCouncil(root,input) {
   const source=manuscriptForReview(root,input),s=openSeries(root);
   if(input.manuscript_sha256!==source.sha256)throw Error('reviewed manuscript changed');
   if(typeof input.agenda!=='string'||!input.agenda.trim())throw Error('agenda required');
@@ -35,7 +35,11 @@ export function manuscriptCouncil(root,input) {
   requests.push({...pov,perspective:{id:'character',name:character.name??character.id,focus:['現在の知識','感情と動機'],limitation:'本文と作者議題は未共有。本文の逐語評価ではない'}});
   if(requests.some(r=>r.base!==source.base)||fingerprint(root)!==source.base)throw Error('changed during review preparation');
   const meeting={schema_version:1,id:crypto.randomUUID(),series_id:source.series_id,base:source.base,kind:'manuscript_review',workflow:input.workflow,agenda:input.agenda,status:'awaiting_reviews',execution_mode:'requests_only',manuscript:source,requests};
-  for(const req of requests)atomic(inside(root,'system/requests/'+req.request_id+'.json'),req);
+  return meeting;
+}
+export function manuscriptCouncil(root,input) {
+  const meeting=prepareManuscriptCouncil(root,input);
+  for(const req of meeting.requests)atomic(inside(root,'system/requests/'+req.request_id+'.json'),req);
   atomic(inside(root,'system/councils/'+meeting.id+'.json'),meeting);
   return meeting;
 }
