@@ -30,7 +30,7 @@ export function readReviewDecisions(root,meetingId,operationId){
   if(!uuid.test(operationId))throw Error('invalid operation id');
   const r=read(inside(root,'system/review-decisions/'+operationId+'.json'));
   const p=normalize(m,r);
-  if(r.meeting_id!==m.id||r.digest!==hash(JSON.stringify(p)))throw Error('decision record mismatch');
+  if(r.operation_id!==operationId||r.meeting_id!==m.id||r.schema_version!==1||r.digest!==hash(JSON.stringify(p)))throw Error('decision record mismatch');
   return {...r,stale:fingerprint(root)!==m.base};
 }
 export function saveReviewDecisions(root,input){

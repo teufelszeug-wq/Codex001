@@ -8,6 +8,18 @@ import {initialize,finishCouncil} from './project.mjs';
 import {read,atomic,inside,fingerprint,hash} from './engine.mjs';
 import {manuscriptCouncil} from './manuscript-review.mjs';
 import {saveReviewDecisions,readReviewDecisions} from './review-decisions.mjs';
+test('a valid record copied to another operation filename is rejected',t=>{
+  const {r,m,input}=setup(t);saveReviewDecisions(r,input);
+  const other=crypto.randomUUID();
+  fs.copyFileSync(inside(r,'system/review-decisions/'+input.operation_id+'.json'),inside(r,'system/review-decisions/'+other+'.json'));
+  assert.throws(()=>readReviewDecisions(r,m.id,other),/mismatch/);
+  assert.throws(()=>saveReviewDecisions(r,{...input,operation_id:other}),/mismatch/);
+  const original=readReviewDecisions(r,m.id,input.operation_id);
+  assert.equal(original.operation_id,input.operation_id);
+  const file=inside(r,'system/review-decisions/'+input.operation_id+'.json');
+  atomic(file,{...original,schema_version:999});
+  assert.throws(()=>readReviewDecisions(r,m.id,input.operation_id),/mismatch/);
+});
 function setup(t){
   const w=fs.mkdtempSync(path.join(os.tmpdir(),'review-decisions-'));t.after(()=>fs.rmSync(w,{recursive:true,force:true}));
   const r=initialize(w,'example','Example');const c=read(inside(r,'system/series.json'));c.pov_character='hero';atomic(inside(r,'system/series.json'),c);
