@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {saveReviewDecisions,readReviewDecisions} from './review-decisions.mjs';
 import path from 'node:path';
 import {initialize,council,finishCouncil} from './project.mjs';
 import {health,snapshot} from './health.mjs';
@@ -16,7 +17,11 @@ const [command, rootArg, ...args] = process.argv.slice(2);
 try {
   if (!rootArg) throw Error('Usage: node writing-system/cli.mjs check|status|request|run|accept <series-directory> ...');
   const root = path.resolve(rootArg);
-  if(command === 'read-manuscript-review' || command === 'manuscript-council') {
+  if(command === 'save-review-decisions') {
+    console.log(JSON.stringify(saveReviewDecisions(root,read(inside(root,args[0]))),null,2));
+  } else if(command === 'read-review-decisions') {
+    console.log(JSON.stringify(readReviewDecisions(root,args[0],args[1]),null,2));
+  } else if(command === 'read-manuscript-review' || command === 'manuscript-council') {
     const input=read(inside(root,args[0]));
     console.log(JSON.stringify((command==='read-manuscript-review'?manuscriptForReview:manuscriptCouncil)(root,input),null,2));
   } else if(command === 'preview-world-entries' || command === 'propose-world-entries') {

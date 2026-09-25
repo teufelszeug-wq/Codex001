@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {initialize,finishCouncil} from './project.mjs';
+import {read,atomic,inside,fingerprint,hash} from './engine.mjs';
+import {manuscriptCouncil} from './manuscript-review.mjs';
+import {saveReviewDecisions,readReviewDecisions} from './review-decisions.mjs';
+function setup(t){
+  const w=fs.mkdtempSync(path.join(os.tmpdir(),'review-decisions-'));t.after(()=>fs.rmSync(w,{recursive:true,force:true}));
+  const r=initialize(w,'example','Example');const c=read(inside(r,'system/series.json'));c.pov_character='hero';atomic(inside(r,'system/series.json'),c);
+  const s=read(inside(r,'state.json'));s.cards=[{id:'hero',type:'character',name:'Hero',knows:[],status:'confirmed',source:'test'}];s.scene_log=[{id:'S1',path:'manuscript/one.md',status:'draft',source:'test'}];atomic(inside(r,'state.json'),s);
+  const body='雨が降る。\n雨が降る。';fs.writeFileSync(inside(r,'manuscript/one.md'),body);
+  const m=manuscriptCouncil(r,{series_id:'example',scene_id:'S1',base:fingerprint(r),manuscript_sha256:hash(body),agenda:'Review',workflow:'conversation'});
+  finishCouncil(r,m.id,m.requests.map(q=>({...q,output:'review'})),{execution_mode:'conversation_single_assistant',summary:'proposal',objections:[],pending:[]});
+  const input={operation_id:crypto.randomUUID(),meeting_id:m.id,series_id:m.series_id,base:m.base,manuscript_sha256:m.manuscript.sha256,issues:[{id:'I1',role:'editor',anchor:{start:6,end:11,quote:'雨が降る。'},comment:'反復の意図',decision:'defer',reason:'作者の判断を待つ',actor:'test user',source:'test instruction'}]};return {r,m,input};
+}
+test('decisions anchor repeated text exactly, replay and preserve paused canon',t=>{const {r,m,input}=setup(t),before=fingerprint(r);const a=saveReviewDecisions(r,input);assert.equal(a.issues[0].anchor.start,6);assert.deepEqual(saveReviewDecisions(r,input),a);assert.equal(fingerprint(r),before);assert.equal(read(inside(r,'system/control.json')).manuscript_generation_enabled,false);assert.throws(()=>saveReviewDecisions(r,{...input,issues:[{...input.issues[0],decision:'accept'}]}),/differently/);assert.equal(readReviewDecisions(r,m.id,input.operation_id).stale,false);});
+test('reject mismatched anchors, identity and missing decision evidence before writing',t=>{const {r,input}=setup(t);for(const bad of [{...input,series_id:'foreign'},{...input,manuscript_sha256:'bad'},{...input,issues:[{...input.issues[0],reason:''}]},{...input,issues:[{...input.issues[0],role:'unknown'}]},{...input,issues:[{...input.issues[0],anchor:{start:0,end:3,quote:'wrong'}}]},{...input,issues:[input.issues[0],input.issues[0]]}])assert.throws(()=>saveReviewDecisions(r,bad));assert.equal(fs.existsSync(inside(r,'system/review-decisions')),false);});
+test('old records remain readable as stale; new saves and corrupted records are refused',t=>{const {r,m,input}=setup(t);saveReviewDecisions(r,input);fs.appendFileSync(inside(r,'manuscript/one.md'),'変更');assert.equal(readReviewDecisions(r,m.id,input.operation_id).stale,true);assert.throws(()=>saveReviewDecisions(r,{...input,operation_id:crypto.randomUUID()}),/stale/);const p=inside(r,'system/review-decisions/'+input.operation_id+'.json'),v=read(p);v.issues[0].decision='accept';atomic(p,v);assert.throws(()=>readReviewDecisions(r,m.id,input.operation_id),/mismatch/);});
