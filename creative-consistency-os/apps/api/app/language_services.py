@@ -181,7 +181,8 @@ class LanguageCultureService:
                 "notes": str(script.get("notes", "")).strip()[:2000],
             }
 
-            raw_parent = item.get("parent_language_id")\n            parent_language_id = None if raw_parent is None else str(raw_parent).strip() or None
+            raw_parent = item.get("parent_language_id")
+            parent_language_id = None if raw_parent is None else str(raw_parent).strip() or None
             normalized.append(
                 {
                     "id": identifier,
