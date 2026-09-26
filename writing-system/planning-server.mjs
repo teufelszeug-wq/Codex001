@@ -1,5 +1,5 @@
 import http from 'node:http';
-import {reviewDecisionHistory} from './review-decisions.mjs';
+import {reviewDecisionHistory,prepareReviewDecisions,saveReviewDecisions} from './review-decisions.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
@@ -54,7 +54,7 @@ export function planningServer(root){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{reply(200,planningHistory(root));}catch{reply(400,{error:'履歴を読み込めません。作品の更新状態を確認してください。'});}return;
     }
-    if(req.method!=='POST'||!['/api/read-manuscript','/api/manuscript-council','/api/world-candidate-action','/api/preview-world-entries','/api/propose-world-entries','/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
+    if(req.method!=='POST'||!['/api/save-review-decisions','/api/read-manuscript','/api/manuscript-council','/api/world-candidate-action','/api/preview-world-entries','/api/propose-world-entries','/api/world-council','/api/save-world-plan','/api/save','/api/council','/api/finish-council','/api/save-council-draft'].includes(req.url)){reply(404,{error:'見つかりません。'});return;}
     if(req.headers['x-planning-token']!==token||!req.headers['content-type']?.startsWith('application/json')){reply(403,{error:'画面を開き直してください。'});return;}
     try{
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000)throw Error('入力が長すぎます。');chunks.push(chunk);}
@@ -67,6 +67,7 @@ export function planningServer(root){
       if(req.url==='/api/save'&&input.brief?.series_id!==config.series_id)throw Error('作品IDが一致しません。');
       if(req.url==='/api/manuscript-council'){if(input.confirmed!==true||input.review?.base!==input.base)throw Error('本文を確認し直してください。');prepareManuscriptCouncil(root,input.review);}
       const isDraft=req.url==='/api/save-council-draft';
+      if(req.url==='/api/save-review-decisions'){if(input.confirmed!==true)throw Error('選択箇所と判断内容を確認してください。');prepareReviewDecisions(root,input);}
       if(req.url==='/api/save-world-plan')validateWorldPlan(root,input.world);
       if(req.url==='/api/world-council')worldPlanForCouncil(root,input.world_plan_id);
       if(req.url==='/api/preview-world-entries'||req.url==='/api/propose-world-entries'){
@@ -79,7 +80,8 @@ export function planningServer(root){
       const submission=req.url==='/api/finish-council'||isDraft?councilSubmission(root,input,{draft:isDraft}):null;
       const result=recordedOperation(root,input.operation_id,{route:req.url,input},()=>{
       let result;
-      if(req.url==='/api/manuscript-council'){const m=manuscriptCouncil(root,input.review);result={id:m.id,status:m.status,execution_mode:m.execution_mode,roles:m.requests.map(r=>r.role)};}
+      if(req.url==='/api/save-review-decisions'){const record=saveReviewDecisions(root,input);result={id:record.operation_id,meeting_id:record.meeting_id,digest:record.digest};}
+      else if(req.url==='/api/manuscript-council'){const m=manuscriptCouncil(root,input.review);result={id:m.id,status:m.status,execution_mode:m.execution_mode,roles:m.requests.map(r=>r.role)};}
       else if(req.url==='/api/propose-world-entries'){const staged=proposeWorldEntries(root,input.edit);result={id:staged.transaction.id,status:staged.transaction.status,digest:staged.transaction.digest,diff:staged.diff,decision_id:staged.decision_id};}
       else if(req.url==='/api/world-council'){const meeting=worldCouncil(root,input.world_plan_id);result={id:meeting.id,status:meeting.status,execution_mode:meeting.execution_mode,world_plan_id:input.world_plan_id};}
       else if(req.url==='/api/save-world-plan'){const record=saveWorldPlan(root,input.world);result={id:record.id,status:record.status};}

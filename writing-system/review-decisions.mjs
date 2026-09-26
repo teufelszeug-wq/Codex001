@@ -33,13 +33,17 @@ export function readReviewDecisions(root,meetingId,operationId){
   if(r.operation_id!==operationId||r.meeting_id!==m.id||r.schema_version!==1||r.digest!==hash(JSON.stringify(p)))throw Error('decision record mismatch');
   return {...r,stale:fingerprint(root)!==m.base};
 }
-export function saveReviewDecisions(root,input){
+export function prepareReviewDecisions(root,input){
   const m=meeting(root,input.meeting_id),p=normalize(m,input);
   if(fingerprint(root)!==m.base)throw Error('stale review decisions');
+  return p;
+}
+export function saveReviewDecisions(root,input){
+  const p=prepareReviewDecisions(root,input);
   const file=inside(root,'system/review-decisions/'+p.operation_id+'.json');
   const digest=hash(JSON.stringify(p));
   if(fs.existsSync(file)){
-    const old=readReviewDecisions(root,m.id,p.operation_id);
+    const old=readReviewDecisions(root,p.meeting_id,p.operation_id);
     if(old.digest!==digest)throw Error('operation already saved differently');
     return old;
   }
@@ -47,7 +51,7 @@ export function saveReviewDecisions(root,input){
   // Exclusive append-only record: partial writes remain inspectable, never auto-overwritten.
   const fd=fs.openSync(file,'wx');
   try{fs.writeFileSync(fd,JSON.stringify({...p,digest,created_at:new Date().toISOString()},null,2)+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
-  return readReviewDecisions(root,m.id,p.operation_id);
+  return readReviewDecisions(root,p.meeting_id,p.operation_id);
 }
 
 export function reviewDecisionHistory(root,meetingId){

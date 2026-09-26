@@ -4,7 +4,31 @@
 <script>
 const $=id=>document.getElementById(id),meetingId=new URLSearchParams(location.search).get('meeting');
 const names={accept:'採用',reject:'不採用',defer:'保留'};
+let context=null,current=null,anchor=null,busy=false,uncertain=false;
+const form=document.createElement('form');form.hidden=true;
+const heading=document.createElement('h2');heading.textContent='指摘と判断を追加';form.append(heading);
+const help=document.createElement('p');help.textContent='上の保存版の本文を選択し「選択箇所を使う」を押してください。新しい指摘として保存します。既存判断の変更はまだできません。未保存の入力は画面を閉じると失われます。';form.append(help);
+const pick=document.createElement('button');pick.type='button';pick.textContent='選択箇所を使う';form.append(pick);
+const quote=document.createElement('p');quote.textContent='本文の箇所が未選択です。';form.append(quote);
+const inputs={};
+for(const [id,label] of [['comment','指摘'],['reason','判断理由'],['actor','判断者'],['source','指示の出典']]){const l=document.createElement('label'),a=document.createElement('textarea');a.id='decision-'+id;a.required=true;a.style.width='100%';a.style.minHeight='70px';l.htmlFor=a.id;l.textContent=label;inputs[id]=a;form.append(l,a);}
+const decision=document.createElement('select');decision.setAttribute('aria-label','採否');for(const [value,label] of Object.entries(names)){const o=document.createElement('option');o.value=value;o.textContent=label;decision.append(o);}decision.value='defer';form.append(decision);
+const confirmation=document.createElement('input');confirmation.type='checkbox';confirmation.required=true;confirmation.id='decision-confirm';const cl=document.createElement('label');cl.htmlFor=confirmation.id;cl.textContent='選択箇所と判断内容を確認しました。';form.append(confirmation,cl);
+const save=document.createElement('button');save.textContent='新しい指摘として保存';form.append(save);const message=document.createElement('p');message.setAttribute('role','status');form.append(message);$('original').after(form);
+form.after(message);
+function controls(){for(const e of form.querySelectorAll('button,input,textarea,select'))e.disabled=busy||uncertain;save.disabled=busy||uncertain||!anchor;}
+pick.onclick=()=>{const selection=window.getSelection();if(!current||!selection||selection.rangeCount!==1)return;const range=selection.getRangeAt(0),body=$('body');if(!body.contains(range.startContainer)||!body.contains(range.endContainer)||range.collapsed){message.textContent='保存版の本文内を選択してください。';return;}const before=range.cloneRange();before.selectNodeContents(body);before.setEnd(range.startContainer,range.startOffset);const start=before.toString().length,end=start+range.toString().length;const text=current.manuscript.text.slice(start,end);if(text!==range.toString()){message.textContent='選択箇所を確認できません。選び直してください。';return;}anchor={start,end,quote:text};quote.textContent='対象箇所：'+text;confirmation.checked=false;controls();};
+form.addEventListener('input',e=>{if(e.target!==confirmation)confirmation.checked=false;});
+form.onsubmit=async e=>{e.preventDefault();if(busy||uncertain||!anchor||!current||!confirmation.checked)return;
+  const operation_id=crypto.randomUUID(),issue={id:crypto.randomUUID(),role:'user',anchor:{...anchor},decision:decision.value,...Object.fromEntries(Object.entries(inputs).map(([k,v])=>[k,v.value]))};
+  const payload={operation_id,meeting_id:meetingId,series_id:context.series_id,base:context.base,manuscript_sha256:current.manuscript.sha256,issues:[issue],confirmed:true};busy=true;controls();$('refresh').disabled=true;message.textContent='保存中です。';
+  try{const response=await fetch('/api/save-review-decisions',{method:'POST',headers:{'Content-Type':'application/json','X-Planning-Token':context.token},body:JSON.stringify(payload)});const result=await response.json();if(!response.ok){const error=Error(result.error);error.known=!result.uncertain;throw error;}
+    anchor=null;quote.textContent='本文の箇所が未選択です。';for(const input of Object.values(inputs))input.value='';confirmation.checked=false;message.textContent='保存しました。操作番号：'+operation_id;await load();
+  }catch(error){if(error.known)message.textContent='保存できませんでした。入力を控えて原稿版と記録を確認してください。';else{uncertain=true;message.textContent='保存結果を確認できません。再送を止めました。操作番号 '+operation_id+' を履歴で照合してください。';}}
+  finally{busy=false;controls();$('refresh').disabled=false;}
+};
 async function load(){
+  current=null;form.hidden=true;
   $('refresh').disabled=true;$('records').replaceChildren();$('original').hidden=true;$('body').textContent='';$('status').textContent='読み込み中です。';
   try{
     const init=await fetch('/api/init');if(!init.ok)throw Error();const ctx=await init.json();
@@ -12,7 +36,8 @@ async function load(){
     const responses=await Promise.all([fetch('/api/history',{headers}),fetch('/api/decision-history?meeting='+encodeURIComponent(meetingId??''),{headers})]);
     if(responses.some(r=>!r.ok))throw Error();const [history,data]=await Promise.all(responses.map(r=>r.json()));
     const m=history.councils.find(x=>x.id===meetingId&&x.manuscript&&x.status==='reviewed_proposal');
-    if(!m||history.base!==data.base)throw Error();
+    if(!m||history.base!==data.base||ctx.base!==data.base)throw Error();
+    context=ctx;current=m;form.hidden=data.stale||uncertain;controls();
     $('meta').textContent=m.manuscript.scene_id+' / '+m.manuscript.status+' / SHA256：'+m.manuscript.sha256;
     $('body').textContent=m.manuscript.text;$('original').hidden=false;
     $('status').textContent=(data.stale?'古い原稿版に対する判断です。':'')+(data.records.length?'判断記録 '+data.records.length+'件。':'判断記録はまだありません。')+(data.issues.length?' 要確認の記録 '+data.issues.length+'件（内容は非表示）。':'');
@@ -25,5 +50,5 @@ async function load(){
   }catch{$('records').replaceChildren();$('original').hidden=true;$('body').textContent='';$('status').textContent='履歴を読み込めません。対象会議または更新状態を確認してください。保存操作は行っていません。';}
   finally{$('refresh').disabled=false;}
 }
-$('refresh').onclick=load;load();
+$('refresh').onclick=()=>{if(busy)return;if(anchor||Object.values(inputs).some(x=>x.value)){if(!confirm('未保存の入力を保持して履歴を更新します。原稿版が変わると入力欄を閉じます。続けますか？'))return;}load();};load();
 </script></html>

@@ -10,6 +10,15 @@ import {initialize,finishCouncil} from './project.mjs';
 import {read,atomic,inside,fingerprint,hash} from './engine.mjs';
 import {manuscriptCouncil} from './manuscript-review.mjs';
 import {saveReviewDecisions,readReviewDecisions,reviewDecisionHistory} from './review-decisions.mjs';
+test('HTTP decision save validates before receipt, replays once and rejects stale inputs',async t=>{
+  const {r,m,input}=setup(t),base=fingerprint(r),server=planningServer(r);await new Promise(done=>server.listen(0,'127.0.0.1',done));t.after(async()=>{server.closeAllConnections();await new Promise(done=>server.close(done));});
+  const url='http://127.0.0.1:'+server.address().port,ctx=await(await fetch(url+'/api/init')).json();
+  const post=data=>fetch(url+'/api/save-review-decisions',{method:'POST',headers:{'Content-Type':'application/json','X-Planning-Token':ctx.token},body:JSON.stringify(data)});
+  for(const bad of [{...input,confirmed:false},{...input,confirmed:true,series_id:'foreign'},{...input,confirmed:true,issues:[{...input.issues[0],reason:''}]},{...input,confirmed:true,manuscript_sha256:'bad'}]){assert.equal((await post(bad)).status,400);assert.ok(!fs.existsSync(inside(r,'system/operations')));}
+  const body={...input,confirmed:true},response=await post(body);assert.equal(response.status,200);const saved=await response.json();assert.equal(saved.id,input.operation_id);assert.deepEqual(await(await post(body)).json(),saved);assert.equal(reviewDecisionHistory(r,m.id).records.length,1);assert.equal(fingerprint(r),base);
+  const page=await(await fetch(url+'/decision-history?meeting='+m.id)).text();new vm.Script(page.match(/<script>([\s\S]*?)<\/script>/)[1]);assert.ok(page.includes('range.startContainer'));assert.ok(page.includes('uncertain=true'));
+  fs.appendFileSync(inside(r,'manuscript/one.md'),'changed');assert.equal((await post({...body,operation_id:crypto.randomUUID()})).status,400);assert.equal(reviewDecisionHistory(r,m.id).records.length,1);
+});
 test('HTTP history authenticates, serves read-only display and refuses unknown or active meetings',async t=>{
   const {r,m,input}=setup(t),base=fingerprint(r);saveReviewDecisions(r,input);
   const server=planningServer(r);await new Promise(done=>server.listen(0,'127.0.0.1',done));t.after(async()=>{server.closeAllConnections();await new Promise(done=>server.close(done));});
