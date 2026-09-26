@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+apps/api/data/
+*.db
+*.sqlite
+*.sqlite3
+node_modules/
+.next/
+out/
+.env
+.env.local
+!.env.example
+.DS_Store
+.vscode/
+.idea/
