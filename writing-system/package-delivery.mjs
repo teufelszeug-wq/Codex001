@@ -11,6 +11,7 @@ function collect(relative){for(const entry of fs.readdirSync(path.join(root,rela
 }}
 collect('writing-system');
 names.push('writing-system/本文レビュー.html');
+names.push('writing-system/本文判断履歴.html');
 names.push('writing-system/世界設定の候補.html','writing-system/世界設定の項目入力.html','writing-system/世界設定.html','writing-system/作品一覧.html','writing-system/企画入力.html','writing-system/開発進捗.html','writing-system/research/2026-09-18_旧システム監査.md','amelia/system/control.json','amelia/system/series.json','amelia/system/health.json','amelia/system/validation.json','amelia/state.json','amelia/AGENTS.md');
 const requested=process.argv.slice(2);
 for(const p of requested)if(!names.includes(p))throw Error('file outside delivery allowlist: '+p);

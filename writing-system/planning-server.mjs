@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {reviewDecisionHistory} from './review-decisions.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
@@ -24,6 +25,11 @@ export function planningServer(root){
     if(req.headers.host!==new URL(origin).host||req.headers.origin&&req.headers.origin!==origin){reply(403,{error:'この画面から操作してください。'});return;}
     if(req.method==='GET'&&req.url==='/'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(html.replace('</style>','</style><nav><a href="/world" target="_blank" rel="noopener">世界設定案を整理する ↗</a> / <a href="/manuscript-review">本文を読んで会議を作る</a></nav>'));return;}
     if(req.method==='GET'&&req.url==='/manuscript-review'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./本文レビュー.html',import.meta.url),'utf8'));return;}
+    if(req.method==='GET'&&req.url.startsWith('/decision-history?')){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Frame-Options':'DENY'});res.end(fs.readFileSync(new URL('./本文判断履歴.html',import.meta.url),'utf8'));return;}
+    if(req.method==='GET'&&req.url.startsWith('/api/decision-history?')){
+      if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
+      try{const id=new URL(req.url,origin).searchParams.get('meeting');reply(200,reviewDecisionHistory(root,id));}catch{reply(409,{error:'判断履歴を読み込めません。会議と作品の更新状態を確認してください。'});}return;
+    }
     if(req.method==='GET'&&req.url==='/api/manuscripts'){
       if(req.headers['x-planning-token']!==token){reply(403,{error:'画面を開き直してください。'});return;}
       try{const s=openSeries(root);reply(200,{series_id:s.config.series_id,base:fingerprint(root),scenes:s.state.scene_log.filter(x=>x.path).map(x=>({id:x.id,status:x.status,path:x.path})),paused:!s.control.manuscript_generation_enabled});}catch{reply(409,{error:'原稿一覧を読み込めません。'});}return;

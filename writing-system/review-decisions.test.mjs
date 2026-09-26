@@ -4,10 +4,22 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import vm from 'node:vm';
+import {planningServer} from './planning-server.mjs';
 import {initialize,finishCouncil} from './project.mjs';
 import {read,atomic,inside,fingerprint,hash} from './engine.mjs';
 import {manuscriptCouncil} from './manuscript-review.mjs';
 import {saveReviewDecisions,readReviewDecisions,reviewDecisionHistory} from './review-decisions.mjs';
+test('HTTP history authenticates, serves read-only display and refuses unknown or active meetings',async t=>{
+  const {r,m,input}=setup(t),base=fingerprint(r);saveReviewDecisions(r,input);
+  const server=planningServer(r);await new Promise(done=>server.listen(0,'127.0.0.1',done));t.after(async()=>{server.closeAllConnections();await new Promise(done=>server.close(done));});
+  const url='http://127.0.0.1:'+server.address().port,ctx=await(await fetch(url+'/api/init')).json(),headers={'X-Planning-Token':ctx.token},route='/api/decision-history?meeting='+m.id;
+  assert.equal((await fetch(url+route)).status,403);assert.equal((await fetch(url+route,{headers:{...headers,Origin:'https://other.example'}})).status,403);
+  const response=await fetch(url+route,{headers});assert.equal(response.status,200);assert.equal((await response.json()).records.length,1);assert.equal(response.headers.get('cache-control'),'no-store');
+  assert.equal((await fetch(url+'/api/decision-history?meeting='+crypto.randomUUID(),{headers})).status,409);
+  const page=await(await fetch(url+'/decision-history?meeting='+m.id)).text();new vm.Script(page.match(/<script>([\s\S]*?)<\/script>/)[1]);assert.ok(page.includes('p.textContent=value'));assert.ok(!page.includes('innerHTML'));assert.ok((await(await fetch(url+'/')).text()).includes('/decision-history?meeting='));assert.equal(fingerprint(r),base);
+  atomic(inside(r,'system/transaction-active.json'),{});assert.equal((await fetch(url+route,{headers})).status,409);
+});
 test('history is read-only, separates meetings and hides invalid payloads without choosing a latest decision',t=>{
   const {r,m,input}=setup(t),before=fingerprint(r);
   assert.deepEqual(reviewDecisionHistory(r,m.id).records,[]);

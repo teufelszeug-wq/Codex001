@@ -1,0 +1,29 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>本文の判断履歴</title>
+<style>body{font-family:system-ui,'Yu Gothic',sans-serif;background:#f4f5f0;color:#22352f;margin:0}main{max-width:860px;margin:32px auto;padding:24px}article,section{background:white;border:1px solid #cbd5ce;border-radius:12px;padding:20px;margin:18px 0}p,pre{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}pre{font:inherit}a{color:#206851}button{font:inherit;padding:10px 20px}#status{color:#914723}</style>
+<main><a href="/">企画・会議履歴に戻る</a><h1>本文の指摘・判断履歴</h1><p>保存済みの判断を読み返す画面です。採用の記録だけでは本文は変更されません。記録の並び順は判断の優先順位を表しません。</p><button id="refresh">履歴を更新</button><p id="status" role="status"></p><section id="original" hidden><h2>会議で確認した原稿</h2><p id="meta"></p><details><summary>原稿の保存版を読む</summary><pre id="body"></pre></details></section><div id="records"></div></main>
+<script>
+const $=id=>document.getElementById(id),meetingId=new URLSearchParams(location.search).get('meeting');
+const names={accept:'採用',reject:'不採用',defer:'保留'};
+async function load(){
+  $('refresh').disabled=true;$('records').replaceChildren();$('original').hidden=true;$('body').textContent='';$('status').textContent='読み込み中です。';
+  try{
+    const init=await fetch('/api/init');if(!init.ok)throw Error();const ctx=await init.json();
+    const headers={'X-Planning-Token':ctx.token};
+    const responses=await Promise.all([fetch('/api/history',{headers}),fetch('/api/decision-history?meeting='+encodeURIComponent(meetingId??''),{headers})]);
+    if(responses.some(r=>!r.ok))throw Error();const [history,data]=await Promise.all(responses.map(r=>r.json()));
+    const m=history.councils.find(x=>x.id===meetingId&&x.manuscript&&x.status==='reviewed_proposal');
+    if(!m||history.base!==data.base)throw Error();
+    $('meta').textContent=m.manuscript.scene_id+' / '+m.manuscript.status+' / SHA256：'+m.manuscript.sha256;
+    $('body').textContent=m.manuscript.text;$('original').hidden=false;
+    $('status').textContent=(data.stale?'古い原稿版に対する判断です。':'')+(data.records.length?'判断記録 '+data.records.length+'件。':'判断記録はまだありません。')+(data.issues.length?' 要確認の記録 '+data.issues.length+'件（内容は非表示）。':'');
+    for(const record of data.records){
+      const box=document.createElement('section'),title=document.createElement('h2');title.textContent='記録 '+record.operation_id;box.append(title);
+      for(const issue of record.issues){const article=document.createElement('article'),heading=document.createElement('h3');heading.textContent=issue.id+'：'+names[issue.decision];article.append(heading);
+        for(const value of ['対象箇所：'+issue.anchor.quote,'指摘：'+issue.comment,'理由：'+issue.reason,'判断者：'+issue.actor,'指示の出典：'+issue.source,'検討役：'+issue.role]){const p=document.createElement('p');p.textContent=value;article.append(p);}box.append(article);
+      }$('records').append(box);
+    }
+  }catch{$('records').replaceChildren();$('original').hidden=true;$('body').textContent='';$('status').textContent='履歴を読み込めません。対象会議または更新状態を確認してください。保存操作は行っていません。';}
+  finally{$('refresh').disabled=false;}
+}
+$('refresh').onclick=load;load();
+</script></html>
