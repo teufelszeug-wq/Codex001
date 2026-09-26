@@ -24,6 +24,111 @@ def world_builder_payload():
     }
 
 
+def language_culture_payload():
+    return {
+        "languages": [
+            {
+                "id": "lang-north",
+                "name": "北方共通語",
+                "role": "common",
+                "regions": ["北部王国", "交易都市"],
+                "inspirations": [
+                    {"source": "nordic_like", "weight": 60},
+                    {"source": "custom:霧の多い沿岸文化", "weight": 40},
+                ],
+                "parent_language_id": None,
+                "era_label": "現代語",
+                "phonology": {
+                    "onsets": ["k", "v", "r", "s", "h"],
+                    "nuclei": ["a", "e", "i", "o"],
+                    "codas": ["", "n", "r"],
+                    "forbidden_sequences": ["kkk"],
+                    "syllables_min": 2,
+                    "syllables_max": 3,
+                    "separator": "",
+                    "capitalize": True,
+                },
+                "naming": {
+                    "prefixes": {"person": [""], "place": [""], "item": [""], "title": ["Ar"]},
+                    "suffixes": {"person": ["a", "en"], "place": ["vik", "heim"], "item": [""], "title": ["ar"]},
+                    "notes": "人名は短め。",
+                },
+                "script": {"name": "北方文字", "type": "alphabetic", "direction": "ltr", "notes": ""},
+                "notes": "交易で広く通じる。",
+            },
+            {
+                "id": "lang-old",
+                "name": "古層典礼語",
+                "role": "sacred",
+                "regions": ["神殿"],
+                "inspirations": [{"source": "old_japanese_inspired", "weight": 35}, {"source": "custom", "weight": 65}],
+                "parent_language_id": None,
+                "phonology": {
+                    "onsets": ["m", "n", "y"],
+                    "nuclei": ["a", "i", "u"],
+                    "codas": [""],
+                    "syllables_min": 2,
+                    "syllables_max": 4,
+                },
+                "naming": {"prefixes": {}, "suffixes": {}, "notes": ""},
+                "script": {"name": "神殿刻字", "type": "syllabic", "direction": "vertical", "notes": ""},
+                "notes": "",
+            },
+        ],
+        "cultures": [
+            {
+                "id": "culture-north",
+                "name": "北方沿岸文化",
+                "regions": ["北部王国"],
+                "language_ids": ["lang-north", "lang-old"],
+                "tags": ["海運", "霧", "交易"],
+                "institutions": ["港湾評議会"],
+                "etiquette": "初対面では家名より港名を先に名乗る。",
+                "taboos": ["航海前の火の貸し借り"],
+                "festivals": ["冬至灯祭"],
+                "material_culture": "木工と織物を重視。",
+                "notes": "",
+            }
+        ],
+        "contacts": [
+            {
+                "from_language_id": "lang-old",
+                "to_language_id": "lang-north",
+                "intensity": 55,
+                "domains": ["religion", "scholarship"],
+                "borrowing_policy": "adapt",
+                "notes": "宗教語彙が借用される。",
+            }
+        ],
+        "root_lexicon": [
+            {
+                "id": "root-mist",
+                "language_id": "lang-north",
+                "form": "hev",
+                "meaning": "霧",
+                "tags": ["weather", "place-name"],
+                "origin": "native",
+                "notes": "",
+            }
+        ],
+        "display_policy": {
+            "mode": "original_with_reading",
+            "first_mention": "original_with_reading",
+            "later_mentions": "translated",
+            "ruby_policy": "project_choice",
+            "notes": "",
+        },
+        "earth_term_policy": {
+            "mode": "strict",
+            "replacement_mode": "world_origin",
+            "allowed_contexts": ["転生者の内心"],
+            "notes": "異世界の地の文では地球由来固有名を避ける。",
+        },
+        "common_language_id": "lang-north",
+        "status": "configured",
+    }
+
+
 def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
@@ -33,7 +138,7 @@ def test_health(client):
 def test_create_list_and_get_project(client):
     payload = create_project(client)
     assert payload["title"] == "First World"
-    assert payload["schema_version"] == 2
+    assert payload["schema_version"] == 3
 
     listed = client.get("/api/v1/projects")
     assert listed.status_code == 200
@@ -117,3 +222,68 @@ def test_import_mode_requires_format(client):
     response = client.put(f"/api/v1/projects/{project['id']}/world-builder", json=payload)
     assert response.status_code == 200
     assert response.json()["import_format"] == "docx"
+
+
+def test_language_culture_catalog_has_open_and_sensitive_inspiration_routes(client):
+    response = client.get("/api/v1/catalog/language-culture")
+    assert response.status_code == 200
+    payload = response.json()
+    inspiration_keys = {item["key"] for item in payload["inspirations"]}
+    assert {"nordic_like", "ainu_inspired", "old_japanese_inspired", "speculative_jomon", "katakamuna_visual", "custom"} <= inspiration_keys
+    assert {item["key"] for item in payload["earth_term_modes"]} == {"off", "warn", "strict"}
+
+
+def test_save_get_language_culture_config_and_preview_names(client):
+    project = create_project(client)
+    payload = language_culture_payload()
+
+    saved = client.put(f"/api/v1/projects/{project['id']}/language-culture", json=payload)
+    assert saved.status_code == 200
+    config = saved.json()
+    assert config["common_language_id"] == "lang-north"
+    assert config["languages"][0]["inspirations"][0]["source"] == "nordic_like"
+    assert config["earth_term_policy"]["mode"] == "strict"
+    assert config["cultures"][0]["language_ids"] == ["lang-north", "lang-old"]
+
+    fetched = client.get(f"/api/v1/projects/{project['id']}/language-culture")
+    assert fetched.status_code == 200
+    assert fetched.json()["root_lexicon"][0]["meaning"] == "霧"
+
+    first = client.post(
+        f"/api/v1/projects/{project['id']}/language-culture/languages/lang-north/preview-names",
+        json={"kind": "place", "count": 8, "seed": 42},
+    )
+    second = client.post(
+        f"/api/v1/projects/{project['id']}/language-culture/languages/lang-north/preview-names",
+        json={"kind": "place", "count": 8, "seed": 42},
+    )
+    assert first.status_code == 200
+    assert first.json()["names"] == second.json()["names"]
+    assert len(first.json()["names"]) == 8
+    assert all(name.endswith(("vik", "heim")) for name in first.json()["names"])
+
+
+def test_language_builder_rejects_unknown_references(client):
+    project = create_project(client)
+    payload = language_culture_payload()
+    payload["cultures"][0]["language_ids"] = ["missing-language"]
+    response = client.put(f"/api/v1/projects/{project['id']}/language-culture", json=payload)
+    assert response.status_code == 422
+
+    payload = language_culture_payload()
+    payload["common_language_id"] = "missing-language"
+    response = client.put(f"/api/v1/projects/{project['id']}/language-culture", json=payload)
+    assert response.status_code == 422
+
+
+def test_language_builder_rejects_invalid_parent_and_policy(client):
+    project = create_project(client)
+    payload = language_culture_payload()
+    payload["languages"][0]["parent_language_id"] = "missing-language"
+    response = client.put(f"/api/v1/projects/{project['id']}/language-culture", json=payload)
+    assert response.status_code == 422
+
+    payload = language_culture_payload()
+    payload["earth_term_policy"]["mode"] = "auto-rewrite-without-approval"
+    response = client.put(f"/api/v1/projects/{project['id']}/language-culture", json=payload)
+    assert response.status_code == 422

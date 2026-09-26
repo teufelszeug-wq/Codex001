@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import get_session
 from app.domain import Project, WorldBuilderProfile
+from app.language_services import LanguageCultureService
 from app.services import ProjectService, WorldBuilderService
 
 
@@ -87,6 +88,23 @@ class WorldBuilderRead(BaseModel):
         )
 
 
+class LanguageCultureWrite(BaseModel):
+    languages: list[dict[str, object]] = Field(default_factory=list)
+    cultures: list[dict[str, object]] = Field(default_factory=list)
+    contacts: list[dict[str, object]] = Field(default_factory=list)
+    root_lexicon: list[dict[str, object]] = Field(default_factory=list)
+    display_policy: dict[str, object] = Field(default_factory=dict)
+    earth_term_policy: dict[str, object] = Field(default_factory=dict)
+    common_language_id: str | None = None
+    status: str = "configured"
+
+
+class NamePreviewRequest(BaseModel):
+    kind: str = "person"
+    count: int = Field(default=10, ge=1, le=30)
+    seed: int = 1
+
+
 app = FastAPI(title=settings.app_name, version=settings.app_version)
 app.add_middleware(
     CORSMiddleware,
@@ -107,6 +125,11 @@ def health() -> dict[str, str]:
 @api.get("/catalog/world-builder", tags=["world-builder"])
 def world_builder_catalog() -> dict[str, object]:
     return WorldBuilderService.catalog()
+
+
+@api.get("/catalog/language-culture", tags=["language-culture"])
+def language_culture_catalog() -> dict[str, object]:
+    return LanguageCultureService.catalog()
 
 
 @api.get("/projects", response_model=list[ProjectRead], tags=["projects"])
@@ -166,6 +189,63 @@ def save_world_builder(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     return WorldBuilderRead.from_domain(profile)
+
+
+@api.get("/projects/{project_id}/language-culture", tags=["language-culture"])
+def get_language_culture(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        config = LanguageCultureService(session).get_config(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    if config is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Language & Culture configuration not found")
+    return config
+
+
+@api.put("/projects/{project_id}/language-culture", tags=["language-culture"])
+def save_language_culture(
+    project_id: UUID,
+    payload: LanguageCultureWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return LanguageCultureService(session).save_config(
+            project_id,
+            languages=payload.languages,
+            cultures=payload.cultures,
+            contacts=payload.contacts,
+            root_lexicon=payload.root_lexicon,
+            display_policy=payload.display_policy,
+            earth_term_policy=payload.earth_term_policy,
+            common_language_id=payload.common_language_id,
+            status=payload.status,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/language-culture/languages/{language_id}/preview-names", tags=["language-culture"])
+def preview_language_names(
+    project_id: UUID,
+    language_id: str,
+    payload: NamePreviewRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        names = LanguageCultureService(session).preview_names(
+            project_id,
+            language_id,
+            kind=payload.kind,
+            count=payload.count,
+            seed=payload.seed,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    return {"language_id": language_id, "kind": payload.kind, "seed": payload.seed, "names": names}
 
 
 app.include_router(api)
