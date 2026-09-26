@@ -7,7 +7,24 @@ import crypto from 'node:crypto';
 import {initialize,finishCouncil} from './project.mjs';
 import {read,atomic,inside,fingerprint,hash} from './engine.mjs';
 import {manuscriptCouncil} from './manuscript-review.mjs';
-import {saveReviewDecisions,readReviewDecisions} from './review-decisions.mjs';
+import {saveReviewDecisions,readReviewDecisions,reviewDecisionHistory} from './review-decisions.mjs';
+test('history is read-only, separates meetings and hides invalid payloads without choosing a latest decision',t=>{
+  const {r,m,input}=setup(t),before=fingerprint(r);
+  assert.deepEqual(reviewDecisionHistory(r,m.id).records,[]);
+  assert.equal(fs.existsSync(inside(r,'system/review-decisions')),false);
+  saveReviewDecisions(r,input);
+  saveReviewDecisions(r,{...input,operation_id:crypto.randomUUID(),issues:[{...input.issues[0],decision:'accept'}]});
+  let h=reviewDecisionHistory(r,m.id);assert.equal(h.records.length,2);assert.equal(h.issues.length,0);
+  assert.deepEqual(h.records.map(x=>x.issues[0].decision).sort(),['accept','defer']);
+  const other=manuscriptCouncil(r,{series_id:'example',scene_id:'S1',base:before,manuscript_sha256:m.manuscript.sha256,agenda:'Other',workflow:'conversation'});
+  finishCouncil(r,other.id,other.requests.map(q=>({...q,output:'review'})),{execution_mode:'conversation_single_assistant',summary:'proposal',objections:[],pending:[]});
+  saveReviewDecisions(r,{...input,meeting_id:other.id,operation_id:crypto.randomUUID()});
+  assert.equal(reviewDecisionHistory(r,m.id).records.length,2);
+  const bad=crypto.randomUUID();atomic(inside(r,'system/review-decisions/'+bad+'.json'),{meeting_id:m.id,comment:'UNTRUSTED_CONTENT'});
+  h=reviewDecisionHistory(r,m.id);assert.equal(h.records.length,2);assert.equal(h.issues.length,1);assert.ok(!JSON.stringify(h).includes('UNTRUSTED_CONTENT'));assert.equal(fingerprint(r),before);
+  fs.appendFileSync(inside(r,'manuscript/one.md'),'変更');assert.equal(reviewDecisionHistory(r,m.id).stale,true);
+  atomic(inside(r,'system/transaction-active.json'),{});assert.throws(()=>reviewDecisionHistory(r,m.id),/unfinished transaction/);
+});
 test('a valid record copied to another operation filename is rejected',t=>{
   const {r,m,input}=setup(t);saveReviewDecisions(r,input);
   const other=crypto.randomUUID();

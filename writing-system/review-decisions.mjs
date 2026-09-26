@@ -49,3 +49,28 @@ export function saveReviewDecisions(root,input){
   try{fs.writeFileSync(fd,JSON.stringify({...p,digest,created_at:new Date().toISOString()},null,2)+'\n');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
   return readReviewDecisions(root,m.id,p.operation_id);
 }
+
+export function reviewDecisionHistory(root,meetingId){
+  const m=meeting(root,meetingId),base=fingerprint(root);
+  const directory=inside(root,'system/review-decisions'),records=[],issues=[];
+  if(!fs.existsSync(directory))return {meeting_id:m.id,base,stale:base!==m.base,records,issues};
+  const entries=fs.readdirSync(directory,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name));
+  for(const entry of entries){
+    // Do not expose unverified comments or raw exception details in history.
+    if(!entry.name.endsWith('.json'))continue;
+    const id=entry.name.slice(0,-5);
+    if(!uuid.test(id)||!entry.isFile()||entry.isSymbolicLink()){
+      issues.push({operation_id:null,status:'invalid_record'});continue;
+    }
+    try{
+      const raw=read(inside(root,'system/review-decisions/'+entry.name));
+      if(raw.meeting_id!==m.id){
+        // Validate other meetings too before silently excluding their records.
+        readReviewDecisions(root,raw.meeting_id,id);continue;
+      }
+      records.push(readReviewDecisions(root,m.id,id));
+    }catch{issues.push({operation_id:id,status:'invalid_record'});}
+  }
+  if(fingerprint(root)!==base)throw Error('changed during decision history read');
+  return {meeting_id:m.id,base,stale:base!==m.base,records,issues};
+}
