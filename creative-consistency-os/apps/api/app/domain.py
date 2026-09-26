@@ -4,7 +4,7 @@ from enum import StrEnum
 from uuid import UUID
 
 
-CURRENT_PROJECT_SCHEMA_VERSION = 2
+CURRENT_PROJECT_SCHEMA_VERSION = 3
 
 
 class CanonState(StrEnum):
