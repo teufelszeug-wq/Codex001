@@ -5,7 +5,7 @@
 - M0 Foundation — complete
 - M1 Application Foundation — complete
 - M2 World Builder Alpha — complete
-- M2.5 Language & Culture Builder — implementation complete; final CI gate pending
+- M2.5 Language & Culture Builder — complete
 
 ## Next
 

@@ -7,8 +7,8 @@ A local-first creative production system for long-form fiction: World Builder + 
 - M0 Foundation — complete
 - M1 Application Foundation — complete
 - M2 World Builder Alpha — complete
-- M2.5 Language & Culture Builder — implementation complete
-- M3 Bible + Writing Room — next after the M2.5 CI gate
+- M2.5 Language & Culture Builder — complete
+- M3 Bible + Writing Room — next
 
 ## Current Golden Path
 
