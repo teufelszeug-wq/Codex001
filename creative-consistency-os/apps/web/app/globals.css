@@ -10,6 +10,7 @@ button, input, textarea, select { font: inherit; }
 .shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 72px 0; }
 .narrow { width: min(760px, calc(100% - 40px)); }
 .wizard-shell { width: min(1040px, calc(100% - 40px)); }
+.language-shell { width: min(1180px, calc(100% - 40px)); }
 .hero { max-width: 780px; margin-bottom: 40px; }
 .eyebrow { letter-spacing: .14em; font-size: 12px; font-weight: 700; color: #6d675d; }
 h1 { font-size: clamp(36px, 6vw, 68px); line-height: 1.02; margin: 12px 0 18px; }
@@ -45,7 +46,7 @@ button.secondary { background: #e9e4da; color: #252525; }
 .range-row { display: grid; grid-template-columns: 150px 1fr 42px; align-items: center; gap: 14px; padding: 9px 0; }
 .range-row input { padding: 0; border: 0; }
 .custom-genre { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e1dbd1; }
-.inline-fields { display: grid; grid-template-columns: 1fr 110px auto; gap: 10px; }
+.inline-fields { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .chip { padding: 8px 11px; background: #e9e4da; color: #2b2926; font-size: 13px; }
 .wizard-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid #e1dbd1; }
@@ -74,14 +75,70 @@ button.secondary { background: #e9e4da; color: #252525; }
 .priority-card strong { font-size: 26px; }
 .priority-card small { grid-column: 1 / -1; color: #716b62; text-transform: uppercase; }
 .priority-card.high { border: 1px solid #afa594; }
+
+.tool-strip { margin: 26px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tool-card { padding: 18px; border-radius: 14px; background: #1e1f22; color: white; display: grid; gap: 6px; }
+.tool-card span { font-size: 11px; letter-spacing: .12em; color: #bdb8ae; }
+.tool-card small { color: #d7d1c7; line-height: 1.5; }
+
+.builder-section { margin-top: 24px; padding: 28px; background: #fff; border: 1px solid #d9d3c8; border-radius: 18px; }
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
+.section-heading.compact { align-items: center; }
+.empty-state { padding: 18px; background: #f4f1ea; border-radius: 12px; color: #716b62; }
+.language-stack { display: grid; gap: 14px; margin-top: 18px; }
+.language-card { border: 1px solid #ddd7cc; border-radius: 14px; background: #faf8f3; overflow: hidden; }
+.language-card summary { list-style: none; display: flex; justify-content: space-between; gap: 16px; padding: 18px; cursor: pointer; }
+.language-card summary::-webkit-details-marker { display: none; }
+.language-card summary span:first-child { display: grid; gap: 3px; }
+.language-card summary small { color: #716b62; font-weight: 400; }
+.language-body { padding: 0 18px 18px; display: grid; gap: 16px; }
+.form-grid { display: grid; gap: 12px; }
+.form-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.form-grid label, .culture-card label, .block-label { display: grid; gap: 7px; font-size: 13px; font-weight: 700; }
+.subpanel { padding: 18px; border-radius: 12px; background: #f2eee6; }
+.subpanel h3 { margin-top: 0; }
+.influence-stack { display: grid; gap: 8px; margin-top: 14px; }
+.influence-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(160px, 2fr) 40px auto; align-items: center; gap: 10px; padding: 10px; background: white; border-radius: 10px; }
+.influence-row div { display: grid; gap: 3px; }
+.influence-row small { color: #716b62; line-height: 1.4; }
+.danger-lite { background: transparent; color: #7e3e3e; border: 1px solid #d9bdbd; padding: 8px 10px; }
+.preview-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.name-preview { margin-top: 10px; padding: 12px; background: white; border-radius: 10px; display: grid; gap: 6px; }
+.name-preview span { line-height: 1.7; }
+.culture-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.culture-card { padding: 18px; border: 1px solid #ddd7cc; border-radius: 14px; background: #faf8f3; display: grid; gap: 12px; }
+.card-title-input { font-size: 20px; font-weight: 800; width: min(100%, 360px); }
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 10px 0; }
+.checkbox-group > span { width: 100%; font-size: 13px; font-weight: 700; }
+.checkbox-group label { display: flex; align-items: center; gap: 6px; font-weight: 400; }
+.contact-row { display: grid; grid-template-columns: 1fr auto 1fr minmax(220px, 1fr) 1fr 1fr auto; gap: 8px; align-items: center; margin-top: 12px; }
+.contact-row label { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.contact-row input[type="range"] { padding: 0; border: 0; min-width: 100px; }
+.lexicon-stack { display: grid; gap: 8px; margin-top: 12px; }
+.lexicon-row { display: grid; grid-template-columns: 1.1fr .8fr 1.2fr 1.2fr 1fr auto; gap: 8px; }
+.save-bar { position: sticky; bottom: 16px; margin-top: 24px; padding: 16px 18px; border-radius: 14px; background: rgba(30,31,34,.96); color: white; display: flex; justify-content: space-between; align-items: center; gap: 16px; box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+.save-actions { display: flex; gap: 8px; }
+
+@media (max-width: 1000px) {
+  .contact-row, .lexicon-row { grid-template-columns: 1fr 1fr; }
+  .contact-row > span { display: none; }
+}
 @media (max-width: 900px) {
   .setup-grid, .choice-grid { grid-template-columns: repeat(2, 1fr); }
   .dna-row { grid-template-columns: 1fr; }
   .review-grid, .summary-grid, .priority-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid.three { grid-template-columns: 1fr 1fr; }
+  .culture-grid { grid-template-columns: 1fr; }
+  .influence-row { grid-template-columns: 1fr 1fr auto; }
+  .influence-row div { grid-column: 1 / -1; }
 }
 @media (max-width: 620px) {
-  .grid, .setup-grid, .choice-grid, .review-grid, .summary-grid, .priority-grid { grid-template-columns: 1fr; }
+  .grid, .setup-grid, .choice-grid, .review-grid, .summary-grid, .priority-grid, .tool-strip, .form-grid.two, .form-grid.three { grid-template-columns: 1fr; }
   .shell { padding-top: 42px; }
-  .wizard-head, .overview-head { display: block; }
-  .inline-fields, .range-row, .dna-summary-row { grid-template-columns: 1fr; }
+  .wizard-head, .overview-head, .section-heading, .save-bar { display: block; }
+  .inline-fields, .range-row, .dna-summary-row, .contact-row, .lexicon-row { grid-template-columns: 1fr; }
+  .section-heading > button, .save-actions { margin-top: 12px; }
+  .save-actions { display: grid; grid-template-columns: 1fr; }
+  .save-actions button { width: 100%; }
 }

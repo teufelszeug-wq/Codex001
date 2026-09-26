@@ -5,17 +5,17 @@
 - M0 Foundation — complete
 - M1 Application Foundation — complete
 - M2 World Builder Alpha — complete
+- M2.5 Language & Culture Builder — implementation complete; final CI gate pending
 
 ## Next
 
-### M2.5 Language & Culture Builder
-Language DNA, naming systems, scripts, cultural contact, loanwords, origin/etymology and Earth-origin terminology foundations.
-
 ### M3 Bible + Writing Room
-Story Bible, manuscript editor, autosave, revision and basic timeline.
+Story Bible, manuscript editor, autosave, revision, basic timeline and explicit Canon promotion workflow.
+
+Planned M3 sub-milestones now include a Canon-promotion path so imported, inferred or generated terminology cannot silently become confirmed world facts.
 
 ### M3.5 Entity Intelligence
-Entity detection, aliases, mentions, linking and reference resolution.
+Entity detection, aliases, mentions, linking, reference resolution and normalized high-volume entity storage.
 
 ### M4 Core Lint Engine
 Deterministic, constraint and semantic lint layers.
