@@ -4,7 +4,7 @@
 
 - M0 Foundation — complete
 - M1 Application Foundation — complete
-- M2 World Builder Alpha — implementation complete; CI gate pending
+- M2 World Builder Alpha — complete
 
 ## Next
 
@@ -47,5 +47,7 @@ Quest, flag, NPC and cross-media world reuse.
 ## Planning rule
 
 Every design meeting may add a sub-milestone when work belongs to the current phase, or a top-level milestone only when it creates a distinct product capability or dependency boundary.
+
+Sub-milestones use Mx-Sn notation when a decimal-numbered top-level milestone already exists, avoiding ambiguous identifiers.
 
 Ideas move through IDEA → PROPOSED → ACCEPTED → SCHEDULED rather than disappearing from the plan.

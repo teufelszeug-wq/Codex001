@@ -6,8 +6,8 @@ A local-first creative production system for long-form fiction: World Builder + 
 
 - M0 Foundation — complete
 - M1 Application Foundation — complete
-- M2 World Builder Alpha — implementation complete
-- M2.5 Language & Culture Builder — next after the M2 CI gate
+- M2 World Builder Alpha — complete
+- M2.5 Language & Culture Builder — next
 
 ## M2 Golden Path
 
