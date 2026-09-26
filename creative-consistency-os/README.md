@@ -1,35 +1,45 @@
 # Creative Consistency OS
 
-M1 Application Foundation for a long-form fiction world-building and continuity platform.
+A local-first creative production system for long-form fiction: World Builder + Story Bible + Writing Environment + Continuity/Lint + Change Management.
 
-## M1 scope
-- Local-first modular monolith
-- Next.js/TypeScript web shell
-- FastAPI API
-- SQLite behind a repository layer
-- Alembic migration baseline
-- Canon/provenance primitives
-- ChangeLog foundation
-- Health endpoint, tests, and CI
+## Current progress
 
-## Local API
-```bash
+- M0 Foundation — complete
+- M1 Application Foundation — complete
+- M2 World Builder Alpha — implementation complete
+- M2.5 Language & Culture Builder — next after the M2 CI gate
+
+## M2 Golden Path
+
+Genre → Setup Mode → World DNA → Review → Persisted Project
+
+Genre selection supports multiple genres, weights, custom genres and "undecided." There is no mandatory primary genre. Every World DNA section can be AUTO, MANUAL or SKIP.
+
+AUTO is proposal permission only; it never commits generated content to Canon.
+
+## Structure
+
+- apps/web — Next.js + TypeScript
+- apps/api — FastAPI + SQLAlchemy + Alembic
+- docs/M1.md
+- docs/M2.md
+- docs/ROADMAP.md
+
+## API local development
+
 cd apps/api
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .[dev]
 alembic upgrade head
 uvicorn app.main:app --reload --port 8000
-```
 
-Windows activation: `.venv\Scripts\activate`.
+Windows activation: .venv\\Scripts\\activate
 
-## Local web
-```bash
+## Web local development
+
 cd apps/web
 npm install
 npm run dev
-```
 
-Default API URL: `http://localhost:8000`.
-See `docs/M1.md` for the milestone record.
+Default API URL: http://localhost:8000
