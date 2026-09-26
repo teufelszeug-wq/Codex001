@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { listProjects, type Project } from "../../lib/api";
 
 export default async function ProjectsPage() {
@@ -20,10 +21,10 @@ export default async function ProjectsPage() {
       ) : (
         <div className="list">
           {projects.map((project) => (
-            <article className="row" key={project.id}>
+            <Link className="row project-link" href={`/projects/${project.id}`} key={project.id}>
               <strong>{project.title}</strong>
               <small>schema v{project.schema_version}</small>
-            </article>
+            </Link>
           ))}
         </div>
       )}
