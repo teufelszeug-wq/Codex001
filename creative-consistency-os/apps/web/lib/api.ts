@@ -589,3 +589,204 @@ export async function createEntityRelation(
     }),
   );
 }
+
+
+export type LintCatalogRule = {
+  rule_id: string;
+  category: string;
+  default_severity: "hint" | "info" | "warning" | "error";
+  description: string;
+};
+
+export type LintCatalog = {
+  builtins: LintCatalogRule[];
+  severities: string[];
+  finding_states: string[];
+  config_version: number;
+};
+
+export type LintConfig = {
+  project_id: string;
+  rules: {
+    builtins: Record<string, { enabled?: boolean; severity?: string }>;
+    custom_terms: Array<{
+      id: string;
+      term: string;
+      severity: string;
+      enabled: boolean;
+      case_sensitive: boolean;
+      message: string;
+    }>;
+  };
+  config_version: number;
+  updated_at: string | null;
+};
+
+export type LintFinding = {
+  id: string;
+  run_id: string;
+  project_id: string;
+  document_id: string | null;
+  entity_id: string | null;
+  rule_id: string;
+  category: string;
+  severity: "hint" | "info" | "warning" | "error";
+  message: string;
+  start_offset: number | null;
+  end_offset: number | null;
+  evidence: Record<string, unknown>;
+  fingerprint: string;
+  finding_state: "OPEN" | "ACKNOWLEDGED" | "IGNORED" | "RESOLVED";
+  created_at: string;
+};
+
+export type LintRun = {
+  id: string;
+  project_id: string;
+  document_id: string | null;
+  scope: "document" | "project";
+  document_revision: number | null;
+  ruleset_version: number;
+  status: string;
+  summary: {
+    total: number;
+    by_severity: Record<string, number>;
+    by_category: Record<string, number>;
+  };
+  created_at: string;
+  findings?: LintFinding[];
+};
+
+export async function getLintCatalog(): Promise<LintCatalog> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/catalog/lint`, { cache: "no-store" }));
+}
+
+export async function getLintConfig(projectId: string): Promise<LintConfig> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint-config`, { cache: "no-store" }));
+}
+
+export async function saveLintConfig(projectId: string, rules: LintConfig["rules"]): Promise<LintConfig> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint-config`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rules }),
+    }),
+  );
+}
+
+export async function runProjectLint(projectId: string): Promise<LintRun> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint/run-project`, { method: "POST" }),
+  );
+}
+
+export async function runDocumentLint(projectId: string, documentId: string): Promise<LintRun> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}/lint`, { method: "POST" }),
+  );
+}
+
+export async function listLintRuns(projectId: string): Promise<LintRun[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint/runs`, { cache: "no-store" }));
+}
+
+export async function getLintRun(projectId: string, runId: string): Promise<LintRun> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint/runs/${runId}`, { cache: "no-store" }));
+}
+
+export async function setLintFindingState(
+  projectId: string,
+  findingId: string,
+  state: LintFinding["finding_state"],
+): Promise<LintFinding> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint/findings/${findingId}/state`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state }),
+    }),
+  );
+}
+
+export type ImpactEdge = {
+  id: string;
+  project_id: string;
+  source_type: string;
+  source_id: string;
+  target_type: string;
+  target_id: string;
+  edge_type: string;
+  detail: Record<string, unknown>;
+  refreshed_at: string;
+};
+
+export type ImpactPreview = {
+  project_id: string;
+  source: { type: string; id: string; name: string; canon_state: string };
+  max_depth: number;
+  affected_document_ids: string[];
+  affected_timeline_event_ids: string[];
+  related_entity_ids: string[];
+  nodes: Array<{ type: string; id: string; depth: number; via: string; detail: Record<string, unknown> }>;
+  edges: Array<ImpactEdge & { depth: number }>;
+};
+
+export type ImpactInvalidation = {
+  id: string;
+  project_id: string;
+  source_type: string;
+  source_id: string;
+  change_kind: string;
+  status: "PENDING" | "REVALIDATED" | "DISMISSED";
+  detail: Record<string, unknown>;
+  result: Record<string, unknown>;
+  created_at: string;
+  resolved_at: string | null;
+};
+
+export async function refreshImpactGraph(projectId: string): Promise<{ project_id: string; edge_count: number; edges: ImpactEdge[] }> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/impact/graph/refresh`, { method: "POST" }),
+  );
+}
+
+export async function listImpactEdges(projectId: string): Promise<ImpactEdge[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/impact/edges`, { cache: "no-store" }));
+}
+
+export async function previewEntityImpact(projectId: string, entityId: string, maxDepth = 4): Promise<ImpactPreview> {
+  const params = new URLSearchParams({ max_depth: String(maxDepth), refresh: "true" });
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/impact/entities/${entityId}?${params.toString()}`, { cache: "no-store" }),
+  );
+}
+
+export async function listImpactInvalidations(projectId: string, statusFilter?: string): Promise<ImpactInvalidation[]> {
+  const params = new URLSearchParams();
+  if (statusFilter) params.set("status_filter", statusFilter);
+  const suffix = params.size ? `?${params.toString()}` : "";
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/impact/invalidations${suffix}`, { cache: "no-store" }),
+  );
+}
+
+export async function revalidateImpact(projectId: string, invalidationId: string, maxDepth = 4): Promise<ImpactInvalidation> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/impact/invalidations/${invalidationId}/revalidate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ max_depth: maxDepth }),
+    }),
+  );
+}
+
+export async function dismissImpact(projectId: string, invalidationId: string, reason: string): Promise<ImpactInvalidation> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/impact/invalidations/${invalidationId}/dismiss`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    }),
+  );
+}

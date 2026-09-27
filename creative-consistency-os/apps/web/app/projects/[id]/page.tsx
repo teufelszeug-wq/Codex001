@@ -43,6 +43,16 @@ export default async function ProjectOverview({ params }: { params: Promise<{ id
           <strong>Entity Intelligence</strong>
           <small>Aliases / Mentions / Resolution / Relations</small>
         </Link>
+        <Link className="tool-card" href={`/projects/${id}/lint`}>
+          <span>M4</span>
+          <strong>Consistency Inspector</strong>
+          <small>Diagnostics / Rules / Triage / Project Lint</small>
+        </Link>
+        <Link className="tool-card" href={`/projects/${id}/impact`}>
+          <span>M4.5</span>
+          <strong>Change Impact</strong>
+          <small>Dependency Graph / Invalidation / Selective Revalidation</small>
+        </Link>
       </section>
 
       {!profile ? (
