@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
+import unicodedata
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -13,6 +14,10 @@ from app.writing_repositories import BibleRepository, ManuscriptRepository, Time
 
 
 INVALIDATION_STATES = {"PENDING", "REVALIDATED", "DISMISSED"}
+
+
+def normalize_surface(value: str) -> str:
+    return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
 
 
 class ImpactService:
@@ -33,8 +38,15 @@ class ImpactService:
     def refresh_graph(self, project_id: UUID) -> dict[str, object]:
         self._project_exists(project_id)
         edges: list[dict[str, object]] = []
+        bible = self.bible.list(project_id)
+        aliases = self.entities.list_aliases(project_id)
+        surface_index: list[tuple[str, str, str]] = []
+        for entity in bible:
+            surface_index.append((str(entity["id"]), str(entity["canonical_name"]), "canonical"))
+        for alias in aliases:
+            surface_index.append((str(alias["entity_id"]), str(alias["alias"]), "alias"))
 
-        for alias in self.entities.list_aliases(project_id):
+        for alias in aliases:
             edges.append({
                 "source_type": "BibleEntity",
                 "source_id": alias["entity_id"],
@@ -46,6 +58,23 @@ class ImpactService:
 
         for document in self.manuscripts.list(project_id):
             document_id = UUID(str(document["id"]))
+            full_document = self.manuscripts.get(project_id, document_id)
+            normalized_content = normalize_surface(str(full_document.get("content", ""))) if full_document else ""
+            for entity_id, surface, surface_kind in surface_index:
+                normalized_surface = normalize_surface(surface)
+                if normalized_surface and normalized_surface in normalized_content:
+                    edges.append({
+                        "source_type": "BibleEntity",
+                        "source_id": entity_id,
+                        "target_type": "ManuscriptDocument",
+                        "target_id": str(document_id),
+                        "edge_type": "surface_reference",
+                        "detail": {
+                            "surface": surface,
+                            "surface_kind": surface_kind,
+                            "document_revision": document["current_revision"],
+                        },
+                    })
             for mention in self.entities.list_mentions(project_id, document_id):
                 if mention.get("entity_id"):
                     edges.append({

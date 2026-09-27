@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import difflib
 import hashlib
 import json
 import unicodedata
@@ -15,7 +16,7 @@ from app.repositories import ChangeLogRepository, SqlAlchemyProjectRepository
 from app.writing_repositories import BibleRepository, ManuscriptRepository, TimelineRepository
 
 
-SEVERITIES = {"info", "warning", "error", "critical"}
+SEVERITIES = {"hint", "info", "warning", "error"}
 FINDING_STATES = {"OPEN", "ACKNOWLEDGED", "IGNORED", "RESOLVED"}
 
 BUILTIN_RULES: dict[str, dict[str, object]] = {
@@ -28,6 +29,11 @@ BUILTIN_RULES: dict[str, dict[str, object]] = {
         "category": "entity",
         "default_severity": "warning",
         "description": "Entity Mentionが現在の本文Revisionより古い。",
+    },
+    "mention_span_mismatch": {
+        "category": "integrity",
+        "default_severity": "error",
+        "description": "現在RevisionのMention spanと本文文字列が一致しない。",
     },
     "unresolved_mention": {
         "category": "entity",
@@ -79,6 +85,11 @@ BUILTIN_RULES: dict[str, dict[str, object]] = {
         "default_severity": "warning",
         "description": "CANON関係の端点が非CANONエンティティになっている。",
     },
+    "possible_name_drift": {
+        "category": "semantic",
+        "default_severity": "hint",
+        "description": "未解決呼称が既知の正式名・別名の表記揺れ候補かを字面類似度から提示する。",
+    },
 }
 
 
@@ -114,7 +125,7 @@ class LintService:
                 }
                 for rule_id, spec in BUILTIN_RULES.items()
             ],
-            "severities": ["info", "warning", "error", "critical"],
+            "severities": ["hint", "info", "warning", "error"],
             "finding_states": ["OPEN", "ACKNOWLEDGED", "IGNORED", "RESOLVED"],
             "config_version": 1,
         }
@@ -272,8 +283,43 @@ class LintService:
             )
 
         bible_by_id = {str(item["id"]): item for item in self.bible.list(project_id)}
+        known_surfaces: list[tuple[str, str, str]] = []
+        for entity in bible_by_id.values():
+            known_surfaces.append((
+                str(entity["canonical_name"]),
+                normalize_key(str(entity["canonical_name"])),
+                str(entity["id"]),
+            ))
+        for alias in self.entities.list_aliases(project_id):
+            known_surfaces.append((
+                str(alias["alias"]),
+                normalize_key(str(alias["alias"])),
+                str(alias["entity_id"]),
+            ))
+
         for mention in current_mentions:
             state = str(mention["resolver_state"])
+            mention_start = int(mention["start_offset"])
+            mention_end = int(mention["end_offset"])
+            surface = str(mention["mention_text"])
+            current_slice = content[mention_start:mention_end] if 0 <= mention_start <= mention_end <= len(content) else None
+            if current_slice != surface:
+                self._append(
+                    findings,
+                    config,
+                    rule_id="mention_span_mismatch",
+                    document_id=document_id,
+                    message=f"現在RevisionのMention spanが本文「{surface}」と一致しません。再スキャンが必要です。",
+                    start_offset=mention_start,
+                    end_offset=mention_end,
+                    evidence={
+                        "mention_id": mention["id"],
+                        "stored_surface": surface,
+                        "current_slice": current_slice,
+                        "revision_no": revision,
+                    },
+                )
+
             common = {
                 "document_id": document_id,
                 "start_offset": int(mention["start_offset"]),
@@ -294,6 +340,32 @@ class LintService:
                     message=f"未解決の固有表現候補「{mention['mention_text']}」があります。",
                     **common,
                 )
+                normalized_surface = normalize_key(surface)
+                best: tuple[float, str, str] | None = None
+                for known_surface, normalized_known, entity_id in known_surfaces:
+                    if not normalized_surface or not normalized_known or normalized_surface == normalized_known:
+                        continue
+                    score = difflib.SequenceMatcher(None, normalized_surface, normalized_known).ratio()
+                    if score >= 0.82 and (best is None or score > best[0]):
+                        best = (score, known_surface, entity_id)
+                if best is not None:
+                    self._append(
+                        findings,
+                        config,
+                        rule_id="possible_name_drift",
+                        document_id=document_id,
+                        entity_id=best[2],
+                        message=f"「{surface}」は既知名「{best[1]}」の表記揺れ候補です。",
+                        start_offset=mention_start,
+                        end_offset=mention_end,
+                        evidence={
+                            "mention_id": mention["id"],
+                            "candidate_entity_id": best[2],
+                            "candidate_surface": best[1],
+                            "similarity": round(best[0], 4),
+                            "provider": "deterministic_lexical_similarity_v1",
+                        },
+                    )
             elif state == "ambiguous":
                 self._append(
                     findings,

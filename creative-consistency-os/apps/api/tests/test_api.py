@@ -882,3 +882,49 @@ def test_m45_alias_changes_queue_impact_invalidation(client):
         item["source_id"] == entity["id"] and item["change_kind"] == "ENTITY_ALIAS_ADDED"
         for item in pending.json()
     )
+
+
+
+def test_m45_surface_reference_finds_unindexed_alias_usage(client):
+    project = create_project(client)
+    entity = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "第一王女",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "第一章",
+            "content": "人々は姫を見送った。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+    assert client.post(
+        f"/api/v1/projects/{project['id']}/bible/{entity['id']}/aliases",
+        json={"alias": "姫", "alias_type": "title"},
+    ).status_code == 201
+
+    preview = client.get(
+        f"/api/v1/projects/{project['id']}/impact/entities/{entity['id']}",
+        params={"max_depth": 4, "refresh": True},
+    )
+    assert preview.status_code == 200
+    assert document["id"] in preview.json()["affected_document_ids"]
+    assert any(item["edge_type"] == "surface_reference" for item in preview.json()["edges"])
+
+
+def test_m4_catalog_uses_hint_info_warning_error_and_semantic_drift_rule(client):
+    catalog = client.get("/api/v1/catalog/lint")
+    assert catalog.status_code == 200
+    payload = catalog.json()
+    assert payload["severities"] == ["hint", "info", "warning", "error"]
+    rule_ids = {item["rule_id"] for item in payload["builtins"]}
+    assert {"mention_span_mismatch", "possible_name_drift"} <= rule_ids
