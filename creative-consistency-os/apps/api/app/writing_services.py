@@ -273,6 +273,7 @@ class WritingService:
     def create_timeline(self, project_id: UUID, **values: object) -> dict[str, object]:
         self._project_exists(project_id)
         values = self._validate_timeline_values(values)
+        self._validate_timeline_participants(project_id, values["participant_ids"])
         event = self.timeline.create(project_id, **values)
         self.change_log.record(
             project_id=project_id,
@@ -292,6 +293,7 @@ class WritingService:
         if existing is None:
             raise LookupError("Timeline event not found")
         values = self._validate_timeline_values({**existing, **values})
+        self._validate_timeline_participants(project_id, values["participant_ids"])
         updated = self.timeline.update(project_id, event_id, **values)
         if updated is None:
             raise LookupError("Timeline event not found")
@@ -306,6 +308,11 @@ class WritingService:
         )
         self.session.commit()
         return updated
+
+    def _validate_timeline_participants(self, project_id: UUID, participant_ids: list[str]) -> None:
+        for participant_id in participant_ids:
+            if self.bible.get(project_id, UUID(participant_id)) is None:
+                raise ValueError("Timeline participant must reference an existing Bible entity")
 
     def _validate_timeline_values(self, values: dict[str, object]) -> dict[str, object]:
         title = str(values.get("title", "")).strip()
