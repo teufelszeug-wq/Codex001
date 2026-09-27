@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.domain import CanonState, SourceType
 from app.entity_repositories import EntityIntelligenceRepository
+from app.impact_repositories import ImpactRepository
 from app.repositories import ChangeLogRepository, SqlAlchemyProjectRepository
 from app.writing_repositories import BibleRepository, ManuscriptRepository
 from app.writing_services import WritingService
@@ -55,6 +56,7 @@ class EntityIntelligenceService:
         self.manuscripts = ManuscriptRepository(session)
         self.entities = EntityIntelligenceRepository(session)
         self.change_log = ChangeLogRepository(session)
+        self.impact = ImpactRepository(session)
 
     def _project_exists(self, project_id: UUID) -> None:
         if self.projects.get(project_id) is None:
@@ -99,6 +101,13 @@ class EntityIntelligenceService:
             before=None,
             after=created,
             reason="Entity Intelligence alias",
+        )
+        self.impact.queue_invalidation(
+            project_id,
+            source_type="BibleEntity",
+            source_id=str(entity_id),
+            change_kind="ENTITY_ALIAS_ADDED",
+            detail={"alias": created["alias"], "alias_type": created["alias_type"]},
         )
         self.session.commit()
         return created
@@ -373,6 +382,20 @@ class EntityIntelligenceService:
             before=None,
             after=relation,
             reason="Entity Intelligence relation",
+        )
+        self.impact.queue_invalidation(
+            project_id,
+            source_type="BibleEntity",
+            source_id=str(source_entity_id),
+            change_kind="ENTITY_RELATION_CREATED",
+            detail={"relation_id": relation["id"], "role": "source"},
+        )
+        self.impact.queue_invalidation(
+            project_id,
+            source_type="BibleEntity",
+            source_id=str(target_entity_id),
+            change_kind="ENTITY_RELATION_CREATED",
+            detail={"relation_id": relation["id"], "role": "target"},
         )
         self.session.commit()
         return relation

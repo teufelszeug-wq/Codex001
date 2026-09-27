@@ -3,6 +3,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.domain import CanonState, SourceType
+from app.impact_repositories import ImpactRepository
 from app.repositories import ChangeLogRepository, SqlAlchemyProjectRepository
 from app.writing_repositories import BibleRepository, ManuscriptRepository, TimelineRepository
 
@@ -40,6 +41,7 @@ class WritingService:
         self.manuscripts = ManuscriptRepository(session)
         self.timeline = TimelineRepository(session)
         self.change_log = ChangeLogRepository(session)
+        self.impact = ImpactRepository(session)
 
     def _project_exists(self, project_id: UUID) -> None:
         if self.projects.get(project_id) is None:
@@ -129,6 +131,13 @@ class WritingService:
             after=updated,
             reason="Story Bible edit",
         )
+        self.impact.queue_invalidation(
+            project_id,
+            source_type="BibleEntity",
+            source_id=str(entity_id),
+            change_kind="BIBLE_ENTITY_UPDATED",
+            detail={"before": before, "after": updated},
+        )
         self.session.commit()
         return updated
 
@@ -155,6 +164,13 @@ class WritingService:
             before=before,
             after=updated,
             reason=cleaned_reason[:2000],
+        )
+        self.impact.queue_invalidation(
+            project_id,
+            source_type="BibleEntity",
+            source_id=str(entity_id),
+            change_kind="CANON_STATE_CHANGED",
+            detail={"from": current, "to": target_state, "reason": cleaned_reason[:2000]},
         )
         self.session.commit()
         return updated

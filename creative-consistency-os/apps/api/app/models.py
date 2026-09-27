@@ -178,6 +178,86 @@ class EntityRelationModel(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 
 
+class LintProjectConfigModel(Base):
+    __tablename__ = "lint_project_configs"
+    project_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    rules_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    config_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
+class LintRunModel(Base):
+    __tablename__ = "lint_runs"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("manuscript_documents.id", ondelete="CASCADE"), nullable=True, index=True)
+    scope: Mapped[str] = mapped_column(String(32), nullable=False, default="document")
+    document_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ruleset_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="completed")
+    summary_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class LintFindingModel(Base):
+    __tablename__ = "lint_findings"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    run_id: Mapped[str] = mapped_column(String(36), ForeignKey("lint_runs.id", ondelete="CASCADE"), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("manuscript_documents.id", ondelete="CASCADE"), nullable=True, index=True)
+    entity_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("bible_entities.id", ondelete="SET NULL"), nullable=True, index=True)
+    rule_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    category: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    severity: Mapped[str] = mapped_column(String(16), nullable=False, default="warning", index=True)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    start_offset: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    end_offset: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    evidence_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    fingerprint: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    finding_state: Mapped[str] = mapped_column(String(24), nullable=False, default="OPEN", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class DependencyEdgeModel(Base):
+    __tablename__ = "dependency_edges"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "source_type",
+            "source_id",
+            "target_type",
+            "target_id",
+            "edge_type",
+            name="uq_dependency_edge",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    source_id: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    target_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    target_id: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    edge_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    detail_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    refreshed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class ImpactInvalidationModel(Base):
+    __tablename__ = "impact_invalidations"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_type: Mapped[str] = mapped_column(String(64), nullable=False, default="BibleEntity")
+    source_id: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    change_kind: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="PENDING", index=True)
+    detail_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    result_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 class ChangeLogModel(Base):
     __tablename__ = "change_log"
 
