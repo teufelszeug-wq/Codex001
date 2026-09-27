@@ -421,3 +421,171 @@ export async function createTimeline(
     }),
   );
 }
+
+
+export type EntityAlias = {
+  id: string;
+  project_id: string;
+  entity_id: string;
+  alias: string;
+  normalized_alias: string;
+  alias_type: string;
+  language_id: string | null;
+  created_at: string;
+};
+
+export type EntityMention = {
+  id: string;
+  project_id: string;
+  document_id: string;
+  entity_id: string | null;
+  mention_text: string;
+  normalized_text: string;
+  start_offset: number;
+  end_offset: number;
+  resolver_state: "resolved" | "ambiguous" | "unresolved" | "ignored";
+  confidence: number;
+  candidate_ids: string[];
+  revision_no: number;
+  resolution_note: string | null;
+  created_at: string;
+};
+
+export type EntityRelation = {
+  id: string;
+  project_id: string;
+  source_entity_id: string;
+  target_entity_id: string;
+  relation_type: string;
+  label: string;
+  canon_state: string;
+  source_type: string;
+  attributes: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ReferenceResolution = {
+  text: string;
+  normalized_text: string;
+  resolver_state: "resolved" | "ambiguous" | "unresolved";
+  confidence: number;
+  candidate_ids: string[];
+  candidates: BibleEntity[];
+};
+
+export async function listEntityAliases(projectId: string): Promise<EntityAlias[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/aliases`, { cache: "no-store" }));
+}
+
+export async function addEntityAlias(
+  projectId: string,
+  entityId: string,
+  payload: { alias: string; alias_type?: string; language_id?: string | null },
+): Promise<EntityAlias> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/bible/${entityId}/aliases`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function resolveEntityReference(projectId: string, value: string): Promise<ReferenceResolution> {
+  const params = new URLSearchParams({ text: value });
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/entity-intelligence/resolve?${params.toString()}`, {
+      cache: "no-store",
+    }),
+  );
+}
+
+export async function refreshEntityMentions(
+  projectId: string,
+  documentId: string,
+  includeCandidates = true,
+): Promise<EntityMention[]> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}/mentions/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ include_candidates: includeCandidates }),
+    }),
+  );
+}
+
+export async function listEntityMentions(projectId: string, documentId: string): Promise<EntityMention[]> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}/mentions`, { cache: "no-store" }),
+  );
+}
+
+export async function resolveEntityMention(
+  projectId: string,
+  mentionId: string,
+  entityId: string,
+  note = "author resolved",
+): Promise<EntityMention> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/mentions/${mentionId}/resolve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entity_id: entityId, note }),
+    }),
+  );
+}
+
+export async function ignoreEntityMention(
+  projectId: string,
+  mentionId: string,
+  note = "author ignored",
+): Promise<EntityMention> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/mentions/${mentionId}/ignore`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note }),
+    }),
+  );
+}
+
+export async function createEntityFromMention(
+  projectId: string,
+  mentionId: string,
+  entityType: string,
+  summary = "",
+): Promise<BibleEntity> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/mentions/${mentionId}/create-entity`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entity_type: entityType, summary }),
+    }),
+  );
+}
+
+export async function listEntityRelations(projectId: string): Promise<EntityRelation[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/relations`, { cache: "no-store" }));
+}
+
+export async function createEntityRelation(
+  projectId: string,
+  payload: {
+    source_entity_id: string;
+    target_entity_id: string;
+    relation_type: string;
+    label?: string;
+    canon_state?: string;
+    source_type?: string;
+    attributes?: Record<string, unknown>;
+  },
+): Promise<EntityRelation> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/relations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}

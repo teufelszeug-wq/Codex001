@@ -38,6 +38,11 @@ export default async function ProjectOverview({ params }: { params: Promise<{ id
           <strong>Writing Room</strong>
           <small>Story Bible / Manuscript / Revision / Timeline</small>
         </Link>
+        <Link className="tool-card" href={`/projects/${id}/entities`}>
+          <span>M3.5</span>
+          <strong>Entity Intelligence</strong>
+          <small>Aliases / Mentions / Resolution / Relations</small>
+        </Link>
       </section>
 
       {!profile ? (
