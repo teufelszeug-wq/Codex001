@@ -6,22 +6,20 @@
 - M1 Application Foundation — complete
 - M2 World Builder Alpha — complete
 - M2.5 Language & Culture Builder — complete
+- M3 Story Bible + Writing Room — complete
+- M3.5 Entity Intelligence — complete
 
 ## Next
-
-### M3 Bible + Writing Room
-Story Bible, manuscript editor, autosave, revision, basic timeline and explicit Canon promotion workflow.
-
-Planned M3 sub-milestones now include a Canon-promotion path so imported, inferred or generated terminology cannot silently become confirmed world facts.
-
-### M3.5 Entity Intelligence
-Entity detection, aliases, mentions, linking, reference resolution and normalized high-volume entity storage.
 
 ### M4 Core Lint Engine
 Deterministic, constraint and semantic lint layers.
 
+M4 now explicitly includes **Mention Freshness Lint**: manuscript mentions indexed against an older revision must be marked stale rather than trusted as current evidence.
+
 ### M4.5 Change Impact Engine
 Dependency graph and selective revalidation after Canon changes.
+
+M4.5 now explicitly includes a **Dependency Graph Adapter** over Bible entities, aliases, manuscript mentions, timeline participants and entity relations.
 
 ### M5 Isekai Pack
 Earth-Origin Guard, world-origin replacement, travel/magic/economy rules.
@@ -37,6 +35,8 @@ Bible-aware generation constrained by Canon/Lint.
 
 ### M9 Closed Beta
 External long-form creators and measurement.
+
+Revision retention/compaction for long-running projects will be evaluated here using real manuscript histories rather than guessed prematurely.
 
 ### M10 SaaS v1.0
 Accounts, plans, sync and production operations.
