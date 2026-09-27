@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import get_session
 from app.domain import Project, WorldBuilderProfile
+from app.entity_services import EntityIntelligenceService
 from app.language_services import LanguageCultureService
 from app.services import ProjectService, WorldBuilderService
 from app.writing_services import WritingService
@@ -155,6 +156,40 @@ class TimelineWrite(BaseModel):
     participant_ids: list[str] = Field(default_factory=list)
     canon_state: str = "PLAN"
     source_type: str = "AUTHOR"
+
+
+class AliasWrite(BaseModel):
+    alias: str = Field(min_length=1, max_length=200)
+    alias_type: str = "alternate"
+    language_id: str | None = Field(default=None, max_length=120)
+
+
+class MentionRefreshRequest(BaseModel):
+    include_candidates: bool = True
+
+
+class MentionResolveRequest(BaseModel):
+    entity_id: UUID
+    note: str = Field(default="author resolved", max_length=2000)
+
+
+class MentionIgnoreRequest(BaseModel):
+    note: str = Field(default="author ignored", max_length=2000)
+
+
+class MentionCreateEntityRequest(BaseModel):
+    entity_type: str = "other"
+    summary: str = Field(default="", max_length=12000)
+
+
+class RelationWrite(BaseModel):
+    source_entity_id: UUID
+    target_entity_id: UUID
+    relation_type: str
+    label: str = Field(default="", max_length=240)
+    canon_state: str = "PLAN"
+    source_type: str = "AUTHOR"
+    attributes: dict[str, object] = Field(default_factory=dict)
 
 
 app = FastAPI(title=settings.app_name, version=settings.app_version)
@@ -420,6 +455,147 @@ def create_timeline(project_id: UUID, payload: TimelineWrite, session: Session =
 def update_timeline(project_id: UUID, event_id: UUID, payload: TimelineWrite, session: Session = Depends(get_session)) -> dict[str, object]:
     try:
         return WritingService(session).update_timeline(project_id, event_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/aliases", tags=["entity-intelligence"])
+def list_entity_aliases(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return EntityIntelligenceService(session).list_aliases(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/bible/{entity_id}/aliases", tags=["entity-intelligence"], status_code=status.HTTP_201_CREATED)
+def add_entity_alias(
+    project_id: UUID,
+    entity_id: UUID,
+    payload: AliasWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return EntityIntelligenceService(session).add_alias(project_id, entity_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/entity-intelligence/resolve", tags=["entity-intelligence"])
+def resolve_entity_reference(
+    project_id: UUID,
+    text: str,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return EntityIntelligenceService(session).resolve_text(project_id, text)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/manuscripts/{document_id}/mentions/refresh", tags=["entity-intelligence"])
+def refresh_entity_mentions(
+    project_id: UUID,
+    document_id: UUID,
+    payload: MentionRefreshRequest,
+    session: Session = Depends(get_session),
+) -> list[dict[str, object]]:
+    try:
+        return EntityIntelligenceService(session).refresh_mentions(
+            project_id,
+            document_id,
+            include_candidates=payload.include_candidates,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/manuscripts/{document_id}/mentions", tags=["entity-intelligence"])
+def list_entity_mentions(
+    project_id: UUID,
+    document_id: UUID,
+    session: Session = Depends(get_session),
+) -> list[dict[str, object]]:
+    try:
+        return EntityIntelligenceService(session).list_mentions(project_id, document_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/mentions/{mention_id}/resolve", tags=["entity-intelligence"])
+def resolve_entity_mention(
+    project_id: UUID,
+    mention_id: UUID,
+    payload: MentionResolveRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return EntityIntelligenceService(session).resolve_mention(
+            project_id,
+            mention_id,
+            entity_id=payload.entity_id,
+            note=payload.note,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/mentions/{mention_id}/ignore", tags=["entity-intelligence"])
+def ignore_entity_mention(
+    project_id: UUID,
+    mention_id: UUID,
+    payload: MentionIgnoreRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return EntityIntelligenceService(session).ignore_mention(project_id, mention_id, note=payload.note)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/mentions/{mention_id}/create-entity", tags=["entity-intelligence"], status_code=status.HTTP_201_CREATED)
+def create_entity_from_mention(
+    project_id: UUID,
+    mention_id: UUID,
+    payload: MentionCreateEntityRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return EntityIntelligenceService(session).create_entity_from_mention(
+            project_id,
+            mention_id,
+            entity_type=payload.entity_type,
+            summary=payload.summary,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/relations", tags=["entity-intelligence"])
+def list_entity_relations(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return EntityIntelligenceService(session).list_relations(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/relations", tags=["entity-intelligence"], status_code=status.HTTP_201_CREATED)
+def create_entity_relation(
+    project_id: UUID,
+    payload: RelationWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return EntityIntelligenceService(session).create_relation(project_id, **payload.model_dump())
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:

@@ -138,7 +138,7 @@ def test_health(client):
 def test_create_list_and_get_project(client):
     payload = create_project(client)
     assert payload["title"] == "First World"
-    assert payload["schema_version"] == 4
+    assert payload["schema_version"] == 5
 
     listed = client.get("/api/v1/projects")
     assert listed.status_code == 200
@@ -416,3 +416,156 @@ def test_timeline_requires_existing_bible_participants(client):
         },
     )
     assert missing.status_code == 422
+
+
+
+def test_entity_intelligence_alias_scan_and_candidate_promotion(client):
+    project = create_project(client)
+    heroine = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "イレーネ",
+            "summary": "主人公",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+
+    alias = client.post(
+        f"/api/v1/projects/{project['id']}/bible/{heroine['id']}/aliases",
+        json={"alias": "イレーネ嬢", "alias_type": "title"},
+    )
+    assert alias.status_code == 201
+    assert alias.json()["normalized_alias"] == "イレーネ嬢"
+
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "第一章",
+            "content": "イレーネはフヴィートバウグルへ向かった。人々はイレーネ嬢と呼んだ。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+
+    refreshed = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/mentions/refresh",
+        json={"include_candidates": True},
+    )
+    assert refreshed.status_code == 200
+    mentions = refreshed.json()
+    assert any(item["mention_text"] == "イレーネ" and item["entity_id"] == heroine["id"] for item in mentions)
+    assert any(item["mention_text"] == "イレーネ嬢" and item["entity_id"] == heroine["id"] for item in mentions)
+
+    unresolved = next(item for item in mentions if item["mention_text"] == "フヴィートバウグル")
+    assert unresolved["resolver_state"] == "unresolved"
+
+    created = client.post(
+        f"/api/v1/projects/{project['id']}/mentions/{unresolved['id']}/create-entity",
+        json={"entity_type": "place", "summary": "本文から抽出した候補。"},
+    )
+    assert created.status_code == 201
+    assert created.json()["canonical_name"] == "フヴィートバウグル"
+    assert created.json()["canon_state"] == "INFERENCE"
+    assert created.json()["source_type"] == "MANUSCRIPT"
+
+    linked = client.get(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/mentions"
+    )
+    resolved_candidate = next(item for item in linked.json() if item["id"] == unresolved["id"])
+    assert resolved_candidate["resolver_state"] == "resolved"
+    assert resolved_candidate["entity_id"] == created.json()["id"]
+
+
+def test_entity_reference_resolution_can_report_ambiguity(client):
+    project = create_project(client)
+    entities = []
+    for name in ("第一王女", "第二王女"):
+        entities.append(
+            client.post(
+                f"/api/v1/projects/{project['id']}/bible",
+                json={
+                    "entity_type": "character",
+                    "canonical_name": name,
+                    "summary": "",
+                    "attributes": {},
+                    "canon_state": "CANON",
+                    "source_type": "AUTHOR",
+                },
+            ).json()
+        )
+
+    for entity in entities:
+        response = client.post(
+            f"/api/v1/projects/{project['id']}/bible/{entity['id']}/aliases",
+            json={"alias": "姫", "alias_type": "title"},
+        )
+        assert response.status_code == 201
+
+    resolved = client.get(
+        f"/api/v1/projects/{project['id']}/entity-intelligence/resolve",
+        params={"text": "姫"},
+    )
+    assert resolved.status_code == 200
+    payload = resolved.json()
+    assert payload["resolver_state"] == "ambiguous"
+    assert set(payload["candidate_ids"]) == {item["id"] for item in entities}
+
+
+def test_entity_relations_validate_graph_edges(client):
+    project = create_project(client)
+    source = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "主人公",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    target = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "organization",
+            "canonical_name": "魔法学院",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+
+    relation = client.post(
+        f"/api/v1/projects/{project['id']}/relations",
+        json={
+            "source_entity_id": source["id"],
+            "target_entity_id": target["id"],
+            "relation_type": "member_of",
+            "label": "在籍",
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+            "attributes": {"since": "第一章"},
+        },
+    )
+    assert relation.status_code == 201
+    assert relation.json()["relation_type"] == "member_of"
+
+    listed = client.get(f"/api/v1/projects/{project['id']}/relations")
+    assert listed.status_code == 200
+    assert listed.json()[0]["target_entity_id"] == target["id"]
+
+    self_edge = client.post(
+        f"/api/v1/projects/{project['id']}/relations",
+        json={
+            "source_entity_id": source["id"],
+            "target_entity_id": source["id"],
+            "relation_type": "friend",
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert self_edge.status_code == 422

@@ -120,6 +120,64 @@ class TimelineEventModel(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 
 
+class EntityAliasModel(Base):
+    __tablename__ = "entity_aliases"
+    __table_args__ = (UniqueConstraint("entity_id", "normalized_alias", name="uq_entity_alias_normalized"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    entity_id: Mapped[str] = mapped_column(String(36), ForeignKey("bible_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    alias: Mapped[str] = mapped_column(String(200), nullable=False)
+    normalized_alias: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    alias_type: Mapped[str] = mapped_column(String(40), nullable=False, default="alternate")
+    language_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class EntityMentionModel(Base):
+    __tablename__ = "entity_mentions"
+    __table_args__ = (
+        UniqueConstraint(
+            "document_id",
+            "revision_no",
+            "start_offset",
+            "end_offset",
+            name="uq_entity_mention_span_revision",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_id: Mapped[str] = mapped_column(String(36), ForeignKey("manuscript_documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    entity_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("bible_entities.id", ondelete="SET NULL"), nullable=True, index=True)
+    mention_text: Mapped[str] = mapped_column(String(240), nullable=False)
+    normalized_text: Mapped[str] = mapped_column(String(240), nullable=False, index=True)
+    start_offset: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_offset: Mapped[int] = mapped_column(Integer, nullable=False)
+    resolver_state: Mapped[str] = mapped_column(String(32), nullable=False, default="unresolved", index=True)
+    confidence: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    candidate_ids_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    revision_no: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    resolution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class EntityRelationModel(Base):
+    __tablename__ = "entity_relations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_entity_id: Mapped[str] = mapped_column(String(36), ForeignKey("bible_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_entity_id: Mapped[str] = mapped_column(String(36), ForeignKey("bible_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    relation_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    label: Mapped[str] = mapped_column(String(240), nullable=False, default="")
+    canon_state: Mapped[str] = mapped_column(String(32), nullable=False, default="PLAN")
+    source_type: Mapped[str] = mapped_column(String(32), nullable=False, default="AUTHOR")
+    attributes_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
 class ChangeLogModel(Base):
     __tablename__ = "change_log"
 
