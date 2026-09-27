@@ -8,35 +8,37 @@
 - M2.5 Language & Culture Builder — complete
 - M3 Story Bible + Writing Room — complete
 - M3.5 Entity Intelligence — complete
+- M4 Core Lint Engine — complete
+- M4.5 Change Impact Engine — complete
 
 ## Next
-
-### M4 Core Lint Engine
-Deterministic, constraint and semantic lint layers.
-
-M4 now explicitly includes **Mention Freshness Lint**: manuscript mentions indexed against an older revision must be marked stale rather than trusted as current evidence.
-
-### M4.5 Change Impact Engine
-Dependency graph and selective revalidation after Canon changes.
-
-M4.5 now explicitly includes a **Dependency Graph Adapter** over Bible entities, aliases, manuscript mentions, timeline participants and entity relations.
 
 ### M5 Isekai Pack
 Earth-Origin Guard, world-origin replacement, travel/magic/economy rules.
 
+M5 will plug into the M4 diagnostic contract rather than creating a second lint system. Its rules remain author-selectable and must provide evidence/provenance. Changes to origin terminology and related Canon data must participate in M4.5 invalidation when they affect downstream prose.
+
 ### M6 LN Genre Packs
 Noble Lady, Palace/Harem and Romantic Comedy.
+
+Genre-specific state machines and social-constraint rules should reuse M4 Findings and M4.5 dependency invalidation.
 
 ### M7 Mystery / SF Verification
 Evidence/alibi/knowledge-state verification and science/assumption checks.
 
+High-stakes reasoning findings must distinguish deterministic violations from probabilistic/advisory diagnostics and retain evidence.
+
 ### M8 AI Co-Author
 Bible-aware generation constrained by Canon/Lint.
+
+The AI Co-Author must not silently consume stale or unresolved dependencies as confirmed facts. Generated/inferred material remains outside CANON until author promotion.
 
 ### M9 Closed Beta
 External long-form creators and measurement.
 
-Revision retention/compaction for long-running projects will be evaluated here using real manuscript histories rather than guessed prematurely.
+Measure false-positive rate, finding triage behavior, dependency fan-out, graph size, revision retention needs and selective-revalidation savings on real projects.
+
+Revision retention/compaction and graph partitioning should be driven by these measurements rather than guessed prematurely.
 
 ### M10 SaaS v1.0
 Accounts, plans, sync and production operations.

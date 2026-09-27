@@ -1,6 +1,6 @@
 # Creative Consistency OS
 
-A local-first creative production system for long-form fiction: World Builder + Language/Culture + Story Bible + Writing Room + Entity Intelligence + Continuity/Lint + Change Management.
+A local-first creative production system for long-form fiction: World Builder + Language/Culture + Story Bible + Writing Room + Entity Intelligence + Core Lint + Change Impact + genre-specific verification.
 
 ## Current progress
 
@@ -10,19 +10,21 @@ A local-first creative production system for long-form fiction: World Builder + 
 - M2.5 Language & Culture Builder — complete
 - M3 Story Bible + Writing Room — complete
 - M3.5 Entity Intelligence — complete
-- M4 Core Lint Engine — next
+- M4 Core Lint Engine — complete
+- M4.5 Change Impact Engine — complete
+- M5 Isekai Pack — next
 
 ## Current Golden Path
 
-Genre → Setup Mode → World DNA → Language/Culture → Story Bible → Writing Room → Entity Intelligence → Lint
+Genre → Setup Mode → World DNA → Language/Culture → Story Bible → Writing Room → Entity Intelligence → Consistency Lint → Change Impact
 
-The project now supports structured world-building, fictional-language/culture design, author-controlled Canon states, chapter writing with autosave and revision history, a basic timeline, aliases, revision-bound manuscript mentions, ambiguity-aware reference resolution, candidate-to-INFERENCE promotion and entity relations.
+The system now supports structured world-building, fictional-language/culture design, author-controlled Canon states, chapter writing with revision history, timeline, aliases, manuscript mentions, ambiguity-aware entity resolution, relationship graphs, evidence-backed consistency diagnostics and dependency-aware selective revalidation.
 
-Author-control rule: generated, extracted or inferred material never becomes CANON automatically.
+Author-control rule: generated, extracted or inferred material never becomes CANON automatically. Lint and Change Impact never auto-rewrite prose or Canon.
 
 ## Current schema
 
-Project schema version: 5
+Project schema version: 7
 
 Migrations:
 - 0001 M1 baseline
@@ -30,6 +32,36 @@ Migrations:
 - 0003 Language & Culture Builder
 - 0004 Story Bible + Writing Room
 - 0005 Entity Intelligence
+- 0006 Core Lint Engine
+- 0007 Change Impact Engine
+
+## M4 Core Lint
+
+Core Lint provides:
+- configurable rule enable/disable
+- HINT / INFO / WARNING / ERROR severity
+- document and project lint runs
+- missing/stale Entity Mention checks
+- mention-span integrity
+- unresolved/ambiguous references
+- Canon-state reference diagnostics
+- normalized name/alias collisions
+- timeline/relation Canon consistency
+- lexical name-drift hints
+- custom project term constraints
+- evidence/fingerprint persistence
+- finding triage
+
+## M4.5 Change Impact
+
+Change Impact provides:
+- rebuildable dependency graph
+- Bible → Alias / Mention / Manuscript / Timeline / Relation connections
+- normalized direct surface-reference fallback
+- bounded transitive impact preview
+- automatic invalidation queue
+- selective re-lint of affected manuscripts
+- author dismissal
 
 ## Structure
 
@@ -40,13 +72,15 @@ Migrations:
 - docs/M2.5.md
 - docs/M3.md
 - docs/M3.5.md
+- docs/M4.md
+- docs/M4.5.md
 - docs/ROADMAP.md
 
 ## Validation
 
-Current M3/M3.5 branch validation:
-- 18 API tests passed
-- Alembic upgrade succeeded
+Current M4/M4.5 validation:
+- 26 API tests passed
+- Alembic upgrade succeeded through 0007
 - Next.js production build succeeded
 
 ## API local development
