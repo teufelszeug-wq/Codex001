@@ -11,6 +11,7 @@ from app.db import get_session
 from app.domain import Project, WorldBuilderProfile
 from app.language_services import LanguageCultureService
 from app.services import ProjectService, WorldBuilderService
+from app.writing_services import WritingService
 
 
 class ProjectCreate(BaseModel):
@@ -103,6 +104,57 @@ class NamePreviewRequest(BaseModel):
     kind: str = "person"
     count: int = Field(default=10, ge=1, le=30)
     seed: int = 1
+
+
+class BibleWrite(BaseModel):
+    entity_type: str
+    canonical_name: str = Field(min_length=1, max_length=200)
+    summary: str = Field(default="", max_length=12000)
+    attributes: dict[str, object] = Field(default_factory=dict)
+    canon_state: str = "DRAFT"
+    source_type: str = "AUTHOR"
+    source_ref: str | None = Field(default=None, max_length=2000)
+
+
+class BibleUpdate(BaseModel):
+    entity_type: str | None = None
+    canonical_name: str | None = Field(default=None, min_length=1, max_length=200)
+    summary: str | None = Field(default=None, max_length=12000)
+    attributes: dict[str, object] | None = None
+    canon_state: str | None = None
+    source_type: str | None = None
+    source_ref: str | None = Field(default=None, max_length=2000)
+
+
+class CanonTransitionRequest(BaseModel):
+    target_state: str
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class ManuscriptCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=240)
+    content: str = ""
+    order_index: int = 0
+    status: str = "draft"
+
+
+class ManuscriptWrite(BaseModel):
+    title: str = Field(min_length=1, max_length=240)
+    content: str = ""
+    order_index: int = 0
+    status: str = "draft"
+    reason: str = Field(default="autosave", max_length=120)
+
+
+class TimelineWrite(BaseModel):
+    title: str = Field(min_length=1, max_length=240)
+    start_label: str = Field(default="", max_length=160)
+    end_label: str | None = Field(default=None, max_length=160)
+    sort_key: int = 0
+    description: str = Field(default="", max_length=12000)
+    participant_ids: list[str] = Field(default_factory=list)
+    canon_state: str = "PLAN"
+    source_type: str = "AUTHOR"
 
 
 app = FastAPI(title=settings.app_name, version=settings.app_version)
@@ -246,6 +298,132 @@ def preview_language_names(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     return {"language_id": language_id, "kind": payload.kind, "seed": payload.seed, "names": names}
+
+
+@api.get("/projects/{project_id}/bible", tags=["writing-room"])
+def list_bible(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return WritingService(session).list_bible(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/bible", tags=["writing-room"], status_code=status.HTTP_201_CREATED)
+def create_bible(project_id: UUID, payload: BibleWrite, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).create_bible(project_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/bible/{entity_id}", tags=["writing-room"])
+def get_bible(project_id: UUID, entity_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).get_bible(project_id, entity_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.put("/projects/{project_id}/bible/{entity_id}", tags=["writing-room"])
+def update_bible(project_id: UUID, entity_id: UUID, payload: BibleUpdate, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).update_bible(project_id, entity_id, **payload.model_dump(exclude_unset=True))
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/bible/{entity_id}/canon", tags=["writing-room"])
+def transition_bible_canon(project_id: UUID, entity_id: UUID, payload: CanonTransitionRequest, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).transition_canon(project_id, entity_id, target_state=payload.target_state, reason=payload.reason)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/manuscripts", tags=["writing-room"])
+def list_manuscripts(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return WritingService(session).list_documents(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/manuscripts", tags=["writing-room"], status_code=status.HTTP_201_CREATED)
+def create_manuscript(project_id: UUID, payload: ManuscriptCreate, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).create_document(project_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/manuscripts/{document_id}", tags=["writing-room"])
+def get_manuscript(project_id: UUID, document_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).get_document(project_id, document_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.put("/projects/{project_id}/manuscripts/{document_id}", tags=["writing-room"])
+def save_manuscript(project_id: UUID, document_id: UUID, payload: ManuscriptWrite, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).save_document(project_id, document_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/manuscripts/{document_id}/revisions", tags=["writing-room"])
+def list_manuscript_revisions(project_id: UUID, document_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return WritingService(session).list_revisions(project_id, document_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/manuscripts/{document_id}/revisions/{revision_id}/restore", tags=["writing-room"])
+def restore_manuscript_revision(project_id: UUID, document_id: UUID, revision_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).restore_revision(project_id, document_id, revision_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/timeline", tags=["writing-room"])
+def list_timeline(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return WritingService(session).list_timeline(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/timeline", tags=["writing-room"], status_code=status.HTTP_201_CREATED)
+def create_timeline(project_id: UUID, payload: TimelineWrite, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).create_timeline(project_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.put("/projects/{project_id}/timeline/{event_id}", tags=["writing-room"])
+def update_timeline(project_id: UUID, event_id: UUID, payload: TimelineWrite, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return WritingService(session).update_timeline(project_id, event_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
 
 app.include_router(api)
