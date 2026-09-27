@@ -233,3 +233,191 @@ export async function previewLanguageNames(
   );
   return payload.names;
 }
+
+export type BibleEntity = {
+  id: string;
+  project_id: string;
+  entity_type: string;
+  canonical_name: string;
+  summary: string;
+  attributes: Record<string, unknown>;
+  canon_state: string;
+  source_type: string;
+  source_ref: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ManuscriptDocument = {
+  id: string;
+  project_id: string;
+  title: string;
+  order_index: number;
+  status: string;
+  content?: string;
+  content_hash: string;
+  current_revision: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ManuscriptRevision = {
+  id: string;
+  document_id: string;
+  revision_no: number;
+  title: string;
+  content: string;
+  content_hash: string;
+  reason: string;
+  created_at: string;
+};
+
+export type TimelineEvent = {
+  id: string;
+  project_id: string;
+  title: string;
+  start_label: string;
+  end_label: string | null;
+  sort_key: number;
+  description: string;
+  participant_ids: string[];
+  canon_state: string;
+  source_type: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function listBible(projectId: string): Promise<BibleEntity[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/bible`, { cache: "no-store" }));
+}
+
+export async function createBible(
+  projectId: string,
+  payload: {
+    entity_type: string;
+    canonical_name: string;
+    summary?: string;
+    attributes?: Record<string, unknown>;
+    canon_state?: string;
+    source_type?: string;
+    source_ref?: string | null;
+  },
+): Promise<BibleEntity> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/bible`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function updateBible(
+  projectId: string,
+  entityId: string,
+  payload: Partial<Pick<BibleEntity, "entity_type" | "canonical_name" | "summary" | "attributes" | "source_type" | "source_ref">>,
+): Promise<BibleEntity> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/bible/${entityId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function transitionBibleCanon(
+  projectId: string,
+  entityId: string,
+  targetState: string,
+  reason: string,
+): Promise<BibleEntity> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/bible/${entityId}/canon`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target_state: targetState, reason }),
+    }),
+  );
+}
+
+export async function listManuscripts(projectId: string): Promise<ManuscriptDocument[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts`, { cache: "no-store" }));
+}
+
+export async function createManuscript(
+  projectId: string,
+  payload: { title: string; content?: string; order_index?: number; status?: string },
+): Promise<ManuscriptDocument> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function getManuscript(projectId: string, documentId: string): Promise<ManuscriptDocument> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}`, { cache: "no-store" }),
+  );
+}
+
+export async function saveManuscript(
+  projectId: string,
+  documentId: string,
+  payload: { title: string; content: string; order_index: number; status: string; reason?: string },
+): Promise<ManuscriptDocument> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function listManuscriptRevisions(projectId: string, documentId: string): Promise<ManuscriptRevision[]> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}/revisions`, { cache: "no-store" }),
+  );
+}
+
+export async function restoreManuscriptRevision(
+  projectId: string,
+  documentId: string,
+  revisionId: string,
+): Promise<ManuscriptDocument> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/manuscripts/${documentId}/revisions/${revisionId}/restore`, {
+      method: "POST",
+    }),
+  );
+}
+
+export async function listTimeline(projectId: string): Promise<TimelineEvent[]> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/timeline`, { cache: "no-store" }));
+}
+
+export async function createTimeline(
+  projectId: string,
+  payload: {
+    title: string;
+    start_label?: string;
+    end_label?: string | null;
+    sort_key?: number;
+    description?: string;
+    participant_ids?: string[];
+    canon_state?: string;
+    source_type?: string;
+  },
+): Promise<TimelineEvent> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/timeline`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}

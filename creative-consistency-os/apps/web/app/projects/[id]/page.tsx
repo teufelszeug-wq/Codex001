@@ -33,6 +33,11 @@ export default async function ProjectOverview({ params }: { params: Promise<{ id
           <strong>言語・文化を設計</strong>
           <small>Language DNA / Culture / Loanwords / Etymology</small>
         </Link>
+        <Link className="tool-card" href={`/projects/${id}/writing`}>
+          <span>M3</span>
+          <strong>Writing Room</strong>
+          <small>Story Bible / Manuscript / Revision / Timeline</small>
+        </Link>
       </section>
 
       {!profile ? (

@@ -142,3 +142,45 @@ button.secondary { background: #e9e4da; color: #252525; }
   .save-actions { display: grid; grid-template-columns: 1fr; }
   .save-actions button { width: 100%; }
 }
+
+
+.writing-shell { width: min(1260px, calc(100% - 32px)); }
+.writing-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 14px; margin-top: 24px; }
+.document-sidebar, .editor-panel { background: #fff; border: 1px solid #d9d3c8; border-radius: 16px; }
+.document-sidebar { padding: 16px; }
+.document-sidebar h2 { font-size: 20px; margin: 0; }
+.document-list { display: grid; gap: 7px; margin-top: 14px; }
+.document-item { width: 100%; text-align: left; display: grid; gap: 4px; background: #f3efe7; color: #222; }
+.document-item small { color: #746e64; font-weight: 400; }
+.document-item.active { background: #1e1f22; color: white; }
+.document-item.active small { color: #d1cbc2; }
+.editor-panel { min-height: 680px; padding: 18px; display: flex; flex-direction: column; }
+.editor-meta { display: grid; grid-template-columns: minmax(0, 1fr) 140px auto; gap: 10px; align-items: center; }
+.editor-title { font-size: 22px; font-weight: 800; border: 0; border-bottom: 1px solid #ded8cd; border-radius: 0; padding-left: 0; }
+.save-state { font-size: 12px; color: #716b62; min-width: 90px; text-align: right; }
+.manuscript-editor { flex: 1; min-height: 520px; border: 0; resize: vertical; margin-top: 14px; padding: 20px 8%; line-height: 2; font-family: "Noto Serif JP", "Yu Mincho", serif; font-size: 16px; }
+.editor-footer { display: flex; gap: 18px; color: #716b62; font-size: 12px; border-top: 1px solid #ece7de; padding-top: 10px; }
+.revision-panel { margin-top: 12px; border-top: 1px solid #ece7de; padding-top: 12px; }
+.revision-panel summary { cursor: pointer; font-weight: 700; }
+.revision-list { display: grid; gap: 6px; margin-top: 10px; }
+.revision-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 8px; align-items: center; padding: 8px; background: #f5f2eb; border-radius: 8px; font-size: 12px; }
+.m3-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 14px; }
+.bible-list, .timeline-list { display: grid; gap: 8px; margin-top: 18px; }
+.bible-row { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: start; padding: 14px; background: #f7f4ed; border-radius: 10px; }
+.bible-row div { display: grid; gap: 4px; }
+.bible-row small, .timeline-row small { color: #716b62; }
+.bible-row p { margin: 2px 0 0; font-size: 13px; }
+.timeline-row { display: grid; grid-template-columns: 100px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid #ece7de; }
+.timeline-row:first-child { border-top: 0; }
+.timeline-row div { display: grid; gap: 3px; }
+
+@media (max-width: 900px) {
+  .writing-layout, .m3-grid { grid-template-columns: 1fr; }
+  .document-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .editor-panel { min-height: 560px; }
+}
+@media (max-width: 620px) {
+  .document-list, .editor-meta, .revision-row { grid-template-columns: 1fr; }
+  .manuscript-editor { padding: 12px 2px; }
+  .save-state { text-align: left; }
+}
