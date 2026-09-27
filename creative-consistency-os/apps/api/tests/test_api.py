@@ -138,7 +138,7 @@ def test_health(client):
 def test_create_list_and_get_project(client):
     payload = create_project(client)
     assert payload["title"] == "First World"
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
 
     listed = client.get("/api/v1/projects")
     assert listed.status_code == 200
@@ -287,3 +287,132 @@ def test_language_builder_rejects_invalid_parent_and_policy(client):
     payload["earth_term_policy"]["mode"] = "auto-rewrite-without-approval"
     response = client.put(f"/api/v1/projects/{project['id']}/language-culture", json=payload)
     assert response.status_code == 422
+
+
+
+def test_story_bible_requires_explicit_canon_transition(client):
+    project = create_project(client)
+    created = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "イレーネ",
+            "summary": "第三区処理課に所属する令嬢。",
+            "attributes": {"hair": "銀髪"},
+            "canon_state": "INFERENCE",
+            "source_type": "AI_EXTRACTION",
+            "source_ref": "chapter-1",
+        },
+    )
+    assert created.status_code == 201
+    entity = created.json()
+    assert entity["canon_state"] == "INFERENCE"
+
+    direct = client.put(
+        f"/api/v1/projects/{project['id']}/bible/{entity['id']}",
+        json={"canon_state": "CANON"},
+    )
+    assert direct.status_code == 422
+
+    promoted = client.post(
+        f"/api/v1/projects/{project['id']}/bible/{entity['id']}/canon",
+        json={"target_state": "CANON", "reason": "作者が設定資料と照合して承認"},
+    )
+    assert promoted.status_code == 200
+    assert promoted.json()["canon_state"] == "CANON"
+
+    listed = client.get(f"/api/v1/projects/{project['id']}/bible")
+    assert listed.status_code == 200
+    assert listed.json()[0]["canonical_name"] == "イレーネ"
+
+
+def test_writing_room_creates_revisions_only_when_text_changes(client):
+    project = create_project(client)
+    created = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={"title": "第一章", "content": "白い朝だった。", "order_index": 1, "status": "draft"},
+    )
+    assert created.status_code == 201
+    document = created.json()
+    assert document["current_revision"] == 1
+
+    changed = client.put(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}",
+        json={
+            "title": "第一章",
+            "content": "白い朝だった。鐘が鳴った。",
+            "order_index": 1,
+            "status": "draft",
+            "reason": "autosave",
+        },
+    )
+    assert changed.status_code == 200
+    assert changed.json()["current_revision"] == 2
+
+    unchanged = client.put(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}",
+        json={
+            "title": "第一章",
+            "content": "白い朝だった。鐘が鳴った。",
+            "order_index": 1,
+            "status": "draft",
+            "reason": "autosave",
+        },
+    )
+    assert unchanged.status_code == 200
+    assert unchanged.json()["current_revision"] == 2
+
+    revisions = client.get(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/revisions"
+    )
+    assert revisions.status_code == 200
+    assert [item["revision_no"] for item in revisions.json()] == [2, 1]
+
+    old = revisions.json()[-1]
+    restored = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/revisions/{old['id']}/restore"
+    )
+    assert restored.status_code == 200
+    assert restored.json()["content"] == "白い朝だった。"
+    assert restored.json()["current_revision"] == 3
+
+
+def test_timeline_requires_existing_bible_participants(client):
+    project = create_project(client)
+    character = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "リナ",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+
+    created = client.post(
+        f"/api/v1/projects/{project['id']}/timeline",
+        json={
+            "title": "王都到着",
+            "start_label": "第3日",
+            "sort_key": 30,
+            "description": "リナが王都へ到着する。",
+            "participant_ids": [character["id"]],
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert created.status_code == 201
+    assert created.json()["participant_ids"] == [character["id"]]
+
+    missing = client.post(
+        f"/api/v1/projects/{project['id']}/timeline",
+        json={
+            "title": "不正参照",
+            "participant_ids": ["11111111-1111-1111-1111-111111111111"],
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert missing.status_code == 422
