@@ -27,7 +27,7 @@ class ImpactRepository:
                 target_type=str(item["target_type"]),
                 target_id=str(item["target_id"]),
                 edge_type=str(item["edge_type"]),
-                detail_json=json.dumps(item.get("detail", {}), ensure_ascii=False),
+                detail_json=json.dumps(item.get("detail", {}), ensure_ascii=False, default=str),
                 refreshed_at=utcnow(),
             )
             self.session.add(row)
@@ -62,7 +62,7 @@ class ImpactRepository:
             source_id=source_id,
             change_kind=change_kind,
             status="PENDING",
-            detail_json=json.dumps(detail or {}, ensure_ascii=False),
+            detail_json=json.dumps(detail or {}, ensure_ascii=False, default=str),
             result_json="{}",
         )
         self.session.add(row)
@@ -107,7 +107,7 @@ class ImpactRepository:
         if row is None or row.project_id != str(project_id):
             return None
         row.status = status
-        row.result_json = json.dumps(result, ensure_ascii=False)
+        row.result_json = json.dumps(result, ensure_ascii=False, default=str)
         row.resolved_at = datetime.now(timezone.utc)
         self.session.flush()
         return self._invalidation_to_dict(row)
