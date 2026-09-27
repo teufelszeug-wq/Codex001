@@ -10,6 +10,8 @@ from app.config import settings
 from app.db import get_session
 from app.domain import Project, WorldBuilderProfile
 from app.entity_services import EntityIntelligenceService
+from app.impact_services import ImpactService
+from app.lint_services import LintService
 from app.language_services import LanguageCultureService
 from app.services import ProjectService, WorldBuilderService
 from app.writing_services import WritingService
@@ -190,6 +192,22 @@ class RelationWrite(BaseModel):
     canon_state: str = "PLAN"
     source_type: str = "AUTHOR"
     attributes: dict[str, object] = Field(default_factory=dict)
+
+
+class LintConfigWrite(BaseModel):
+    rules: dict[str, object] = Field(default_factory=dict)
+
+
+class FindingStateWrite(BaseModel):
+    state: str
+
+
+class ImpactRevalidateRequest(BaseModel):
+    max_depth: int = Field(default=4, ge=1, le=6)
+
+
+class ImpactDismissRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
 
 
 app = FastAPI(title=settings.app_name, version=settings.app_version)
@@ -596,6 +614,173 @@ def create_entity_relation(
 ) -> dict[str, object]:
     try:
         return EntityIntelligenceService(session).create_relation(project_id, **payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/catalog/lint", tags=["lint"])
+def lint_catalog() -> dict[str, object]:
+    return LintService.catalog()
+
+
+@api.get("/projects/{project_id}/lint-config", tags=["lint"])
+def get_lint_config(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return LintService(session).get_config(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.put("/projects/{project_id}/lint-config", tags=["lint"])
+def save_lint_config(
+    project_id: UUID,
+    payload: LintConfigWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return LintService(session).save_config(project_id, payload.rules)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/lint/run-project", tags=["lint"])
+def run_project_lint(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return LintService(session).run_project(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/manuscripts/{document_id}/lint", tags=["lint"])
+def run_document_lint(
+    project_id: UUID,
+    document_id: UUID,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return LintService(session).run_document(project_id, document_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/lint/runs", tags=["lint"])
+def list_lint_runs(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return LintService(session).list_runs(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/lint/runs/{run_id}", tags=["lint"])
+def get_lint_run(
+    project_id: UUID,
+    run_id: UUID,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return LintService(session).get_run(project_id, run_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/lint/findings/{finding_id}/state", tags=["lint"])
+def set_lint_finding_state(
+    project_id: UUID,
+    finding_id: UUID,
+    payload: FindingStateWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return LintService(session).set_finding_state(project_id, finding_id, payload.state)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/impact/graph/refresh", tags=["impact"])
+def refresh_dependency_graph(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return ImpactService(session).refresh_graph(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/impact/edges", tags=["impact"])
+def list_dependency_edges(project_id: UUID, session: Session = Depends(get_session)) -> list[dict[str, object]]:
+    try:
+        return ImpactService(session).list_edges(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/impact/entities/{entity_id}", tags=["impact"])
+def preview_entity_impact(
+    project_id: UUID,
+    entity_id: UUID,
+    max_depth: int = 4,
+    refresh: bool = True,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return ImpactService(session).preview_entity(
+            project_id,
+            entity_id,
+            max_depth=max_depth,
+            refresh=refresh,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/impact/invalidations", tags=["impact"])
+def list_impact_invalidations(
+    project_id: UUID,
+    status_filter: str | None = None,
+    session: Session = Depends(get_session),
+) -> list[dict[str, object]]:
+    try:
+        return ImpactService(session).list_invalidations(project_id, status=status_filter)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/impact/invalidations/{invalidation_id}/revalidate", tags=["impact"])
+def revalidate_impact(
+    project_id: UUID,
+    invalidation_id: UUID,
+    payload: ImpactRevalidateRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return ImpactService(session).revalidate(
+            project_id,
+            invalidation_id,
+            max_depth=payload.max_depth,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/impact/invalidations/{invalidation_id}/dismiss", tags=["impact"])
+def dismiss_impact(
+    project_id: UUID,
+    invalidation_id: UUID,
+    payload: ImpactDismissRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return ImpactService(session).dismiss(project_id, invalidation_id, reason=payload.reason)
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:

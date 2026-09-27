@@ -138,7 +138,7 @@ def test_health(client):
 def test_create_list_and_get_project(client):
     payload = create_project(client)
     assert payload["title"] == "First World"
-    assert payload["schema_version"] == 5
+    assert payload["schema_version"] == 7
 
     listed = client.get("/api/v1/projects")
     assert listed.status_code == 200
@@ -569,3 +569,316 @@ def test_entity_relations_validate_graph_edges(client):
         },
     )
     assert self_edge.status_code == 422
+
+
+
+def test_m4_lint_tracks_missing_scan_unresolved_mentions_and_stale_revision(client):
+    project = create_project(client)
+    heroine = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "イレーネ",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "第一章",
+            "content": "イレーネはフヴィートバウグルへ向かった。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+
+    first = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert first.status_code == 200
+    first_rules = {item["rule_id"] for item in first.json()["findings"]}
+    assert "mention_index_missing" in first_rules
+
+    scan = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/mentions/refresh",
+        json={"include_candidates": True},
+    )
+    assert scan.status_code == 200
+
+    second = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert second.status_code == 200
+    second_rules = {item["rule_id"] for item in second.json()["findings"]}
+    assert "unresolved_mention" in second_rules
+
+    changed = client.put(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}",
+        json={
+            "title": "第一章",
+            "content": "イレーネはフヴィートバウグルへ向かった。翌朝、鐘が鳴った。",
+            "order_index": 1,
+            "status": "draft",
+            "reason": "test change",
+        },
+    )
+    assert changed.status_code == 200
+
+    stale = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert stale.status_code == 200
+    stale_rules = {item["rule_id"] for item in stale.json()["findings"]}
+    assert "mention_freshness" in stale_rules
+
+
+def test_m4_lint_config_supports_custom_terms_and_finding_triage(client):
+    project = create_project(client)
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/lint-config",
+        json={
+            "rules": {
+                "builtins": {
+                    "mention_index_missing": {"enabled": False, "severity": "info"}
+                },
+                "custom_terms": [
+                    {
+                        "id": "earth-smartphone",
+                        "term": "スマホ",
+                        "severity": "error",
+                        "enabled": True,
+                        "case_sensitive": False,
+                        "message": "異世界本文に現代地球語のスマホがあります。",
+                    }
+                ],
+            }
+        },
+    )
+    assert saved.status_code == 200
+
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={"title": "第一章", "content": "彼はスマホを取り出した。", "order_index": 1, "status": "draft"},
+    ).json()
+    run = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert run.status_code == 200
+    finding = next(item for item in run.json()["findings"] if item["rule_id"] == "custom_term:earth-smartphone")
+    assert finding["severity"] == "error"
+
+    triaged = client.post(
+        f"/api/v1/projects/{project['id']}/lint/findings/{finding['id']}/state",
+        json={"state": "ACKNOWLEDGED"},
+    )
+    assert triaged.status_code == 200
+    assert triaged.json()["finding_state"] == "ACKNOWLEDGED"
+
+
+def test_m4_project_lint_detects_alias_collision_and_noncanon_graph_semantics(client):
+    project = create_project(client)
+    first = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "第一王女",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    second = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "第二王女",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    for entity in (first, second):
+        response = client.post(
+            f"/api/v1/projects/{project['id']}/bible/{entity['id']}/aliases",
+            json={"alias": "姫", "alias_type": "title"},
+        )
+        assert response.status_code == 201
+
+    timeline = client.post(
+        f"/api/v1/projects/{project['id']}/timeline",
+        json={
+            "title": "戴冠式",
+            "start_label": "王暦100年",
+            "sort_key": 100,
+            "description": "",
+            "participant_ids": [second["id"]],
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert timeline.status_code == 201
+
+    project_run = client.post(f"/api/v1/projects/{project['id']}/lint/run-project")
+    assert project_run.status_code == 200
+    rules = {item["rule_id"] for item in project_run.json()["findings"]}
+    assert "alias_collision" in rules
+    assert "canon_timeline_noncanon_participant" in rules
+
+
+def test_m4_lint_marks_inference_reference_without_promoting_it(client):
+    project = create_project(client)
+    inferred = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "place",
+            "canonical_name": "フヴィートバウグル",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "INFERENCE",
+            "source_type": "MANUSCRIPT",
+        },
+    ).json()
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={"title": "第一章", "content": "フヴィートバウグルへ向かう。", "order_index": 1, "status": "draft"},
+    ).json()
+    assert client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/mentions/refresh",
+        json={"include_candidates": True},
+    ).status_code == 200
+
+    run = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    finding = next(item for item in run.json()["findings"] if item["rule_id"] == "reference_inference")
+    assert finding["entity_id"] == inferred["id"]
+
+    fetched = client.get(f"/api/v1/projects/{project['id']}/bible/{inferred['id']}")
+    assert fetched.json()["canon_state"] == "INFERENCE"
+
+
+def test_m45_dependency_graph_preview_and_selective_revalidation(client):
+    project = create_project(client)
+    heroine = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "イレーネ",
+            "summary": "旧要約",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    office = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "organization",
+            "canonical_name": "第三区処理課",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={"title": "第一章", "content": "イレーネは第三区処理課へ出勤した。", "order_index": 1, "status": "draft"},
+    ).json()
+    assert client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/mentions/refresh",
+        json={"include_candidates": True},
+    ).status_code == 200
+
+    timeline = client.post(
+        f"/api/v1/projects/{project['id']}/timeline",
+        json={
+            "title": "初出勤",
+            "start_label": "第1日",
+            "sort_key": 10,
+            "description": "",
+            "participant_ids": [heroine["id"]],
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+
+    relation = client.post(
+        f"/api/v1/projects/{project['id']}/relations",
+        json={
+            "source_entity_id": heroine["id"],
+            "target_entity_id": office["id"],
+            "relation_type": "member_of",
+            "label": "所属",
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+            "attributes": {},
+        },
+    )
+    assert relation.status_code == 201
+
+    graph = client.post(f"/api/v1/projects/{project['id']}/impact/graph/refresh")
+    assert graph.status_code == 200
+    assert graph.json()["edge_count"] >= 6
+
+    preview = client.get(
+        f"/api/v1/projects/{project['id']}/impact/entities/{heroine['id']}",
+        params={"max_depth": 4, "refresh": False},
+    )
+    assert preview.status_code == 200
+    payload = preview.json()
+    assert document["id"] in payload["affected_document_ids"]
+    assert timeline["id"] in payload["affected_timeline_event_ids"]
+    assert office["id"] in payload["related_entity_ids"]
+
+    updated = client.put(
+        f"/api/v1/projects/{project['id']}/bible/{heroine['id']}",
+        json={"summary": "更新された要約"},
+    )
+    assert updated.status_code == 200
+
+    pending = client.get(
+        f"/api/v1/projects/{project['id']}/impact/invalidations",
+        params={"status_filter": "PENDING"},
+    )
+    assert pending.status_code == 200
+    invalidation = next(
+        item for item in pending.json()
+        if item["source_id"] == heroine["id"] and item["change_kind"] == "BIBLE_ENTITY_UPDATED"
+    )
+
+    revalidated = client.post(
+        f"/api/v1/projects/{project['id']}/impact/invalidations/{invalidation['id']}/revalidate",
+        json={"max_depth": 4},
+    )
+    assert revalidated.status_code == 200
+    result = revalidated.json()
+    assert result["status"] == "REVALIDATED"
+    assert document["id"] in result["result"]["affected_document_ids"]
+    assert any(item["document_id"] == document["id"] for item in result["result"]["lint_runs"])
+
+
+def test_m45_alias_changes_queue_impact_invalidation(client):
+    project = create_project(client)
+    entity = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "リナ",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    response = client.post(
+        f"/api/v1/projects/{project['id']}/bible/{entity['id']}/aliases",
+        json={"alias": "森の賢者", "alias_type": "epithet"},
+    )
+    assert response.status_code == 201
+
+    pending = client.get(
+        f"/api/v1/projects/{project['id']}/impact/invalidations",
+        params={"status_filter": "PENDING"},
+    )
+    assert pending.status_code == 200
+    assert any(
+        item["source_id"] == entity["id"] and item["change_kind"] == "ENTITY_ALIAS_ADDED"
+        for item in pending.json()
+    )
