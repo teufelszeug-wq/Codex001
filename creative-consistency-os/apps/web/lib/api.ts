@@ -645,7 +645,7 @@ export type LintRun = {
   id: string;
   project_id: string;
   document_id: string | null;
-  scope: "document" | "project";
+  scope: "document" | "project" | "structure";
   document_revision: number | null;
   ruleset_version: number;
   status: string;
@@ -923,5 +923,94 @@ export async function previewIsekaiReplacement(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ term }),
     }),
+  );
+}
+
+
+export type LNGenrePackKey = "noble_lady" | "palace_harem" | "romcom";
+
+export type LNGenreCatalog = {
+  packs: Array<{ key: LNGenrePackKey; label: string; description: string }>;
+  attribute_contracts: Record<string, unknown>;
+  defaults: {
+    enabled_packs: Record<LNGenrePackKey, boolean>;
+    noble_lady: LNGenrePackConfig["noble_lady"];
+    palace_harem: LNGenrePackConfig["palace_harem"];
+    romcom: LNGenrePackConfig["romcom"];
+    status: "draft" | "configured";
+  };
+  pack_version: number;
+};
+
+export type LNGenrePackConfig = {
+  project_id: string;
+  enabled_packs: Record<LNGenrePackKey, boolean>;
+  noble_lady: {
+    rank_order: string[];
+    rank_title_map: Record<string, string[]>;
+    address_rules: Array<{
+      id: string;
+      target_rank: string;
+      allowed_addresses: string[];
+    }>;
+    allow_multiple_active_engagements: boolean;
+    engagement_relation_types: string[];
+  };
+  palace_harem: {
+    rank_order: string[];
+    restricted_areas: Array<{
+      id: string;
+      place_entity_id: string;
+      min_rank: string;
+      allowed_faction_entity_ids: string[];
+      exception_entity_ids: string[];
+    }>;
+    information_rules: Array<{
+      id: string;
+      fact_key: string;
+      min_rank: string;
+      allowed_faction_entity_ids: string[];
+    }>;
+    ritual_sequences: Array<{
+      id: string;
+      ritual_key: string;
+      steps: string[];
+    }>;
+  };
+  romcom: {
+    stages: string[];
+    max_stage_jump: number;
+    allow_regression: boolean;
+    require_reason_for_large_jump: boolean;
+    unresolved_misunderstanding_severity: string;
+  };
+  status: "draft" | "configured";
+  pack_version: number;
+  updated_at: string | null;
+};
+
+export type LNGenrePackWrite = Omit<LNGenrePackConfig, "project_id" | "pack_version" | "updated_at">;
+
+export async function getLNGenreCatalog(): Promise<LNGenreCatalog> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/catalog/ln-genres`, { cache: "no-store" }));
+}
+
+export async function getLNGenrePack(projectId: string): Promise<LNGenrePackConfig> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/ln-genres`, { cache: "no-store" }));
+}
+
+export async function saveLNGenrePack(projectId: string, payload: LNGenrePackWrite): Promise<LNGenrePackConfig> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/ln-genres`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function runStructureLint(projectId: string): Promise<LintRun> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/lint/run-structure`, { method: "POST" }),
   );
 }

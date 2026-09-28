@@ -58,6 +58,11 @@ export default async function ProjectOverview({ params }: { params: Promise<{ id
           <strong>Isekai Guard</strong>
           <small>Earth-Origin / Replacement / Travel / Magic / Economy</small>
         </Link>
+        <Link className="tool-card" href={`/projects/${id}/ln-genres`}>
+          <span>M6</span>
+          <strong>LN Genre Packs</strong>
+          <small>Noble Lady / Palace-Harem / Romantic Comedy</small>
+        </Link>
       </section>
 
       {!profile ? (
