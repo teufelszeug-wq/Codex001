@@ -12,19 +12,20 @@ A local-first creative production system for long-form fiction: World Builder + 
 - M3.5 Entity Intelligence — complete
 - M4 Core Lint Engine — complete
 - M4.5 Change Impact Engine — complete
-- M5 Isekai Pack — next
+- M5 Isekai Pack — complete
+- M6 LN Genre Packs — next
 
 ## Current Golden Path
 
-Genre → Setup Mode → World DNA → Language/Culture → Story Bible → Writing Room → Entity Intelligence → Consistency Lint → Change Impact
+Genre → Setup Mode → World DNA → Language/Culture → Story Bible → Writing Room → Entity Intelligence → Consistency Lint → Change Impact → Genre Pack Verification
 
-The system now supports structured world-building, fictional-language/culture design, author-controlled Canon states, chapter writing with revision history, timeline, aliases, manuscript mentions, ambiguity-aware entity resolution, relationship graphs, evidence-backed consistency diagnostics and dependency-aware selective revalidation.
+The system now supports structured world-building, fictional-language/culture design, author-controlled Canon states, chapter writing with revision history, timeline, aliases, manuscript mentions, ambiguity-aware entity resolution, relationship graphs, evidence-backed consistency diagnostics, dependency-aware selective revalidation and an opt-in Isekai verification pack.
 
-Author-control rule: generated, extracted or inferred material never becomes CANON automatically. Lint and Change Impact never auto-rewrite prose or Canon.
+Author-control rule: generated, extracted or inferred material never becomes CANON automatically. Lint, Change Impact and genre packs never auto-rewrite prose or Canon.
 
 ## Current schema
 
-Project schema version: 7
+Project schema version: 8
 
 Migrations:
 - 0001 M1 baseline
@@ -34,6 +35,7 @@ Migrations:
 - 0005 Entity Intelligence
 - 0006 Core Lint Engine
 - 0007 Change Impact Engine
+- 0008 Isekai Pack
 
 ## M4 Core Lint
 
@@ -63,6 +65,25 @@ Change Impact provides:
 - selective re-lint of affected manuscripts
 - author dismissal
 
+## M5 Isekai Pack
+
+M5 provides:
+- opt-in Earth-Origin Guard
+- configurable strictness and categories
+- allowlists and custom terms
+- author-approved World-Origin Mapping
+- optional source-place provenance
+- travel-time rules
+- magic-cost rules
+- currency and price-band checks
+- healing-limit rules
+- M4 Findings rather than a separate warning system
+- M4.5 global policy invalidation
+- source-place → replacement → manuscript impact propagation
+- Isekai Guard web workspace
+
+See docs/M5.md for the data contracts and author-control rules.
+
 ## Structure
 
 - apps/web — Next.js + TypeScript
@@ -74,13 +95,14 @@ Change Impact provides:
 - docs/M3.5.md
 - docs/M4.md
 - docs/M4.5.md
+- docs/M5.md
 - docs/ROADMAP.md
 
 ## Validation
 
-Current M4/M4.5 validation:
-- 26 API tests passed
-- Alembic upgrade succeeded through 0007
+Current M5 validation:
+- 32 API tests passed
+- Alembic upgrade succeeded through 0008
 - Next.js production build succeeded
 
 ## API local development

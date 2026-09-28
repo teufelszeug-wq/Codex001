@@ -10,23 +10,21 @@
 - M3.5 Entity Intelligence — complete
 - M4 Core Lint Engine — complete
 - M4.5 Change Impact Engine — complete
+- M5 Isekai Pack — complete
 
 ## Next
-
-### M5 Isekai Pack
-Earth-Origin Guard, world-origin replacement, travel/magic/economy rules.
-
-M5 will plug into the M4 diagnostic contract rather than creating a second lint system. Its rules remain author-selectable and must provide evidence/provenance. Changes to origin terminology and related Canon data must participate in M4.5 invalidation when they affect downstream prose.
 
 ### M6 LN Genre Packs
 Noble Lady, Palace/Harem and Romantic Comedy.
 
-Genre-specific state machines and social-constraint rules should reuse M4 Findings and M4.5 dependency invalidation.
+M6 should reuse the M4/M4.5 contract rather than building isolated checkers. Planned state domains include peerage/house/engagement/etiquette for Noble Lady, rank/faction/restricted-area/ritual/information-access for Palace/Harem, and relationship-stage/schedule/misunderstanding-state for Romantic Comedy.
+
+M6 must remain modular: any pack can be enabled independently or combined, with no mandatory primary genre.
 
 ### M7 Mystery / SF Verification
 Evidence/alibi/knowledge-state verification and science/assumption checks.
 
-High-stakes reasoning findings must distinguish deterministic violations from probabilistic/advisory diagnostics and retain evidence.
+High-stakes reasoning findings must distinguish deterministic violations from probabilistic/advisory diagnostics and retain evidence. SF verification should preserve an explicit hardness/assumption model rather than treating all speculative settings as hard SF.
 
 ### M8 AI Co-Author
 Bible-aware generation constrained by Canon/Lint.
@@ -36,15 +34,21 @@ The AI Co-Author must not silently consume stale or unresolved dependencies as c
 ### M9 Closed Beta
 External long-form creators and measurement.
 
-Measure false-positive rate, finding triage behavior, dependency fan-out, graph size, revision retention needs and selective-revalidation savings on real projects.
+Measure false-positive rate, finding triage behavior, Earth-Origin Guard category precision, dependency fan-out, graph size, revision retention needs and selective-revalidation savings on real projects.
 
-Revision retention/compaction and graph partitioning should be driven by these measurements rather than guessed prematurely.
+Revision retention/compaction, graph partitioning and catalog expansion should be driven by these measurements rather than guessed prematurely.
 
 ### M10 SaaS v1.0
 Accounts, plans, sync and production operations.
 
 ### M11 Game / Cross-Media Extension
 Quest, flag, NPC and cross-media world reuse.
+
+## Completed M5 sub-milestones
+
+M5 added fifteen sub-milestones rather than creating another top-level phase:
+
+M5-S1 opt-in/strictness; S2 Earth-Origin categories; S3 category controls; S4 allowlist/custom terms; S5 generic replacements; S6 world mappings; S7 source-place provenance; S8 travel; S9 magic; S10 economy; S11 healing; S12 pack invalidation; S13 replacement dependency propagation; S14 web workspace; S15 migration/tests/CI.
 
 ## Planning rule
 
