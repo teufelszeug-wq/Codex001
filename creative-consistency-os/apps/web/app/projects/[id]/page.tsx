@@ -53,6 +53,11 @@ export default async function ProjectOverview({ params }: { params: Promise<{ id
           <strong>Change Impact</strong>
           <small>Dependency Graph / Invalidation / Selective Revalidation</small>
         </Link>
+        <Link className="tool-card" href={`/projects/${id}/isekai`}>
+          <span>M5</span>
+          <strong>Isekai Guard</strong>
+          <small>Earth-Origin / Replacement / Travel / Magic / Economy</small>
+        </Link>
       </section>
 
       {!profile ? (

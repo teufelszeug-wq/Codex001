@@ -596,6 +596,7 @@ export type LintCatalogRule = {
   category: string;
   default_severity: "hint" | "info" | "warning" | "error";
   description: string;
+  pack?: string;
 };
 
 export type LintCatalog = {
@@ -787,6 +788,140 @@ export async function dismissImpact(projectId: string, invalidationId: string, r
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason }),
+    }),
+  );
+}
+
+
+export type IsekaiCategory = {
+  key: string;
+  label: string;
+  description: string;
+};
+
+export type IsekaiCatalogTerm = {
+  term: string;
+  category: string;
+  concept_key: string;
+  generic_replacement: string;
+};
+
+export type IsekaiCatalog = {
+  categories: IsekaiCategory[];
+  earth_terms: IsekaiCatalogTerm[];
+  strictness: string[];
+  attribute_contracts: Record<string, unknown>;
+  pack_version: number;
+};
+
+export type IsekaiCustomTerm = {
+  id: string;
+  term: string;
+  category: string;
+  concept_key: string;
+  generic_replacement: string;
+  severity: string | null;
+  enabled: boolean;
+};
+
+export type IsekaiReplacement = {
+  earth_term: string;
+  world_term: string;
+  source_place_entity_id: string | null;
+  notes: string;
+};
+
+export type IsekaiTravelRoute = {
+  id: string;
+  from_entity_id: string;
+  to_entity_id: string;
+  mode: string;
+  min_hours: number;
+  max_hours: number;
+  bidirectional: boolean;
+  notes: string;
+};
+
+export type IsekaiPackConfig = {
+  project_id: string;
+  enabled: boolean;
+  strictness: string;
+  enabled_categories: Record<string, boolean>;
+  allow_terms: string[];
+  custom_terms: IsekaiCustomTerm[];
+  replacements: IsekaiReplacement[];
+  require_world_mapping: boolean;
+  travel_routes: IsekaiTravelRoute[];
+  magic_policy: {
+    enabled: boolean;
+    require_cost: boolean;
+    allowed_cost_types: string[];
+    costless_tiers: string[];
+  };
+  economy_policy: {
+    enabled: boolean;
+    currencies: string[];
+    price_bands: Array<{
+      id: string;
+      category: string;
+      currency: string;
+      min_price: number;
+      max_price: number;
+      notes: string;
+    }>;
+  };
+  healing_policy: {
+    enabled: boolean;
+    resurrection_allowed: boolean;
+    limb_regrowth_allowed: boolean;
+  };
+  status: "draft" | "configured";
+  pack_version: number;
+  updated_at: string | null;
+};
+
+export type IsekaiPackWrite = Omit<IsekaiPackConfig, "project_id" | "pack_version" | "updated_at">;
+
+export type IsekaiReplacementPreview = {
+  term: string;
+  matched: boolean;
+  allowed: boolean;
+  category: string | null;
+  concept_key: string | null;
+  generic_replacement: string | null;
+  world_replacement: string | null;
+  source_place_entity_id: string | null;
+  notes?: string;
+  needs_author_decision: boolean;
+};
+
+export async function getIsekaiCatalog(): Promise<IsekaiCatalog> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/catalog/isekai`, { cache: "no-store" }));
+}
+
+export async function getIsekaiPack(projectId: string): Promise<IsekaiPackConfig> {
+  return expectJson(await fetch(`${API_BASE}/api/v1/projects/${projectId}/isekai`, { cache: "no-store" }));
+}
+
+export async function saveIsekaiPack(projectId: string, payload: IsekaiPackWrite): Promise<IsekaiPackConfig> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/isekai`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  );
+}
+
+export async function previewIsekaiReplacement(
+  projectId: string,
+  term: string,
+): Promise<IsekaiReplacementPreview> {
+  return expectJson(
+    await fetch(`${API_BASE}/api/v1/projects/${projectId}/isekai/replacement-preview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ term }),
     }),
   );
 }
