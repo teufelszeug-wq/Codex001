@@ -225,6 +225,120 @@ class ImpactService:
                 },
             ])
 
+        # M6 structured-reference dependencies.
+        # These edges are derived from author-authored Bible attributes and remain useful
+        # even when the corresponding genre pack is temporarily disabled.
+        for entity in bible:
+            entity_id = str(entity["id"])
+            attributes = entity.get("attributes", {})
+            if not isinstance(attributes, dict):
+                continue
+
+            noble = attributes.get("ln_noble")
+            if isinstance(noble, dict):
+                house_id = str(noble.get("house_entity_id", "")).strip()
+                if house_id:
+                    edges.append({
+                        "source_type": "BibleEntity",
+                        "source_id": house_id,
+                        "target_type": "BibleEntity",
+                        "target_id": entity_id,
+                        "edge_type": "noble_house_member",
+                        "detail": {
+                            "member_name": entity["canonical_name"],
+                            "rank": noble.get("rank"),
+                        },
+                    })
+
+            palace = attributes.get("ln_palace")
+            if isinstance(palace, dict):
+                faction_id = str(palace.get("faction_entity_id", "")).strip()
+                if faction_id:
+                    edges.append({
+                        "source_type": "BibleEntity",
+                        "source_id": faction_id,
+                        "target_type": "BibleEntity",
+                        "target_id": entity_id,
+                        "edge_type": "palace_faction_member",
+                        "detail": {
+                            "member_name": entity["canonical_name"],
+                            "rank": palace.get("rank"),
+                        },
+                    })
+
+            access = attributes.get("ln_palace_access")
+            if isinstance(access, dict):
+                for source_key, edge_type in (
+                    ("actor_entity_id", "palace_access_actor"),
+                    ("place_entity_id", "palace_access_place"),
+                ):
+                    source_id = str(access.get(source_key, "")).strip()
+                    if source_id:
+                        edges.append({
+                            "source_type": "BibleEntity",
+                            "source_id": source_id,
+                            "target_type": "BibleEntity",
+                            "target_id": entity_id,
+                            "edge_type": edge_type,
+                            "detail": {"event_name": entity["canonical_name"]},
+                        })
+
+            info = attributes.get("ln_information_access")
+            if isinstance(info, dict):
+                actor_id = str(info.get("actor_entity_id", "")).strip()
+                if actor_id:
+                    edges.append({
+                        "source_type": "BibleEntity",
+                        "source_id": actor_id,
+                        "target_type": "BibleEntity",
+                        "target_id": entity_id,
+                        "edge_type": "palace_information_actor",
+                        "detail": {
+                            "event_name": entity["canonical_name"],
+                            "fact_key": info.get("fact_key"),
+                        },
+                    })
+
+            transition = attributes.get("ln_relationship_transition")
+            if isinstance(transition, dict):
+                for source_key, edge_type in (
+                    ("source_entity_id", "romcom_transition_source"),
+                    ("target_entity_id", "romcom_transition_target"),
+                ):
+                    source_id = str(transition.get(source_key, "")).strip()
+                    if source_id:
+                        edges.append({
+                            "source_type": "BibleEntity",
+                            "source_id": source_id,
+                            "target_type": "BibleEntity",
+                            "target_id": entity_id,
+                            "edge_type": edge_type,
+                            "detail": {
+                                "event_name": entity["canonical_name"],
+                                "from_stage": transition.get("from_stage"),
+                                "to_stage": transition.get("to_stage"),
+                            },
+                        })
+
+            schedule = attributes.get("ln_schedule")
+            if isinstance(schedule, dict) and isinstance(schedule.get("participant_ids"), list):
+                for participant_id in schedule["participant_ids"]:
+                    source_id = str(participant_id).strip()
+                    if source_id:
+                        edges.append({
+                            "source_type": "BibleEntity",
+                            "source_id": source_id,
+                            "target_type": "BibleEntity",
+                            "target_id": entity_id,
+                            "edge_type": "romcom_schedule_participant",
+                            "detail": {
+                                "event_name": entity["canonical_name"],
+                                "day_key": schedule.get("day_key"),
+                                "start_minute": schedule.get("start_minute"),
+                                "end_minute": schedule.get("end_minute"),
+                            },
+                        })
+
         unique: dict[tuple[str, str, str, str, str], dict[str, object]] = {}
         for edge in edges:
             key = (
