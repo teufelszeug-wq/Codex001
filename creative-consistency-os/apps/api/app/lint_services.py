@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 
 from app.domain import CanonState
 from app.entity_repositories import EntityIntelligenceRepository
+from app.isekai_catalog import EARTH_TERM_CATALOG, STRICTNESS_TO_SEVERITY
+from app.isekai_repositories import IsekaiPackRepository
 from app.lint_repositories import LintRepository
 from app.repositories import ChangeLogRepository, SqlAlchemyProjectRepository
 from app.writing_repositories import BibleRepository, ManuscriptRepository, TimelineRepository
@@ -90,6 +92,60 @@ BUILTIN_RULES: dict[str, dict[str, object]] = {
         "default_severity": "hint",
         "description": "未解決呼称が既知の正式名・別名の表記揺れ候補かを字面類似度から提示する。",
     },
+    "isekai_earth_origin_term": {
+        "category": "isekai_immersion",
+        "default_severity": "warning",
+        "description": "異世界本文に地球固有の地名・文化・技術・制度等を強く想起させる語がある。",
+        "pack": "isekai",
+    },
+    "isekai_world_term_unmapped": {
+        "category": "isekai_immersion",
+        "default_severity": "info",
+        "description": "世界内置換を必須にした語へ、承認済みの世界内名称がまだ割り当てられていない。",
+        "pack": "isekai",
+    },
+    "isekai_travel_duration": {
+        "category": "isekai_travel",
+        "default_severity": "error",
+        "description": "構造化された移動イベントの所要時間が設定済みルート範囲から外れている。",
+        "pack": "isekai",
+    },
+    "isekai_travel_route_unknown": {
+        "category": "isekai_travel",
+        "default_severity": "info",
+        "description": "構造化された移動イベントに対応する移動ルート規則が見つからない。",
+        "pack": "isekai",
+    },
+    "isekai_magic_cost_missing": {
+        "category": "isekai_magic",
+        "default_severity": "warning",
+        "description": "コスト必須の魔法体系で、呪文のコスト情報が不足している。",
+        "pack": "isekai",
+    },
+    "isekai_magic_cost_type": {
+        "category": "isekai_magic",
+        "default_severity": "warning",
+        "description": "呪文が魔法体系で許可していないコスト種別を使用している。",
+        "pack": "isekai",
+    },
+    "isekai_currency_unregistered": {
+        "category": "isekai_economy",
+        "default_severity": "warning",
+        "description": "アイテム価格に世界設定へ登録されていない通貨が使われている。",
+        "pack": "isekai",
+    },
+    "isekai_price_out_of_band": {
+        "category": "isekai_economy",
+        "default_severity": "warning",
+        "description": "アイテム価格が設定済みカテゴリ価格帯から外れている。",
+        "pack": "isekai",
+    },
+    "isekai_healing_limit": {
+        "category": "isekai_magic",
+        "default_severity": "error",
+        "description": "治癒魔法の能力が世界設定上の回復限界を超えている。",
+        "pack": "isekai",
+    },
 }
 
 
@@ -111,6 +167,7 @@ class LintService:
         self.timeline = TimelineRepository(session)
         self.entities = EntityIntelligenceRepository(session)
         self.lint = LintRepository(session)
+        self.isekai = IsekaiPackRepository(session)
         self.change_log = ChangeLogRepository(session)
 
     @staticmethod
@@ -122,6 +179,7 @@ class LintService:
                     "category": spec["category"],
                     "default_severity": spec["default_severity"],
                     "description": spec["description"],
+                    "pack": spec.get("pack", "core"),
                 }
                 for rule_id, spec in BUILTIN_RULES.items()
             ],
@@ -455,6 +513,7 @@ class LintService:
                     )
                     start = max(end, found + 1)
 
+        findings.extend(self._isekai_document_findings(project_id, document, config))
         return findings
 
     def _project_findings(
@@ -534,6 +593,262 @@ class LintService:
                     evidence={"relation_id": relation["id"], "endpoints": noncanon},
                 )
 
+        findings.extend(self._isekai_project_findings(project_id, config, bible))
+        return findings
+
+    def _isekai_document_findings(
+        self,
+        project_id: UUID,
+        document: dict[str, object],
+        lint_config: dict[str, object],
+    ) -> list[dict[str, object]]:
+        pack = self.isekai.get(project_id)
+        if pack is None or not bool(pack.get("enabled", False)):
+            return []
+
+        content = str(document.get("content", ""))
+        document_id = str(document["id"])
+        if not content:
+            return []
+
+        strictness = str(pack.get("strictness", "standard"))
+        default_severity = STRICTNESS_TO_SEVERITY.get(strictness, "warning")
+        enabled_categories = pack.get("enabled_categories", {})
+        allow_terms = {normalize_key(str(item)) for item in pack.get("allow_terms", [])}
+        replacements = {
+            normalize_key(str(item.get("earth_term", ""))): item
+            for item in pack.get("replacements", [])
+            if isinstance(item, dict)
+        }
+
+        entries: list[dict[str, object]] = [dict(item) for item in EARTH_TERM_CATALOG]
+        for item in pack.get("custom_terms", []):
+            if isinstance(item, dict) and item.get("enabled", True):
+                entries.append(dict(item))
+
+        findings: list[dict[str, object]] = []
+        folded = unicodedata.normalize("NFKC", content).casefold()
+        seen_spans: set[tuple[int, int, str]] = set()
+
+        for entry in entries:
+            term = str(entry.get("term", "")).strip()
+            category = str(entry.get("category", ""))
+            if not term or not bool(enabled_categories.get(category, True)):
+                continue
+            normalized_term = normalize_key(term)
+            if normalized_term in allow_terms:
+                continue
+            needle = unicodedata.normalize("NFKC", term).casefold()
+            start = 0
+            while True:
+                found = folded.find(needle, start)
+                if found < 0:
+                    break
+                end = found + len(needle)
+                span_key = (found, end, normalized_term)
+                if span_key not in seen_spans:
+                    seen_spans.add(span_key)
+                    replacement = replacements.get(normalized_term)
+                    world_term = str(replacement.get("world_term")) if replacement else None
+                    generic = str(entry.get("generic_replacement", "")) or None
+                    severity_override = str(entry.get("severity")) if entry.get("severity") else default_severity
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="isekai_earth_origin_term",
+                        message=(
+                            f"異世界感ガード: 「{content[found:end]}」は地球由来語候補です。"
+                            + (f" 世界内候補「{world_term}」が登録されています。" if world_term else "")
+                            + (f" 一般化候補は「{generic}」です。" if generic else "")
+                        ),
+                        document_id=document_id,
+                        start_offset=found,
+                        end_offset=end,
+                        evidence={
+                            "term": term,
+                            "category": category,
+                            "concept_key": entry.get("concept_key"),
+                            "generic_replacement": generic,
+                            "world_replacement": world_term,
+                            "source_place_entity_id": replacement.get("source_place_entity_id") if replacement else None,
+                            "strictness": strictness,
+                            "pack": "isekai",
+                        },
+                        severity_override=severity_override,
+                    )
+                    if bool(pack.get("require_world_mapping", False)) and replacement is None:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="isekai_world_term_unmapped",
+                            message=f"「{content[found:end]}」には承認済みの世界内名称がまだありません。",
+                            document_id=document_id,
+                            start_offset=found,
+                            end_offset=end,
+                            evidence={
+                                "term": term,
+                                "category": category,
+                                "concept_key": entry.get("concept_key"),
+                                "generic_replacement": generic,
+                                "pack": "isekai",
+                            },
+                        )
+                start = max(end, found + 1)
+
+        return findings
+
+    def _isekai_project_findings(
+        self,
+        project_id: UUID,
+        lint_config: dict[str, object],
+        bible: list[dict[str, object]],
+    ) -> list[dict[str, object]]:
+        pack = self.isekai.get(project_id)
+        if pack is None or not bool(pack.get("enabled", False)):
+            return []
+
+        findings: list[dict[str, object]] = []
+        routes = [item for item in pack.get("travel_routes", []) if isinstance(item, dict)]
+        magic_policy = pack.get("magic_policy", {})
+        economy_policy = pack.get("economy_policy", {})
+        healing_policy = pack.get("healing_policy", {})
+
+        for entity in bible:
+            attributes = entity.get("attributes", {})
+            if not isinstance(attributes, dict):
+                continue
+            entity_id = str(entity["id"])
+            entity_name = str(entity["canonical_name"])
+
+            travel = attributes.get("isekai_travel")
+            if isinstance(travel, dict):
+                from_id = str(travel.get("from_entity_id", ""))
+                to_id = str(travel.get("to_entity_id", ""))
+                mode = str(travel.get("mode", ""))
+                try:
+                    duration = float(travel.get("duration_hours"))
+                except (TypeError, ValueError):
+                    duration = None
+                matches: list[dict[str, object]] = []
+                for route in routes:
+                    direct = (
+                        str(route.get("from_entity_id")) == from_id
+                        and str(route.get("to_entity_id")) == to_id
+                    )
+                    reverse = (
+                        bool(route.get("bidirectional", True))
+                        and str(route.get("from_entity_id")) == to_id
+                        and str(route.get("to_entity_id")) == from_id
+                    )
+                    if (direct or reverse) and str(route.get("mode")) == mode:
+                        matches.append(route)
+                if routes and not matches:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="isekai_travel_route_unknown",
+                        entity_id=entity_id,
+                        message=f"移動イベント「{entity_name}」に対応するルート規則がありません。",
+                        evidence={"travel": travel, "pack": "isekai"},
+                    )
+                elif matches and duration is not None:
+                    route = matches[0]
+                    minimum = float(route.get("min_hours", 0))
+                    maximum = float(route.get("max_hours", 0))
+                    if duration < minimum or duration > maximum:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="isekai_travel_duration",
+                            entity_id=entity_id,
+                            message=f"移動イベント「{entity_name}」の所要時間 {duration:g}h は設定範囲 {minimum:g}–{maximum:g}h 外です。",
+                            evidence={"travel": travel, "route": route, "pack": "isekai"},
+                        )
+
+            if str(entity.get("entity_type")) == "spell":
+                magic = attributes.get("magic")
+                if isinstance(magic_policy, dict) and bool(magic_policy.get("enabled", False)):
+                    magic = magic if isinstance(magic, dict) else {}
+                    cost = magic.get("cost")
+                    tier = str(magic.get("tier", ""))
+                    costless_tiers = {str(item) for item in magic_policy.get("costless_tiers", [])}
+                    if bool(magic_policy.get("require_cost", True)) and not isinstance(cost, dict) and tier not in costless_tiers:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="isekai_magic_cost_missing",
+                            entity_id=entity_id,
+                            message=f"呪文「{entity_name}」に魔法コストが設定されていません。",
+                            evidence={"tier": tier, "magic": magic, "pack": "isekai"},
+                        )
+                    if isinstance(cost, dict):
+                        cost_type = str(cost.get("type", ""))
+                        allowed = {str(item) for item in magic_policy.get("allowed_cost_types", [])}
+                        if allowed and cost_type not in allowed:
+                            self._append(
+                                findings,
+                                lint_config,
+                                rule_id="isekai_magic_cost_type",
+                                entity_id=entity_id,
+                                message=f"呪文「{entity_name}」のコスト種別「{cost_type}」は許可一覧にありません。",
+                                evidence={"cost": cost, "allowed_cost_types": sorted(allowed), "pack": "isekai"},
+                            )
+
+                healing = attributes.get("healing")
+                if isinstance(healing_policy, dict) and bool(healing_policy.get("enabled", False)) and isinstance(healing, dict):
+                    violations: list[str] = []
+                    if bool(healing.get("resurrection", False)) and not bool(healing_policy.get("resurrection_allowed", False)):
+                        violations.append("死者蘇生")
+                    if bool(healing.get("limb_regrowth", False)) and not bool(healing_policy.get("limb_regrowth_allowed", False)):
+                        violations.append("欠損再生")
+                    if violations:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="isekai_healing_limit",
+                            entity_id=entity_id,
+                            message=f"治癒魔法「{entity_name}」が設定上許可されていない能力（{'・'.join(violations)}）を持っています。",
+                            evidence={"healing": healing, "policy": healing_policy, "pack": "isekai"},
+                        )
+
+            if str(entity.get("entity_type")) == "item" and isinstance(economy_policy, dict) and bool(economy_policy.get("enabled", False)):
+                economy = attributes.get("economy")
+                if isinstance(economy, dict):
+                    currency = str(economy.get("currency", ""))
+                    category = str(economy.get("category", ""))
+                    try:
+                        price = float(economy.get("price"))
+                    except (TypeError, ValueError):
+                        price = None
+                    currencies = {str(item) for item in economy_policy.get("currencies", [])}
+                    if currency and currencies and currency not in currencies:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="isekai_currency_unregistered",
+                            entity_id=entity_id,
+                            message=f"アイテム「{entity_name}」の通貨「{currency}」は世界経済設定に登録されていません。",
+                            evidence={"economy": economy, "currencies": sorted(currencies), "pack": "isekai"},
+                        )
+                    if price is not None:
+                        for band in economy_policy.get("price_bands", []):
+                            if not isinstance(band, dict):
+                                continue
+                            if str(band.get("category")) != category or str(band.get("currency")) != currency:
+                                continue
+                            minimum = float(band.get("min_price", 0))
+                            maximum = float(band.get("max_price", 0))
+                            if price < minimum or price > maximum:
+                                self._append(
+                                    findings,
+                                    lint_config,
+                                    rule_id="isekai_price_out_of_band",
+                                    entity_id=entity_id,
+                                    message=f"アイテム「{entity_name}」の価格 {price:g} {currency} は設定帯 {minimum:g}–{maximum:g} 外です。",
+                                    evidence={"economy": economy, "price_band": band, "pack": "isekai"},
+                                )
+                            break
+
         return findings
 
     def _append(
@@ -548,6 +863,7 @@ class LintService:
         start_offset: int | None = None,
         end_offset: int | None = None,
         evidence: dict[str, object] | None = None,
+        severity_override: str | None = None,
     ) -> None:
         rule_config = {}
         builtins = config.get("builtins", {})
@@ -558,7 +874,12 @@ class LintService:
         if rule_config.get("enabled", True) is False:
             return
         spec = BUILTIN_RULES[rule_id]
-        severity = str(rule_config.get("severity", spec["default_severity"]))
+        if "severity" in rule_config:
+            severity = str(rule_config["severity"])
+        elif severity_override is not None:
+            severity = str(severity_override)
+        else:
+            severity = str(spec["default_severity"])
         if severity not in SEVERITIES:
             severity = str(spec["default_severity"])
         findings.append(
