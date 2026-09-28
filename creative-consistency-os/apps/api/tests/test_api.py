@@ -1569,8 +1569,8 @@ def test_m6_palace_access_information_and_ritual_rules(client):
     assert info_event.status_code == 201
     for name, step, seq in [
         ("拝礼", "bow", 1),
-        ("献上", "offer", 3),
-        ("名乗り", "announce", 2),
+        ("献上", "offer", 2),
+        ("名乗り", "announce", 3),
     ]:
         assert client.post(
             f"/api/v1/projects/{project['id']}/bible",

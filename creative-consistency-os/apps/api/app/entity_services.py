@@ -30,6 +30,8 @@ RELATION_TYPES = {
     "rival",
     "enemy",
     "romance",
+    "engaged_to",
+    "betrothed_to",
     "member_of",
     "serves",
     "owns",
