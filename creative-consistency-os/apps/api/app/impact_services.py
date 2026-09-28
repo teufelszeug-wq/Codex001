@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.entity_repositories import EntityIntelligenceRepository
 from app.impact_repositories import ImpactRepository
+from app.isekai_repositories import IsekaiPackRepository
 from app.lint_services import LintService
 from app.repositories import ChangeLogRepository, SqlAlchemyProjectRepository
 from app.writing_repositories import BibleRepository, ManuscriptRepository, TimelineRepository
@@ -29,6 +30,7 @@ class ImpactService:
         self.timeline = TimelineRepository(session)
         self.entities = EntityIntelligenceRepository(session)
         self.impact = ImpactRepository(session)
+        self.isekai = IsekaiPackRepository(session)
         self.change_log = ChangeLogRepository(session)
 
     def _project_exists(self, project_id: UUID) -> None:
@@ -40,6 +42,7 @@ class ImpactService:
         edges: list[dict[str, object]] = []
         bible = self.bible.list(project_id)
         aliases = self.entities.list_aliases(project_id)
+        isekai_pack = self.isekai.get(project_id)
         surface_index: list[tuple[str, str, str]] = []
         for entity in bible:
             surface_index.append((str(entity["id"]), str(entity["canonical_name"]), "canonical"))
@@ -75,6 +78,49 @@ class ImpactService:
                             "document_revision": document["current_revision"],
                         },
                     })
+            if isekai_pack is not None:
+                for index, replacement in enumerate(isekai_pack.get("replacements", [])):
+                    if not isinstance(replacement, dict):
+                        continue
+                    source_place_id = replacement.get("source_place_entity_id")
+                    world_term = str(replacement.get("world_term", "")).strip()
+                    earth_term = str(replacement.get("earth_term", "")).strip()
+                    replacement_id = f"isekai-replacement:{index}"
+                    if source_place_id:
+                        edges.append({
+                            "source_type": "BibleEntity",
+                            "source_id": str(source_place_id),
+                            "target_type": "IsekaiReplacement",
+                            "target_id": replacement_id,
+                            "edge_type": "isekai_replacement_source",
+                            "detail": {
+                                "earth_term": earth_term,
+                                "world_term": world_term,
+                            },
+                        })
+                    normalized_doc = normalized_content
+                    matched_surface = next(
+                        (
+                            surface for surface in (world_term, earth_term)
+                            if surface and normalize_surface(surface) in normalized_doc
+                        ),
+                        None,
+                    )
+                    if matched_surface:
+                        edges.append({
+                            "source_type": "IsekaiReplacement",
+                            "source_id": replacement_id,
+                            "target_type": "ManuscriptDocument",
+                            "target_id": str(document_id),
+                            "edge_type": "isekai_replacement_usage",
+                            "detail": {
+                                "surface": matched_surface,
+                                "earth_term": earth_term,
+                                "world_term": world_term,
+                                "document_revision": document["current_revision"],
+                            },
+                        })
+
             for mention in self.entities.list_mentions(project_id, document_id):
                 if mention.get("entity_id"):
                     edges.append({

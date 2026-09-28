@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.impact_repositories import ImpactRepository
 from app.isekai_catalog import (
     EARTH_TERM_CATALOG,
+    DEFAULT_ENABLED_CATEGORIES,
     ISEKAI_CATEGORIES,
     ISEKAI_STATUS,
     ISEKAI_STRICTNESS,
@@ -164,7 +165,7 @@ class IsekaiPackService:
         if unknown_categories:
             raise ValueError("Unknown isekai category")
         cleaned_categories = {
-            key: bool(categories.get(key, True))
+            key: bool(categories.get(key, DEFAULT_ENABLED_CATEGORIES[key]))
             for key in ISEKAI_CATEGORIES
         }
 

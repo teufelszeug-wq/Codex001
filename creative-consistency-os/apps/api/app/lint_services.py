@@ -3,6 +3,7 @@ from __future__ import annotations
 import difflib
 import hashlib
 import json
+import re
 import unicodedata
 from collections import Counter, defaultdict
 from uuid import UUID
@@ -627,7 +628,6 @@ class LintService:
                 entries.append(dict(item))
 
         findings: list[dict[str, object]] = []
-        folded = unicodedata.normalize("NFKC", content).casefold()
         seen_spans: set[tuple[int, int, str]] = set()
 
         for entry in entries:
@@ -638,29 +638,47 @@ class LintService:
             normalized_term = normalize_key(term)
             if normalized_term in allow_terms:
                 continue
-            needle = unicodedata.normalize("NFKC", term).casefold()
-            start = 0
-            while True:
-                found = folded.find(needle, start)
-                if found < 0:
-                    break
-                end = found + len(needle)
+            flags = re.IGNORECASE if term.isascii() else 0
+            for match in re.finditer(re.escape(term), content, flags):
+                found, end = match.span()
                 span_key = (found, end, normalized_term)
-                if span_key not in seen_spans:
-                    seen_spans.add(span_key)
-                    replacement = replacements.get(normalized_term)
-                    world_term = str(replacement.get("world_term")) if replacement else None
-                    generic = str(entry.get("generic_replacement", "")) or None
-                    severity_override = str(entry.get("severity")) if entry.get("severity") else default_severity
+                if span_key in seen_spans:
+                    continue
+                seen_spans.add(span_key)
+                replacement = replacements.get(normalized_term)
+                world_term = str(replacement.get("world_term")) if replacement else None
+                generic = str(entry.get("generic_replacement", "")) or None
+                severity_override = str(entry.get("severity")) if entry.get("severity") else default_severity
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="isekai_earth_origin_term",
+                    message=(
+                        f"異世界感ガード: 「{content[found:end]}」は地球由来語候補です。"
+                        + (f" 世界内候補「{world_term}」が登録されています。" if world_term else "")
+                        + (f" 一般化候補は「{generic}」です。" if generic else "")
+                    ),
+                    document_id=document_id,
+                    start_offset=found,
+                    end_offset=end,
+                    evidence={
+                        "term": term,
+                        "category": category,
+                        "concept_key": entry.get("concept_key"),
+                        "generic_replacement": generic,
+                        "world_replacement": world_term,
+                        "source_place_entity_id": replacement.get("source_place_entity_id") if replacement else None,
+                        "strictness": strictness,
+                        "pack": "isekai",
+                    },
+                    severity_override=severity_override,
+                )
+                if bool(pack.get("require_world_mapping", False)) and replacement is None:
                     self._append(
                         findings,
                         lint_config,
-                        rule_id="isekai_earth_origin_term",
-                        message=(
-                            f"異世界感ガード: 「{content[found:end]}」は地球由来語候補です。"
-                            + (f" 世界内候補「{world_term}」が登録されています。" if world_term else "")
-                            + (f" 一般化候補は「{generic}」です。" if generic else "")
-                        ),
+                        rule_id="isekai_world_term_unmapped",
+                        message=f"「{content[found:end]}」には承認済みの世界内名称がまだありません。",
                         document_id=document_id,
                         start_offset=found,
                         end_offset=end,
@@ -669,31 +687,9 @@ class LintService:
                             "category": category,
                             "concept_key": entry.get("concept_key"),
                             "generic_replacement": generic,
-                            "world_replacement": world_term,
-                            "source_place_entity_id": replacement.get("source_place_entity_id") if replacement else None,
-                            "strictness": strictness,
                             "pack": "isekai",
                         },
-                        severity_override=severity_override,
                     )
-                    if bool(pack.get("require_world_mapping", False)) and replacement is None:
-                        self._append(
-                            findings,
-                            lint_config,
-                            rule_id="isekai_world_term_unmapped",
-                            message=f"「{content[found:end]}」には承認済みの世界内名称がまだありません。",
-                            document_id=document_id,
-                            start_offset=found,
-                            end_offset=end,
-                            evidence={
-                                "term": term,
-                                "category": category,
-                                "concept_key": entry.get("concept_key"),
-                                "generic_replacement": generic,
-                                "pack": "isekai",
-                            },
-                        )
-                start = max(end, found + 1)
 
         return findings
 

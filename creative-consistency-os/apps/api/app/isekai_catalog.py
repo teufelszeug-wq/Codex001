@@ -69,13 +69,21 @@ STRICTNESS_TO_SEVERITY = {
 
 ISEKAI_STRICTNESS = ["soft", "standard", "strict"]
 ISEKAI_STATUS = {"draft", "configured"}
+DEFAULT_ENABLED_CATEGORIES = {
+    "geo_origin_food_drink": True,
+    "earth_culture_food": True,
+    "modern_technology": True,
+    "modern_institution": True,
+    "earth_currency": False,
+    "modern_measurement": False,
+}
 
 
 def default_isekai_config() -> dict[str, object]:
     return {
         "enabled": False,
         "strictness": "standard",
-        "enabled_categories": {key: True for key in ISEKAI_CATEGORIES},
+        "enabled_categories": dict(DEFAULT_ENABLED_CATEGORIES),
         "allow_terms": [],
         "custom_terms": [],
         "replacements": [],
