@@ -138,7 +138,7 @@ def test_health(client):
 def test_create_list_and_get_project(client):
     payload = create_project(client)
     assert payload["title"] == "First World"
-    assert payload["schema_version"] == 7
+    assert payload["schema_version"] == 8
 
     listed = client.get("/api/v1/projects")
     assert listed.status_code == 200
@@ -928,3 +928,352 @@ def test_m4_catalog_uses_hint_info_warning_error_and_semantic_drift_rule(client)
     assert payload["severities"] == ["hint", "info", "warning", "error"]
     rule_ids = {item["rule_id"] for item in payload["builtins"]}
     assert {"mention_span_mismatch", "possible_name_drift"} <= rule_ids
+
+
+
+def test_m5_isekai_pack_is_opt_in_and_detects_earth_origin_terms(client):
+    project = create_project(client)
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "異世界の朝",
+            "content": "朝食にはダージリンとパンが出た。主人公はスマホを探した。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+
+    before = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert before.status_code == 200
+    assert not any(item["rule_id"].startswith("isekai_") for item in before.json()["findings"])
+
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/isekai",
+        json={
+            "enabled": True,
+            "strictness": "strict",
+            "enabled_categories": {},
+            "allow_terms": [],
+            "custom_terms": [],
+            "replacements": [
+                {
+                    "earth_term": "ダージリン",
+                    "world_term": "霧峰茶",
+                    "source_place_entity_id": None,
+                    "notes": "世界内高地産",
+                }
+            ],
+            "require_world_mapping": True,
+            "travel_routes": [],
+            "magic_policy": {"enabled": False},
+            "economy_policy": {"enabled": False},
+            "healing_policy": {"enabled": False},
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+    assert saved.json()["enabled"] is True
+
+    run = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert run.status_code == 200
+    earth = [item for item in run.json()["findings"] if item["rule_id"] == "isekai_earth_origin_term"]
+    assert {item["evidence"]["term"] for item in earth} >= {"ダージリン", "スマホ"}
+    darjeeling = next(item for item in earth if item["evidence"]["term"] == "ダージリン")
+    assert darjeeling["severity"] == "error"
+    assert darjeeling["evidence"]["world_replacement"] == "霧峰茶"
+    assert any(
+        item["rule_id"] == "isekai_world_term_unmapped" and item["evidence"]["term"] == "スマホ"
+        for item in run.json()["findings"]
+    )
+
+    preview = client.post(
+        f"/api/v1/projects/{project['id']}/isekai/replacement-preview",
+        json={"term": "ダージリン"},
+    )
+    assert preview.status_code == 200
+    assert preview.json()["world_replacement"] == "霧峰茶"
+    assert preview.json()["needs_author_decision"] is False
+
+
+def test_m5_allowlist_and_category_controls_are_author_selectable(client):
+    project = create_project(client)
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "例外章",
+            "content": "ダージリンとスマホという語が記録に残っている。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/isekai",
+        json={
+            "enabled": True,
+            "strictness": "standard",
+            "enabled_categories": {
+                "geo_origin_food_drink": True,
+                "modern_technology": False,
+            },
+            "allow_terms": ["ダージリン"],
+            "custom_terms": [],
+            "replacements": [],
+            "require_world_mapping": False,
+            "travel_routes": [],
+            "magic_policy": {"enabled": False},
+            "economy_policy": {"enabled": False},
+            "healing_policy": {"enabled": False},
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+    run = client.post(f"/api/v1/projects/{project['id']}/manuscripts/{document['id']}/lint")
+    assert run.status_code == 200
+    assert not any(item["rule_id"] == "isekai_earth_origin_term" for item in run.json()["findings"])
+
+
+def test_m5_structured_travel_magic_economy_and_healing_rules(client):
+    project = create_project(client)
+    town_a = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "place",
+            "canonical_name": "白門町",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    town_b = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "place",
+            "canonical_name": "青塔市",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "event",
+            "canonical_name": "白門から青塔への移動",
+            "summary": "",
+            "attributes": {
+                "isekai_travel": {
+                    "from_entity_id": town_a["id"],
+                    "to_entity_id": town_b["id"],
+                    "mode": "horse",
+                    "duration_hours": 2,
+                }
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    )
+    client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "spell",
+            "canonical_name": "大治癒",
+            "summary": "",
+            "attributes": {
+                "magic": {"tier": "high"},
+                "healing": {"resurrection": True, "limb_regrowth": True},
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    )
+    client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "item",
+            "canonical_name": "宿屋の夕食",
+            "summary": "",
+            "attributes": {
+                "economy": {"category": "meal", "currency": "クラウン", "price": 80}
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    )
+    client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "item",
+            "canonical_name": "異国の古銭",
+            "summary": "",
+            "attributes": {
+                "economy": {"category": "collectible", "currency": "円", "price": 1000}
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    )
+
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/isekai",
+        json={
+            "enabled": True,
+            "strictness": "standard",
+            "enabled_categories": {},
+            "allow_terms": [],
+            "custom_terms": [],
+            "replacements": [],
+            "require_world_mapping": False,
+            "travel_routes": [
+                {
+                    "id": "white-blue-horse",
+                    "from_entity_id": town_a["id"],
+                    "to_entity_id": town_b["id"],
+                    "mode": "horse",
+                    "min_hours": 6,
+                    "max_hours": 10,
+                    "bidirectional": True,
+                    "notes": "",
+                }
+            ],
+            "magic_policy": {
+                "enabled": True,
+                "require_cost": True,
+                "allowed_cost_types": ["mana"],
+                "costless_tiers": [],
+            },
+            "economy_policy": {
+                "enabled": True,
+                "currencies": ["クラウン"],
+                "price_bands": [
+                    {
+                        "id": "meal",
+                        "category": "meal",
+                        "currency": "クラウン",
+                        "min_price": 2,
+                        "max_price": 20,
+                        "notes": "",
+                    }
+                ],
+            },
+            "healing_policy": {
+                "enabled": True,
+                "resurrection_allowed": False,
+                "limb_regrowth_allowed": False,
+            },
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    run = client.post(f"/api/v1/projects/{project['id']}/lint/run-project")
+    assert run.status_code == 200
+    rules = {item["rule_id"] for item in run.json()["findings"]}
+    assert {
+        "isekai_travel_duration",
+        "isekai_magic_cost_missing",
+        "isekai_price_out_of_band",
+        "isekai_currency_unregistered",
+        "isekai_healing_limit",
+    } <= rules
+
+
+def test_m5_custom_earth_term_and_generic_replacement_preview(client):
+    project = create_project(client)
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/isekai",
+        json={
+            "enabled": True,
+            "strictness": "soft",
+            "enabled_categories": {},
+            "allow_terms": [],
+            "custom_terms": [
+                {
+                    "id": "custom-earth-snack",
+                    "term": "ホニャララスナック",
+                    "category": "earth_culture_food",
+                    "concept_key": "fried_snack",
+                    "generic_replacement": "揚げ菓子",
+                    "severity": "info",
+                    "enabled": True,
+                }
+            ],
+            "replacements": [],
+            "require_world_mapping": False,
+            "travel_routes": [],
+            "magic_policy": {"enabled": False},
+            "economy_policy": {"enabled": False},
+            "healing_policy": {"enabled": False},
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+    preview = client.post(
+        f"/api/v1/projects/{project['id']}/isekai/replacement-preview",
+        json={"term": "ホニャララスナック"},
+    )
+    assert preview.status_code == 200
+    assert preview.json()["generic_replacement"] == "揚げ菓子"
+    assert preview.json()["needs_author_decision"] is True
+
+
+def test_m5_config_change_queues_global_impact_revalidation(client):
+    project = create_project(client)
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "第一章",
+            "content": "ダージリンを飲んだ。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/isekai",
+        json={
+            "enabled": True,
+            "strictness": "standard",
+            "enabled_categories": {},
+            "allow_terms": [],
+            "custom_terms": [],
+            "replacements": [],
+            "require_world_mapping": False,
+            "travel_routes": [],
+            "magic_policy": {"enabled": False},
+            "economy_policy": {"enabled": False},
+            "healing_policy": {"enabled": False},
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    pending = client.get(
+        f"/api/v1/projects/{project['id']}/impact/invalidations",
+        params={"status_filter": "PENDING"},
+    )
+    assert pending.status_code == 200
+    invalidation = next(
+        item for item in pending.json()
+        if item["source_type"] == "IsekaiPackConfig"
+        and item["change_kind"] == "ISEKAI_PACK_CONFIG_UPDATED"
+    )
+
+    revalidated = client.post(
+        f"/api/v1/projects/{project['id']}/impact/invalidations/{invalidation['id']}/revalidate",
+        json={"max_depth": 4},
+    )
+    assert revalidated.status_code == 200
+    payload = revalidated.json()
+    assert payload["status"] == "REVALIDATED"
+    lint_run = payload["result"]["lint_runs"][0]
+    assert lint_run["document_id"] is None
+    full_run = client.get(
+        f"/api/v1/projects/{project['id']}/lint/runs/{lint_run['run_id']}"
+    )
+    assert full_run.status_code == 200
+    assert any(
+        item["rule_id"] == "isekai_earth_origin_term"
+        and item["document_id"] == document["id"]
+        for item in full_run.json()["findings"]
+    )
