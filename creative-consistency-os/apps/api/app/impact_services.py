@@ -359,12 +359,17 @@ class ImpactService:
         if invalidation["status"] != "PENDING":
             return invalidation
 
-        if invalidation["source_type"] == "IsekaiPackConfig":
+        if invalidation["source_type"] in {"IsekaiPackConfig", "LNGenrePackConfig"}:
             lint_service = LintService(self.session)
             run = lint_service.run_project(project_id)
+            reason = (
+                "Isekai Pack policy changed"
+                if invalidation["source_type"] == "IsekaiPackConfig"
+                else "LN Genre Pack policy changed"
+            )
             result = {
                 "scope": "project",
-                "reason": "Isekai Pack policy changed",
+                "reason": reason,
                 "lint_runs": [{
                     "run_id": run["id"],
                     "document_id": None,
@@ -386,7 +391,7 @@ class ImpactService:
                 entity_id=invalidation_id,
                 before=invalidation,
                 after=updated,
-                reason="M5 global pack-policy revalidation",
+                reason="Genre pack global policy revalidation",
             )
             self.session.commit()
             return updated
@@ -410,6 +415,13 @@ class ImpactService:
                 "summary": run["summary"],
             })
 
+        structure_run = lint_service.run_structure(project_id)
+        lint_runs.append({
+            "run_id": structure_run["id"],
+            "document_id": None,
+            "scope": "structure",
+            "summary": structure_run["summary"],
+        })
         result = {
             "affected_document_ids": preview["affected_document_ids"],
             "affected_timeline_event_ids": preview["affected_timeline_event_ids"],

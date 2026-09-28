@@ -13,6 +13,7 @@ from app.entity_services import EntityIntelligenceService
 from app.impact_services import ImpactService
 from app.isekai_services import IsekaiPackService
 from app.lint_services import LintService
+from app.ln_genre_services import LNGenrePackService
 from app.language_services import LanguageCultureService
 from app.services import ProjectService, WorldBuilderService
 from app.writing_services import WritingService
@@ -230,6 +231,14 @@ class IsekaiReplacementPreviewRequest(BaseModel):
     term: str = Field(min_length=1, max_length=200)
 
 
+class LNGenrePackWrite(BaseModel):
+    enabled_packs: dict[str, bool] = Field(default_factory=dict)
+    noble_lady: dict[str, object] = Field(default_factory=dict)
+    palace_harem: dict[str, object] = Field(default_factory=dict)
+    romcom: dict[str, object] = Field(default_factory=dict)
+    status: str = "draft"
+
+
 app = FastAPI(title=settings.app_name, version=settings.app_version)
 app.add_middleware(
     CORSMiddleware,
@@ -260,6 +269,11 @@ def language_culture_catalog() -> dict[str, object]:
 @api.get("/catalog/isekai", tags=["isekai"])
 def isekai_catalog() -> dict[str, object]:
     return IsekaiPackService.catalog()
+
+
+@api.get("/catalog/ln-genres", tags=["ln-genres"])
+def ln_genre_catalog() -> dict[str, object]:
+    return LNGenrePackService.catalog()
 
 
 @api.get("/projects", response_model=list[ProjectRead], tags=["projects"])
@@ -725,6 +739,36 @@ def set_lint_finding_state(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/ln-genres", tags=["ln-genres"])
+def get_ln_genre_pack(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return LNGenrePackService(session).get(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.put("/projects/{project_id}/ln-genres", tags=["ln-genres"])
+def save_ln_genre_pack(
+    project_id: UUID,
+    payload: LNGenrePackWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return LNGenrePackService(session).save(project_id, payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/lint/run-structure", tags=["lint"])
+def run_structure_lint(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return LintService(session).run_structure(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
 @api.get("/projects/{project_id}/isekai", tags=["isekai"])
