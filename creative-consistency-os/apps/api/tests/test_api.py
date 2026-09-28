@@ -1277,3 +1277,63 @@ def test_m5_config_change_queues_global_impact_revalidation(client):
         and item["document_id"] == document["id"]
         for item in full_run.json()["findings"]
     )
+
+
+
+def test_m5_replacement_source_place_participates_in_change_impact(client):
+    project = create_project(client)
+    source_place = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "place",
+            "canonical_name": "霧峰",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "茶会",
+            "content": "客人には霧峰茶が振る舞われた。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/isekai",
+        json={
+            "enabled": True,
+            "strictness": "standard",
+            "enabled_categories": {},
+            "allow_terms": [],
+            "custom_terms": [],
+            "replacements": [
+                {
+                    "earth_term": "ダージリン",
+                    "world_term": "霧峰茶",
+                    "source_place_entity_id": source_place["id"],
+                    "notes": "",
+                }
+            ],
+            "require_world_mapping": True,
+            "travel_routes": [],
+            "magic_policy": {"enabled": False},
+            "economy_policy": {"enabled": False},
+            "healing_policy": {"enabled": False},
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    preview = client.get(
+        f"/api/v1/projects/{project['id']}/impact/entities/{source_place['id']}",
+        params={"max_depth": 4, "refresh": True},
+    )
+    assert preview.status_code == 200
+    payload = preview.json()
+    assert document["id"] in payload["affected_document_ids"]
+    assert any(item["edge_type"] == "isekai_replacement_source" for item in payload["edges"])
+    assert any(item["edge_type"] == "isekai_replacement_usage" for item in payload["edges"])
