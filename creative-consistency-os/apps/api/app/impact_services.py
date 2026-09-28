@@ -312,8 +312,41 @@ class ImpactService:
             raise LookupError("Impact invalidation not found")
         if invalidation["status"] != "PENDING":
             return invalidation
+
+        if invalidation["source_type"] == "IsekaiPackConfig":
+            lint_service = LintService(self.session)
+            run = lint_service.run_project(project_id)
+            result = {
+                "scope": "project",
+                "reason": "Isekai Pack policy changed",
+                "lint_runs": [{
+                    "run_id": run["id"],
+                    "document_id": None,
+                    "summary": run["summary"],
+                }],
+            }
+            updated = self.impact.resolve_invalidation(
+                project_id,
+                invalidation_id,
+                status="REVALIDATED",
+                result=result,
+            )
+            if updated is None:
+                raise LookupError("Impact invalidation not found")
+            self.change_log.record(
+                project_id=project_id,
+                event_type="CHANGE_IMPACT_REVALIDATED",
+                entity_type="ImpactInvalidation",
+                entity_id=invalidation_id,
+                before=invalidation,
+                after=updated,
+                reason="M5 global pack-policy revalidation",
+            )
+            self.session.commit()
+            return updated
+
         if invalidation["source_type"] != "BibleEntity":
-            raise ValueError("Selective revalidation currently supports BibleEntity invalidations")
+            raise ValueError("Unsupported invalidation source type")
 
         preview = self.preview_entity(
             project_id,

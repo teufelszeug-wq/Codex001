@@ -11,6 +11,7 @@ from app.db import get_session
 from app.domain import Project, WorldBuilderProfile
 from app.entity_services import EntityIntelligenceService
 from app.impact_services import ImpactService
+from app.isekai_services import IsekaiPackService
 from app.lint_services import LintService
 from app.language_services import LanguageCultureService
 from app.services import ProjectService, WorldBuilderService
@@ -210,6 +211,25 @@ class ImpactDismissRequest(BaseModel):
     reason: str = Field(min_length=1, max_length=2000)
 
 
+class IsekaiPackWrite(BaseModel):
+    enabled: bool = False
+    strictness: str = "standard"
+    enabled_categories: dict[str, bool] = Field(default_factory=dict)
+    allow_terms: list[str] = Field(default_factory=list)
+    custom_terms: list[dict[str, object]] = Field(default_factory=list)
+    replacements: list[dict[str, object]] = Field(default_factory=list)
+    require_world_mapping: bool = False
+    travel_routes: list[dict[str, object]] = Field(default_factory=list)
+    magic_policy: dict[str, object] = Field(default_factory=dict)
+    economy_policy: dict[str, object] = Field(default_factory=dict)
+    healing_policy: dict[str, object] = Field(default_factory=dict)
+    status: str = "draft"
+
+
+class IsekaiReplacementPreviewRequest(BaseModel):
+    term: str = Field(min_length=1, max_length=200)
+
+
 app = FastAPI(title=settings.app_name, version=settings.app_version)
 app.add_middleware(
     CORSMiddleware,
@@ -235,6 +255,11 @@ def world_builder_catalog() -> dict[str, object]:
 @api.get("/catalog/language-culture", tags=["language-culture"])
 def language_culture_catalog() -> dict[str, object]:
     return LanguageCultureService.catalog()
+
+
+@api.get("/catalog/isekai", tags=["isekai"])
+def isekai_catalog() -> dict[str, object]:
+    return IsekaiPackService.catalog()
 
 
 @api.get("/projects", response_model=list[ProjectRead], tags=["projects"])
@@ -696,6 +721,42 @@ def set_lint_finding_state(
 ) -> dict[str, object]:
     try:
         return LintService(session).set_finding_state(project_id, finding_id, payload.state)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.get("/projects/{project_id}/isekai", tags=["isekai"])
+def get_isekai_pack(project_id: UUID, session: Session = Depends(get_session)) -> dict[str, object]:
+    try:
+        return IsekaiPackService(session).get(project_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@api.put("/projects/{project_id}/isekai", tags=["isekai"])
+def save_isekai_pack(
+    project_id: UUID,
+    payload: IsekaiPackWrite,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return IsekaiPackService(session).save(project_id, payload.model_dump())
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+
+@api.post("/projects/{project_id}/isekai/replacement-preview", tags=["isekai"])
+def preview_isekai_replacement(
+    project_id: UUID,
+    payload: IsekaiReplacementPreviewRequest,
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    try:
+        return IsekaiPackService(session).replacement_preview(project_id, payload.term)
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:
