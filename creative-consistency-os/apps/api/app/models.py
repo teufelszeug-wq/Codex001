@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -175,6 +175,27 @@ class EntityRelationModel(Base):
     source_type: Mapped[str] = mapped_column(String(32), nullable=False, default="AUTHOR")
     attributes_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
+class IsekaiPackConfigModel(Base):
+    __tablename__ = "isekai_pack_configs"
+    project_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    strictness: Mapped[str] = mapped_column(String(32), nullable=False, default="standard")
+    enabled_categories_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    allow_terms_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    custom_terms_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    replacements_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    require_world_mapping: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    travel_routes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    magic_policy_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    economy_policy_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    healing_policy_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
+    pack_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 
 
