@@ -15,6 +15,7 @@ from app.entity_repositories import EntityIntelligenceRepository
 from app.isekai_catalog import EARTH_TERM_CATALOG, STRICTNESS_TO_SEVERITY
 from app.isekai_repositories import IsekaiPackRepository
 from app.lint_repositories import LintRepository
+from app.ln_genre_repositories import LNGenrePackRepository
 from app.repositories import ChangeLogRepository, SqlAlchemyProjectRepository
 from app.writing_repositories import BibleRepository, ManuscriptRepository, TimelineRepository
 
@@ -147,6 +148,114 @@ BUILTIN_RULES: dict[str, dict[str, object]] = {
         "description": "治癒魔法の能力が世界設定上の回復限界を超えている。",
         "pack": "isekai",
     },
+    "noble_rank_unknown": {
+        "category": "noble_status",
+        "default_severity": "warning",
+        "description": "貴族キャラクターの爵位キーが作品の序列に存在しない。",
+        "pack": "noble_lady",
+    },
+    "noble_house_reference_invalid": {
+        "category": "noble_house",
+        "default_severity": "error",
+        "description": "キャラクターの所属家参照がStory Bibleに存在しない。",
+        "pack": "noble_lady",
+    },
+    "noble_title_rank_mismatch": {
+        "category": "noble_etiquette",
+        "default_severity": "warning",
+        "description": "公開称号が設定済み爵位の許可称号と一致しない。",
+        "pack": "noble_lady",
+    },
+    "noble_multiple_active_engagements": {
+        "category": "noble_engagement",
+        "default_severity": "error",
+        "description": "複数婚約を許可していない作品で同一人物に複数の有効婚約がある。",
+        "pack": "noble_lady",
+    },
+    "noble_address_mismatch": {
+        "category": "noble_etiquette",
+        "default_severity": "warning",
+        "description": "構造化された呼称イベントが対象爵位の呼称規則に一致しない。",
+        "pack": "noble_lady",
+    },
+    "palace_rank_unknown": {
+        "category": "palace_rank",
+        "default_severity": "warning",
+        "description": "後宮・宮廷キャラクターの位階キーが作品の序列に存在しない。",
+        "pack": "palace_harem",
+    },
+    "palace_faction_reference_invalid": {
+        "category": "palace_faction",
+        "default_severity": "error",
+        "description": "宮廷キャラクターの派閥参照がStory Bibleに存在しない。",
+        "pack": "palace_harem",
+    },
+    "palace_restricted_area_access": {
+        "category": "palace_access",
+        "default_severity": "error",
+        "description": "構造化された宮廷行動が立入権限規則を満たしていない。",
+        "pack": "palace_harem",
+    },
+    "palace_information_access": {
+        "category": "palace_information",
+        "default_severity": "warning",
+        "description": "キャラクターが位階・派閥上アクセスできない情報を取得している。",
+        "pack": "palace_harem",
+    },
+    "palace_ritual_step_unknown": {
+        "category": "palace_ritual",
+        "default_severity": "warning",
+        "description": "儀礼イベントに定義されていない手順キーが使われている。",
+        "pack": "palace_harem",
+    },
+    "palace_ritual_order": {
+        "category": "palace_ritual",
+        "default_severity": "warning",
+        "description": "儀礼イベントの手順順序が設定済みシーケンスと一致しない。",
+        "pack": "palace_harem",
+    },
+    "romcom_stage_unknown": {
+        "category": "romcom_relationship",
+        "default_severity": "warning",
+        "description": "恋愛関係遷移に未定義の関係段階が使われている。",
+        "pack": "romcom",
+    },
+    "romcom_stage_jump": {
+        "category": "romcom_relationship",
+        "default_severity": "warning",
+        "description": "恋愛関係の進展が設定した最大段階ジャンプを超えている。",
+        "pack": "romcom",
+    },
+    "romcom_stage_regression": {
+        "category": "romcom_relationship",
+        "default_severity": "warning",
+        "description": "関係段階の後退を許可していない設定で段階が後退している。",
+        "pack": "romcom",
+    },
+    "romcom_schedule_conflict": {
+        "category": "romcom_schedule",
+        "default_severity": "error",
+        "description": "同一人物の構造化予定が同じ日・時間帯で重複している。",
+        "pack": "romcom",
+    },
+    "romcom_schedule_invalid": {
+        "category": "romcom_schedule",
+        "default_severity": "warning",
+        "description": "構造化予定の開始・終了時刻が不正。",
+        "pack": "romcom",
+    },
+    "romcom_misunderstanding_order": {
+        "category": "romcom_misunderstanding",
+        "default_severity": "warning",
+        "description": "誤解のOPEN/RESOLVEライフサイクル順序が不正。",
+        "pack": "romcom",
+    },
+    "romcom_misunderstanding_unresolved": {
+        "category": "romcom_misunderstanding",
+        "default_severity": "info",
+        "description": "OPENされた誤解が構造化イベント上まだ解消されていない。",
+        "pack": "romcom",
+    },
 }
 
 
@@ -169,6 +278,7 @@ class LintService:
         self.entities = EntityIntelligenceRepository(session)
         self.lint = LintRepository(session)
         self.isekai = IsekaiPackRepository(session)
+        self.ln_genres = LNGenrePackRepository(session)
         self.change_log = ChangeLogRepository(session)
 
     @staticmethod
@@ -274,6 +384,31 @@ class LintService:
             before=None,
             after={"run_id": run["id"], "summary": summary},
             reason="M4 project lint",
+        )
+        self.session.commit()
+        return run
+
+    def run_structure(self, project_id: UUID) -> dict[str, object]:
+        self._project_exists(project_id)
+        config = self.get_config(project_id)["rules"]
+        findings = self._project_findings(project_id, config)
+        summary = self._summary(findings)
+        run = self.lint.create_run(
+            project_id,
+            document_id=None,
+            scope="structure",
+            document_revision=None,
+            findings=findings,
+            summary=summary,
+        )
+        self.change_log.record(
+            project_id=project_id,
+            event_type="LINT_STRUCTURE_RUN_COMPLETED",
+            entity_type="Project",
+            entity_id=project_id,
+            before=None,
+            after={"run_id": run["id"], "summary": summary},
+            reason="M6 structural lint",
         )
         self.session.commit()
         return run
@@ -595,6 +730,478 @@ class LintService:
                 )
 
         findings.extend(self._isekai_project_findings(project_id, config, bible))
+        findings.extend(self._ln_genre_project_findings(project_id, config, bible, bible_by_id))
+        return findings
+
+    def _ln_genre_project_findings(
+        self,
+        project_id: UUID,
+        lint_config: dict[str, object],
+        bible: list[dict[str, object]],
+        bible_by_id: dict[str, dict[str, object]],
+    ) -> list[dict[str, object]]:
+        pack = self.ln_genres.get(project_id)
+        if pack is None:
+            return []
+        enabled = pack.get("enabled_packs", {})
+        findings: list[dict[str, object]] = []
+        relations = self.entities.list_relations(project_id)
+
+        if isinstance(enabled, dict) and bool(enabled.get("noble_lady", False)):
+            findings.extend(self._noble_findings(
+                lint_config,
+                bible,
+                bible_by_id,
+                relations,
+                pack.get("noble_lady", {}),
+            ))
+        if isinstance(enabled, dict) and bool(enabled.get("palace_harem", False)):
+            findings.extend(self._palace_findings(
+                lint_config,
+                bible,
+                bible_by_id,
+                pack.get("palace_harem", {}),
+            ))
+        if isinstance(enabled, dict) and bool(enabled.get("romcom", False)):
+            findings.extend(self._romcom_findings(
+                lint_config,
+                bible,
+                pack.get("romcom", {}),
+            ))
+        return findings
+
+    def _noble_findings(
+        self,
+        lint_config: dict[str, object],
+        bible: list[dict[str, object]],
+        bible_by_id: dict[str, dict[str, object]],
+        relations: list[dict[str, object]],
+        policy: object,
+    ) -> list[dict[str, object]]:
+        if not isinstance(policy, dict):
+            return []
+        findings: list[dict[str, object]] = []
+        ranks = [str(item) for item in policy.get("rank_order", [])]
+        rank_title_map = policy.get("rank_title_map", {})
+        rank_title_map = rank_title_map if isinstance(rank_title_map, dict) else {}
+        noble_by_id: dict[str, dict[str, object]] = {}
+
+        for entity in bible:
+            if str(entity.get("entity_type")) != "character":
+                continue
+            attributes = entity.get("attributes", {})
+            if not isinstance(attributes, dict):
+                continue
+            noble = attributes.get("ln_noble")
+            if not isinstance(noble, dict):
+                continue
+            entity_id = str(entity["id"])
+            noble_by_id[entity_id] = noble
+            rank = str(noble.get("rank", "")).strip()
+            if rank and rank not in ranks:
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="noble_rank_unknown",
+                    entity_id=entity_id,
+                    message=f"「{entity['canonical_name']}」の爵位「{rank}」は爵位序列にありません。",
+                    evidence={"rank": rank, "rank_order": ranks, "pack": "noble_lady"},
+                )
+            house_id = str(noble.get("house_entity_id", "")).strip()
+            if house_id and house_id not in bible_by_id:
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="noble_house_reference_invalid",
+                    entity_id=entity_id,
+                    message=f"「{entity['canonical_name']}」の所属家参照がStory Bibleに存在しません。",
+                    evidence={"house_entity_id": house_id, "pack": "noble_lady"},
+                )
+            public_title = str(noble.get("public_title", "")).strip()
+            allowed_titles = rank_title_map.get(rank, [])
+            if (
+                public_title
+                and isinstance(allowed_titles, list)
+                and allowed_titles
+                and public_title not in {str(item) for item in allowed_titles}
+            ):
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="noble_title_rank_mismatch",
+                    entity_id=entity_id,
+                    message=f"「{entity['canonical_name']}」の公開称号「{public_title}」は爵位「{rank}」の許可称号にありません。",
+                    evidence={"rank": rank, "public_title": public_title, "allowed_titles": allowed_titles, "pack": "noble_lady"},
+                )
+
+        relation_types = {str(item) for item in policy.get("engagement_relation_types", [])}
+        if not bool(policy.get("allow_multiple_active_engagements", False)) and relation_types:
+            active: dict[str, list[dict[str, object]]] = defaultdict(list)
+            for relation in relations:
+                if str(relation.get("relation_type")) not in relation_types:
+                    continue
+                attributes = relation.get("attributes", {})
+                status = str(attributes.get("status", "active")) if isinstance(attributes, dict) else "active"
+                if status != "active":
+                    continue
+                active[str(relation["source_entity_id"])].append(relation)
+                active[str(relation["target_entity_id"])].append(relation)
+            for entity_id, group in active.items():
+                if len(group) > 1:
+                    entity = bible_by_id.get(entity_id)
+                    name = str(entity["canonical_name"]) if entity else entity_id
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="noble_multiple_active_engagements",
+                        entity_id=entity_id if entity else None,
+                        message=f"「{name}」に有効な婚約関係が{len(group)}件あります。",
+                        evidence={"relation_ids": [item["id"] for item in group], "pack": "noble_lady"},
+                    )
+
+        address_rules = policy.get("address_rules", [])
+        if isinstance(address_rules, list):
+            rules_by_rank = {
+                str(item.get("target_rank")): {str(v) for v in item.get("allowed_addresses", [])}
+                for item in address_rules
+                if isinstance(item, dict)
+            }
+            for event in bible:
+                attributes = event.get("attributes", {})
+                if not isinstance(attributes, dict):
+                    continue
+                address = attributes.get("ln_address")
+                if not isinstance(address, dict):
+                    continue
+                target_id = str(address.get("target_entity_id", ""))
+                used = str(address.get("used_address", "")).strip()
+                target = bible_by_id.get(target_id)
+                target_noble = noble_by_id.get(target_id)
+                if target is None or target_noble is None:
+                    continue
+                target_rank = str(target_noble.get("rank", ""))
+                allowed = rules_by_rank.get(target_rank)
+                if allowed and used and used not in allowed:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="noble_address_mismatch",
+                        entity_id=str(event["id"]),
+                        message=f"呼称イベント「{event['canonical_name']}」の「{used}」は対象爵位「{target_rank}」の許可呼称にありません。",
+                        evidence={"address": address, "allowed_addresses": sorted(allowed), "pack": "noble_lady"},
+                    )
+
+        return findings
+
+    def _palace_findings(
+        self,
+        lint_config: dict[str, object],
+        bible: list[dict[str, object]],
+        bible_by_id: dict[str, dict[str, object]],
+        policy: object,
+    ) -> list[dict[str, object]]:
+        if not isinstance(policy, dict):
+            return []
+        findings: list[dict[str, object]] = []
+        ranks = [str(item) for item in policy.get("rank_order", [])]
+        rank_index = {rank: index for index, rank in enumerate(ranks)}
+        palace_by_id: dict[str, dict[str, object]] = {}
+
+        for entity in bible:
+            if str(entity.get("entity_type")) != "character":
+                continue
+            attributes = entity.get("attributes", {})
+            if not isinstance(attributes, dict):
+                continue
+            palace = attributes.get("ln_palace")
+            if not isinstance(palace, dict):
+                continue
+            entity_id = str(entity["id"])
+            palace_by_id[entity_id] = palace
+            rank = str(palace.get("rank", "")).strip()
+            if rank and rank not in rank_index:
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="palace_rank_unknown",
+                    entity_id=entity_id,
+                    message=f"「{entity['canonical_name']}」の位階「{rank}」は宮廷位階序列にありません。",
+                    evidence={"rank": rank, "rank_order": ranks, "pack": "palace_harem"},
+                )
+            faction_id = str(palace.get("faction_entity_id", "")).strip()
+            if faction_id and faction_id not in bible_by_id:
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="palace_faction_reference_invalid",
+                    entity_id=entity_id,
+                    message=f"「{entity['canonical_name']}」の派閥参照がStory Bibleに存在しません。",
+                    evidence={"faction_entity_id": faction_id, "pack": "palace_harem"},
+                )
+
+        restricted = {
+            str(item.get("place_entity_id")): item
+            for item in policy.get("restricted_areas", [])
+            if isinstance(item, dict)
+        }
+        information = {
+            str(item.get("fact_key")): item
+            for item in policy.get("information_rules", [])
+            if isinstance(item, dict)
+        }
+
+        def authorized(actor_id: str, rule: dict[str, object]) -> bool:
+            if actor_id in {str(item) for item in rule.get("exception_entity_ids", [])}:
+                return True
+            actor = palace_by_id.get(actor_id, {})
+            actor_rank = str(actor.get("rank", ""))
+            min_rank = str(rule.get("min_rank", ""))
+            if min_rank:
+                if actor_rank not in rank_index or rank_index[actor_rank] < rank_index.get(min_rank, len(ranks)):
+                    return False
+            allowed_factions = {str(item) for item in rule.get("allowed_faction_entity_ids", [])}
+            if allowed_factions:
+                return str(actor.get("faction_entity_id", "")) in allowed_factions
+            return True
+
+        ritual_events: dict[str, list[tuple[int, dict[str, object], dict[str, object]]]] = defaultdict(list)
+        for event in bible:
+            attributes = event.get("attributes", {})
+            if not isinstance(attributes, dict):
+                continue
+            access = attributes.get("ln_palace_access")
+            if isinstance(access, dict):
+                actor_id = str(access.get("actor_entity_id", ""))
+                place_id = str(access.get("place_entity_id", ""))
+                rule = restricted.get(place_id)
+                if rule is not None and not authorized(actor_id, rule):
+                    actor = bible_by_id.get(actor_id)
+                    place = bible_by_id.get(place_id)
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="palace_restricted_area_access",
+                        entity_id=str(event["id"]),
+                        message=f"「{actor['canonical_name'] if actor else actor_id}」は「{place['canonical_name'] if place else place_id}」の立入条件を満たしていません。",
+                        evidence={"access": access, "rule": rule, "pack": "palace_harem"},
+                    )
+            info_access = attributes.get("ln_information_access")
+            if isinstance(info_access, dict):
+                actor_id = str(info_access.get("actor_entity_id", ""))
+                fact_key = str(info_access.get("fact_key", ""))
+                rule = information.get(fact_key)
+                if rule is not None and not authorized(actor_id, rule):
+                    actor = bible_by_id.get(actor_id)
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="palace_information_access",
+                        entity_id=str(event["id"]),
+                        message=f"「{actor['canonical_name'] if actor else actor_id}」は情報「{fact_key}」のアクセス条件を満たしていません。",
+                        evidence={"information_access": info_access, "rule": rule, "pack": "palace_harem"},
+                    )
+            ritual = attributes.get("ln_ritual")
+            if isinstance(ritual, dict):
+                key = str(ritual.get("ritual_key", "")).strip()
+                try:
+                    sequence = int(ritual.get("sequence_index", 0))
+                except (TypeError, ValueError):
+                    sequence = 0
+                if key:
+                    ritual_events[key].append((sequence, event, ritual))
+
+        sequences = {
+            str(item.get("ritual_key")): [str(step) for step in item.get("steps", [])]
+            for item in policy.get("ritual_sequences", [])
+            if isinstance(item, dict)
+        }
+        for ritual_key, events in ritual_events.items():
+            expected = sequences.get(ritual_key)
+            if not expected:
+                continue
+            positions = {step: index for index, step in enumerate(expected)}
+            observed_positions: list[int] = []
+            for _, event, ritual in sorted(events, key=lambda item: item[0]):
+                step = str(ritual.get("step_key", ""))
+                if step not in positions:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="palace_ritual_step_unknown",
+                        entity_id=str(event["id"]),
+                        message=f"儀礼「{ritual_key}」に未定義手順「{step}」があります。",
+                        evidence={"ritual": ritual, "expected_steps": expected, "pack": "palace_harem"},
+                    )
+                    continue
+                observed_positions.append(positions[step])
+            if any(later <= earlier for earlier, later in zip(observed_positions, observed_positions[1:])):
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="palace_ritual_order",
+                    message=f"儀礼「{ritual_key}」の手順順序が設定済み順序と一致しません。",
+                    evidence={"observed_positions": observed_positions, "expected_steps": expected, "pack": "palace_harem"},
+                )
+
+        return findings
+
+    def _romcom_findings(
+        self,
+        lint_config: dict[str, object],
+        bible: list[dict[str, object]],
+        policy: object,
+    ) -> list[dict[str, object]]:
+        if not isinstance(policy, dict):
+            return []
+        findings: list[dict[str, object]] = []
+        stages = [str(item) for item in policy.get("stages", [])]
+        stage_index = {stage: index for index, stage in enumerate(stages)}
+        max_jump = int(policy.get("max_stage_jump", 1))
+        schedule_by_participant: dict[tuple[str, str], list[tuple[int, int, dict[str, object]]]] = defaultdict(list)
+        misunderstandings: dict[str, list[tuple[int, str, dict[str, object]]]] = defaultdict(list)
+
+        for event in bible:
+            attributes = event.get("attributes", {})
+            if not isinstance(attributes, dict):
+                continue
+            transition = attributes.get("ln_relationship_transition")
+            if isinstance(transition, dict):
+                before = str(transition.get("from_stage", ""))
+                after = str(transition.get("to_stage", ""))
+                if before not in stage_index or after not in stage_index:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="romcom_stage_unknown",
+                        entity_id=str(event["id"]),
+                        message=f"関係遷移イベント「{event['canonical_name']}」に未定義段階があります。",
+                        evidence={"transition": transition, "stages": stages, "pack": "romcom"},
+                    )
+                else:
+                    delta = stage_index[after] - stage_index[before]
+                    if delta > max_jump:
+                        reason = str(transition.get("reason", "")).strip()
+                        suffix = " 理由が未記入です。" if bool(policy.get("require_reason_for_large_jump", True)) and not reason else ""
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="romcom_stage_jump",
+                            entity_id=str(event["id"]),
+                            message=f"「{event['canonical_name']}」は関係段階を{delta}段階進めています。許容は{max_jump}段階です。{suffix}",
+                            evidence={"transition": transition, "delta": delta, "max_stage_jump": max_jump, "pack": "romcom"},
+                        )
+                    if delta < 0 and not bool(policy.get("allow_regression", True)):
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="romcom_stage_regression",
+                            entity_id=str(event["id"]),
+                            message=f"「{event['canonical_name']}」で関係段階が「{before}」から「{after}」へ後退しています。",
+                            evidence={"transition": transition, "pack": "romcom"},
+                        )
+
+            schedule = attributes.get("ln_schedule")
+            if isinstance(schedule, dict):
+                day = str(schedule.get("day_key", "")).strip()
+                try:
+                    start = int(schedule.get("start_minute"))
+                    end = int(schedule.get("end_minute"))
+                except (TypeError, ValueError):
+                    start = end = -1
+                participants = schedule.get("participant_ids", [])
+                if not isinstance(participants, list) or start < 0 or end <= start:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="romcom_schedule_invalid",
+                        entity_id=str(event["id"]),
+                        message=f"予定イベント「{event['canonical_name']}」の時間情報が不正です。",
+                        evidence={"schedule": schedule, "pack": "romcom"},
+                    )
+                else:
+                    for participant_id in participants:
+                        schedule_by_participant[(str(participant_id), day)].append((start, end, event))
+
+            misunderstanding = attributes.get("ln_misunderstanding")
+            if isinstance(misunderstanding, dict):
+                key = str(misunderstanding.get("misunderstanding_id", "")).strip()
+                action = str(misunderstanding.get("action", "")).strip()
+                try:
+                    sequence = int(misunderstanding.get("sequence_index", 0))
+                except (TypeError, ValueError):
+                    sequence = 0
+                if key:
+                    misunderstandings[key].append((sequence, action, event))
+
+        for (participant_id, day), events in schedule_by_participant.items():
+            ordered = sorted(events, key=lambda item: (item[0], item[1]))
+            previous: tuple[int, int, dict[str, object]] | None = None
+            for current in ordered:
+                if previous is not None and current[0] < previous[1]:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="romcom_schedule_conflict",
+                        entity_id=str(current[2]["id"]),
+                        message=f"同一人物の予定「{previous[2]['canonical_name']}」と「{current[2]['canonical_name']}」が{day}で重複しています。",
+                        evidence={
+                            "participant_id": participant_id,
+                            "day_key": day,
+                            "first_event_id": previous[2]["id"],
+                            "second_event_id": current[2]["id"],
+                            "first_range": [previous[0], previous[1]],
+                            "second_range": [current[0], current[1]],
+                            "pack": "romcom",
+                        },
+                    )
+                if previous is None or current[1] > previous[1]:
+                    previous = current
+
+        unresolved_severity = str(policy.get("unresolved_misunderstanding_severity", "info"))
+        for key, actions in misunderstandings.items():
+            open_state = False
+            for _, action, event in sorted(actions, key=lambda item: item[0]):
+                if action == "open":
+                    if open_state:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="romcom_misunderstanding_order",
+                            entity_id=str(event["id"]),
+                            message=f"誤解「{key}」が解消前に再度OPENされています。",
+                            evidence={"misunderstanding_id": key, "action": action, "pack": "romcom"},
+                        )
+                    open_state = True
+                elif action == "resolve":
+                    if not open_state:
+                        self._append(
+                            findings,
+                            lint_config,
+                            rule_id="romcom_misunderstanding_order",
+                            entity_id=str(event["id"]),
+                            message=f"誤解「{key}」がOPENされる前にRESOLVEされています。",
+                            evidence={"misunderstanding_id": key, "action": action, "pack": "romcom"},
+                        )
+                    open_state = False
+                else:
+                    self._append(
+                        findings,
+                        lint_config,
+                        rule_id="romcom_misunderstanding_order",
+                        entity_id=str(event["id"]),
+                        message=f"誤解「{key}」に未知のaction「{action}」があります。",
+                        evidence={"misunderstanding_id": key, "action": action, "pack": "romcom"},
+                    )
+            if open_state:
+                self._append(
+                    findings,
+                    lint_config,
+                    rule_id="romcom_misunderstanding_unresolved",
+                    message=f"誤解「{key}」がまだ解消されていません。",
+                    evidence={"misunderstanding_id": key, "pack": "romcom"},
+                    severity_override=unresolved_severity,
+                )
+
         return findings
 
     def _isekai_document_findings(
