@@ -138,7 +138,7 @@ def test_health(client):
 def test_create_list_and_get_project(client):
     payload = create_project(client)
     assert payload["title"] == "First World"
-    assert payload["schema_version"] == 8
+    assert payload["schema_version"] == 9
 
     listed = client.get("/api/v1/projects")
     assert listed.status_code == 200
@@ -1337,3 +1337,500 @@ def test_m5_replacement_source_place_participates_in_change_impact(client):
     assert document["id"] in payload["affected_document_ids"]
     assert any(item["edge_type"] == "isekai_replacement_source" for item in payload["edges"])
     assert any(item["edge_type"] == "isekai_replacement_usage" for item in payload["edges"])
+
+
+
+def test_m6_ln_genre_packs_are_independent_and_combinable(client):
+    project = create_project(client)
+    initial = client.get(f"/api/v1/projects/{project['id']}/ln-genres")
+    assert initial.status_code == 200
+    assert initial.json()["enabled_packs"] == {
+        "noble_lady": False,
+        "palace_harem": False,
+        "romcom": False,
+    }
+
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/ln-genres",
+        json={
+            "enabled_packs": {
+                "noble_lady": True,
+                "palace_harem": True,
+                "romcom": True,
+            },
+            "noble_lady": initial.json()["noble_lady"],
+            "palace_harem": initial.json()["palace_harem"],
+            "romcom": initial.json()["romcom"],
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+    assert all(saved.json()["enabled_packs"].values())
+
+
+def test_m6_noble_lady_rank_title_engagement_and_address_rules(client):
+    project = create_project(client)
+    house = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "organization",
+            "canonical_name": "エーデルガルト家",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    heroine = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "イレーネ",
+            "summary": "",
+            "attributes": {
+                "ln_noble": {
+                    "house_entity_id": house["id"],
+                    "rank": "duke",
+                    "public_title": "男爵令嬢",
+                }
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    suitor_a = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "第一王子",
+            "summary": "",
+            "attributes": {"ln_noble": {"rank": "royal"}},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    suitor_b = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "第二王子",
+            "summary": "",
+            "attributes": {"ln_noble": {"rank": "royal"}},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    for target in (suitor_a, suitor_b):
+        response = client.post(
+            f"/api/v1/projects/{project['id']}/relations",
+            json={
+                "source_entity_id": heroine["id"],
+                "target_entity_id": target["id"],
+                "relation_type": "engaged_to",
+                "label": "婚約",
+                "canon_state": "CANON",
+                "source_type": "AUTHOR",
+                "attributes": {"status": "active"},
+            },
+        )
+        assert response.status_code == 201
+
+    address_event = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "event",
+            "canonical_name": "王子への挨拶",
+            "summary": "",
+            "attributes": {
+                "ln_address": {
+                    "speaker_entity_id": heroine["id"],
+                    "target_entity_id": suitor_a["id"],
+                    "used_address": "おまえ",
+                }
+            },
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert address_event.status_code == 201
+
+    initial = client.get(f"/api/v1/projects/{project['id']}/ln-genres").json()
+    noble = initial["noble_lady"]
+    noble["rank_title_map"] = {"duke": ["公爵令嬢"], "royal": ["殿下"]}
+    noble["address_rules"] = [
+        {"id": "royal-address", "target_rank": "royal", "allowed_addresses": ["殿下"]}
+    ]
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/ln-genres",
+        json={
+            "enabled_packs": {"noble_lady": True, "palace_harem": False, "romcom": False},
+            "noble_lady": noble,
+            "palace_harem": initial["palace_harem"],
+            "romcom": initial["romcom"],
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    run = client.post(f"/api/v1/projects/{project['id']}/lint/run-structure")
+    assert run.status_code == 200
+    rules = {item["rule_id"] for item in run.json()["findings"]}
+    assert {
+        "noble_title_rank_mismatch",
+        "noble_multiple_active_engagements",
+        "noble_address_mismatch",
+    } <= rules
+
+
+def test_m6_palace_access_information_and_ritual_rules(client):
+    project = create_project(client)
+    faction = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "organization",
+            "canonical_name": "蘭派",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    forbidden_faction = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "organization",
+            "canonical_name": "梅派",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    inner_palace = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "place",
+            "canonical_name": "内殿",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    attendant = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "下級女官",
+            "summary": "",
+            "attributes": {
+                "ln_palace": {
+                    "rank": "attendant",
+                    "faction_entity_id": forbidden_faction["id"],
+                }
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    access_event = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "event",
+            "canonical_name": "内殿への侵入",
+            "summary": "",
+            "attributes": {
+                "ln_palace_access": {
+                    "actor_entity_id": attendant["id"],
+                    "place_entity_id": inner_palace["id"],
+                }
+            },
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert access_event.status_code == 201
+    info_event = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "event",
+            "canonical_name": "密命を知る",
+            "summary": "",
+            "attributes": {
+                "ln_information_access": {
+                    "actor_entity_id": attendant["id"],
+                    "fact_key": "imperial_secret",
+                }
+            },
+            "canon_state": "PLAN",
+            "source_type": "AUTHOR",
+        },
+    )
+    assert info_event.status_code == 201
+    for name, step, seq in [
+        ("拝礼", "bow", 1),
+        ("献上", "offer", 3),
+        ("名乗り", "announce", 2),
+    ]:
+        assert client.post(
+            f"/api/v1/projects/{project['id']}/bible",
+            json={
+                "entity_type": "event",
+                "canonical_name": name,
+                "summary": "",
+                "attributes": {
+                    "ln_ritual": {
+                        "ritual_key": "audience",
+                        "step_key": step,
+                        "sequence_index": seq,
+                    }
+                },
+                "canon_state": "PLAN",
+                "source_type": "AUTHOR",
+            },
+        ).status_code == 201
+
+    initial = client.get(f"/api/v1/projects/{project['id']}/ln-genres").json()
+    palace = initial["palace_harem"]
+    palace["restricted_areas"] = [
+        {
+            "id": "inner-palace",
+            "place_entity_id": inner_palace["id"],
+            "min_rank": "consort",
+            "allowed_faction_entity_ids": [faction["id"]],
+            "exception_entity_ids": [],
+        }
+    ]
+    palace["information_rules"] = [
+        {
+            "id": "imperial-secret",
+            "fact_key": "imperial_secret",
+            "min_rank": "imperial_consort",
+            "allowed_faction_entity_ids": [faction["id"]],
+        }
+    ]
+    palace["ritual_sequences"] = [
+        {
+            "id": "audience",
+            "ritual_key": "audience",
+            "steps": ["bow", "announce", "offer"],
+        }
+    ]
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/ln-genres",
+        json={
+            "enabled_packs": {"noble_lady": False, "palace_harem": True, "romcom": False},
+            "noble_lady": initial["noble_lady"],
+            "palace_harem": palace,
+            "romcom": initial["romcom"],
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    run = client.post(f"/api/v1/projects/{project['id']}/lint/run-structure")
+    assert run.status_code == 200
+    rules = {item["rule_id"] for item in run.json()["findings"]}
+    assert {
+        "palace_restricted_area_access",
+        "palace_information_access",
+        "palace_ritual_order",
+    } <= rules
+
+
+def test_m6_romcom_relationship_schedule_and_misunderstanding_rules(client):
+    project = create_project(client)
+    a = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "春香",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    b = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "悠斗",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+
+    events = [
+        {
+            "name": "突然の告白",
+            "attributes": {
+                "ln_relationship_transition": {
+                    "source_entity_id": a["id"],
+                    "target_entity_id": b["id"],
+                    "from_stage": "acquaintance",
+                    "to_stage": "dating",
+                    "reason": "",
+                }
+            },
+        },
+        {
+            "name": "放課後カフェ",
+            "attributes": {
+                "ln_schedule": {
+                    "participant_ids": [a["id"]],
+                    "day_key": "day-10",
+                    "start_minute": 900,
+                    "end_minute": 960,
+                }
+            },
+        },
+        {
+            "name": "同時刻の委員会",
+            "attributes": {
+                "ln_schedule": {
+                    "participant_ids": [a["id"]],
+                    "day_key": "day-10",
+                    "start_minute": 930,
+                    "end_minute": 990,
+                }
+            },
+        },
+        {
+            "name": "誤解を解く",
+            "attributes": {
+                "ln_misunderstanding": {
+                    "misunderstanding_id": "photo-rumor",
+                    "action": "resolve",
+                    "sequence_index": 1,
+                }
+            },
+        },
+        {
+            "name": "別の誤解が始まる",
+            "attributes": {
+                "ln_misunderstanding": {
+                    "misunderstanding_id": "umbrella",
+                    "action": "open",
+                    "sequence_index": 2,
+                }
+            },
+        },
+    ]
+    for item in events:
+        assert client.post(
+            f"/api/v1/projects/{project['id']}/bible",
+            json={
+                "entity_type": "event",
+                "canonical_name": item["name"],
+                "summary": "",
+                "attributes": item["attributes"],
+                "canon_state": "PLAN",
+                "source_type": "AUTHOR",
+            },
+        ).status_code == 201
+
+    initial = client.get(f"/api/v1/projects/{project['id']}/ln-genres").json()
+    romcom = initial["romcom"]
+    romcom["max_stage_jump"] = 1
+    romcom["allow_regression"] = False
+    romcom["unresolved_misunderstanding_severity"] = "warning"
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/ln-genres",
+        json={
+            "enabled_packs": {"noble_lady": False, "palace_harem": False, "romcom": True},
+            "noble_lady": initial["noble_lady"],
+            "palace_harem": initial["palace_harem"],
+            "romcom": romcom,
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    run = client.post(f"/api/v1/projects/{project['id']}/lint/run-structure")
+    assert run.status_code == 200
+    rules = {item["rule_id"] for item in run.json()["findings"]}
+    assert {
+        "romcom_stage_jump",
+        "romcom_schedule_conflict",
+        "romcom_misunderstanding_order",
+        "romcom_misunderstanding_unresolved",
+    } <= rules
+    unresolved = next(
+        item for item in run.json()["findings"]
+        if item["rule_id"] == "romcom_misunderstanding_unresolved"
+    )
+    assert unresolved["severity"] == "warning"
+
+
+def test_m6_pack_change_queues_global_revalidation_and_bible_change_runs_structure_lint(client):
+    project = create_project(client)
+    character = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "公爵令嬢",
+            "summary": "",
+            "attributes": {"ln_noble": {"rank": "duke", "public_title": "公爵令嬢"}},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    initial = client.get(f"/api/v1/projects/{project['id']}/ln-genres").json()
+    saved = client.put(
+        f"/api/v1/projects/{project['id']}/ln-genres",
+        json={
+            "enabled_packs": {"noble_lady": True, "palace_harem": False, "romcom": False},
+            "noble_lady": initial["noble_lady"],
+            "palace_harem": initial["palace_harem"],
+            "romcom": initial["romcom"],
+            "status": "configured",
+        },
+    )
+    assert saved.status_code == 200
+
+    pending = client.get(
+        f"/api/v1/projects/{project['id']}/impact/invalidations",
+        params={"status_filter": "PENDING"},
+    )
+    pack_invalidation = next(
+        item for item in pending.json()
+        if item["source_type"] == "LNGenrePackConfig"
+    )
+    revalidated = client.post(
+        f"/api/v1/projects/{project['id']}/impact/invalidations/{pack_invalidation['id']}/revalidate",
+        json={"max_depth": 4},
+    )
+    assert revalidated.status_code == 200
+    assert revalidated.json()["status"] == "REVALIDATED"
+
+    updated = client.put(
+        f"/api/v1/projects/{project['id']}/bible/{character['id']}",
+        json={"attributes": {"ln_noble": {"rank": "unknown-rank", "public_title": "公爵令嬢"}}},
+    )
+    assert updated.status_code == 200
+    pending = client.get(
+        f"/api/v1/projects/{project['id']}/impact/invalidations",
+        params={"status_filter": "PENDING"},
+    )
+    entity_invalidation = next(
+        item for item in pending.json()
+        if item["source_type"] == "BibleEntity"
+        and item["source_id"] == character["id"]
+    )
+    checked = client.post(
+        f"/api/v1/projects/{project['id']}/impact/invalidations/{entity_invalidation['id']}/revalidate",
+        json={"max_depth": 4},
+    )
+    assert checked.status_code == 200
+    structure_runs = [
+        item for item in checked.json()["result"]["lint_runs"]
+        if item.get("scope") == "structure"
+    ]
+    assert structure_runs
+    full = client.get(
+        f"/api/v1/projects/{project['id']}/lint/runs/{structure_runs[0]['run_id']}"
+    )
+    assert any(item["rule_id"] == "noble_rank_unknown" for item in full.json()["findings"])
