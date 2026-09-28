@@ -1,6 +1,6 @@
 # Creative Consistency OS
 
-A local-first creative production system for long-form fiction: World Builder + Language/Culture + Story Bible + Writing Room + Entity Intelligence + Core Lint + Change Impact + genre-specific verification.
+A local-first creative production system for long-form fiction: World Builder + Language/Culture + Story Bible + Writing Room + Entity Intelligence + Core Lint + Change Impact + modular genre verification.
 
 ## Current progress
 
@@ -13,19 +13,22 @@ A local-first creative production system for long-form fiction: World Builder + 
 - M4 Core Lint Engine — complete
 - M4.5 Change Impact Engine — complete
 - M5 Isekai Pack — complete
-- M6 LN Genre Packs — next
+- M6 LN Genre Packs — complete
+- M7 Mystery / SF Verification — next
 
 ## Current Golden Path
 
 Genre → Setup Mode → World DNA → Language/Culture → Story Bible → Writing Room → Entity Intelligence → Consistency Lint → Change Impact → Genre Pack Verification
 
-The system now supports structured world-building, fictional-language/culture design, author-controlled Canon states, chapter writing with revision history, timeline, aliases, manuscript mentions, ambiguity-aware entity resolution, relationship graphs, evidence-backed consistency diagnostics, dependency-aware selective revalidation and an opt-in Isekai verification pack.
+The system supports structured world-building, fictional-language/culture design, author-controlled Canon states, revisioned manuscript writing, timeline, aliases, entity resolution, relationship graphs, evidence-backed consistency diagnostics, dependency-aware revalidation, Isekai verification and modular LN social/relationship verification.
 
 Author-control rule: generated, extracted or inferred material never becomes CANON automatically. Lint, Change Impact and genre packs never auto-rewrite prose or Canon.
 
+There is no mandatory primary genre. Genre packs can be disabled, enabled independently or combined.
+
 ## Current schema
 
-Project schema version: 8
+Project schema version: 9
 
 Migrations:
 - 0001 M1 baseline
@@ -36,53 +39,65 @@ Migrations:
 - 0006 Core Lint Engine
 - 0007 Change Impact Engine
 - 0008 Isekai Pack
+- 0009 LN Genre Packs
 
 ## M4 Core Lint
 
 Core Lint provides:
 - configurable rule enable/disable
 - HINT / INFO / WARNING / ERROR severity
-- document and project lint runs
-- missing/stale Entity Mention checks
-- mention-span integrity
-- unresolved/ambiguous references
-- Canon-state reference diagnostics
-- normalized name/alias collisions
-- timeline/relation Canon consistency
-- lexical name-drift hints
-- custom project term constraints
+- document, project and structural lint scopes
 - evidence/fingerprint persistence
 - finding triage
+- extension contract for genre packs
 
 ## M4.5 Change Impact
 
 Change Impact provides:
 - rebuildable dependency graph
-- Bible → Alias / Mention / Manuscript / Timeline / Relation connections
-- normalized direct surface-reference fallback
-- bounded transitive impact preview
-- automatic invalidation queue
-- selective re-lint of affected manuscripts
+- transitive impact preview
+- invalidation queue
+- selective manuscript re-lint
+- structural revalidation
 - author dismissal
 
 ## M5 Isekai Pack
 
 M5 provides:
 - opt-in Earth-Origin Guard
-- configurable strictness and categories
 - allowlists and custom terms
-- author-approved World-Origin Mapping
-- optional source-place provenance
-- travel-time rules
-- magic-cost rules
-- currency and price-band checks
-- healing-limit rules
-- M4 Findings rather than a separate warning system
-- M4.5 global policy invalidation
-- source-place → replacement → manuscript impact propagation
-- Isekai Guard web workspace
+- World-Origin Mapping and source-place provenance
+- travel / magic / economy / healing constraints
+- M4/M4.5 integration
 
-See docs/M5.md for the data contracts and author-control rules.
+See docs/M5.md.
+
+## M6 LN Genre Packs
+
+M6 provides three independent, combinable packs.
+
+Noble Lady:
+- rank hierarchy
+- house references
+- rank/title consistency
+- engagement graph
+- address/etiquette checks
+
+Palace/Harem:
+- rank hierarchy
+- faction references
+- restricted-area permissions
+- information-access permissions
+- ritual sequence validation
+
+Romantic Comedy:
+- relationship-stage transitions
+- schedule collision detection
+- misunderstanding lifecycle
+
+M6 also adds structural lint and structured dependency edges so setting-only changes are revalidated without relying only on manuscript text.
+
+See docs/M6.md.
 
 ## Structure
 
@@ -96,13 +111,14 @@ See docs/M5.md for the data contracts and author-control rules.
 - docs/M4.md
 - docs/M4.5.md
 - docs/M5.md
+- docs/M6.md
 - docs/ROADMAP.md
 
 ## Validation
 
-Current M5 validation:
-- 32 API tests passed
-- Alembic upgrade succeeded through 0008
+Current M6 validation:
+- 38 API tests passed
+- Alembic upgrade succeeded through 0009
 - Next.js production build succeeded
 
 ## API local development
