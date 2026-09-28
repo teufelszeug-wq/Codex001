@@ -1834,3 +1834,55 @@ def test_m6_pack_change_queues_global_revalidation_and_bible_change_runs_structu
         f"/api/v1/projects/{project['id']}/lint/runs/{structure_runs[0]['run_id']}"
     )
     assert any(item["rule_id"] == "noble_rank_unknown" for item in full.json()["findings"])
+
+
+
+def test_m6_structured_house_reference_propagates_change_impact_to_member_text(client):
+    project = create_project(client)
+    house = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "organization",
+            "canonical_name": "白鷺家",
+            "summary": "",
+            "attributes": {},
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    member = client.post(
+        f"/api/v1/projects/{project['id']}/bible",
+        json={
+            "entity_type": "character",
+            "canonical_name": "リディア",
+            "summary": "",
+            "attributes": {
+                "ln_noble": {
+                    "house_entity_id": house["id"],
+                    "rank": "count",
+                    "public_title": "伯爵令嬢",
+                }
+            },
+            "canon_state": "CANON",
+            "source_type": "AUTHOR",
+        },
+    ).json()
+    document = client.post(
+        f"/api/v1/projects/{project['id']}/manuscripts",
+        json={
+            "title": "第一章",
+            "content": "リディアは舞踏会へ向かった。",
+            "order_index": 1,
+            "status": "draft",
+        },
+    ).json()
+
+    preview = client.get(
+        f"/api/v1/projects/{project['id']}/impact/entities/{house['id']}",
+        params={"max_depth": 4, "refresh": True},
+    )
+    assert preview.status_code == 200
+    payload = preview.json()
+    assert member["id"] in payload["related_entity_ids"]
+    assert document["id"] in payload["affected_document_ids"]
+    assert any(item["edge_type"] == "noble_house_member" for item in payload["edges"])
