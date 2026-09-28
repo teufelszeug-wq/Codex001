@@ -199,6 +199,20 @@ class IsekaiPackConfigModel(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 
 
+class LNGenrePackConfigModel(Base):
+    __tablename__ = "ln_genre_pack_configs"
+    project_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    enabled_packs_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    noble_lady_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    palace_harem_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    romcom_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
+    pack_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
 class LintProjectConfigModel(Base):
     __tablename__ = "lint_project_configs"
     project_id: Mapped[str] = mapped_column(
