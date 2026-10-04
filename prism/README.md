@@ -198,3 +198,35 @@ Before adding a new submilestone, check whether it can instead be represented as
 3. or a module-level task.
 
 Do not create a new milestone unless it is truly an independent development phase.
+
+## Shared-System Operating Model
+
+PRISM is operated as one shared system across chats.
+
+### Single Source of Truth
+- GitHub = code, schemas, manifests, tests, run logs, reproducible artifacts.
+- Notion = 6-phase roadmap, progress, decisions, risks, cross-chat synchronization.
+- ChatGPT Library = legacy migration source only.
+
+### Shared Data Contract
+- Reuse identical data keyed by race_id + source + available_at + content hash.
+- Generate RAW -> NORMALIZED -> FEATURE once and share it with Prediction, M-DISC, VAL and M-PAPER.
+- Use dependency-aware incremental reruns; do not rerun unaffected downstream components.
+- Prediction, Market and Result snapshots are immutable/versioned.
+
+### Shared Milestone Contract
+- Every PRISM/RIO task from every chat maps to Phase A-F.
+- B0-B11, VAL-0-6 and Paper Track remain subordinate tracks.
+- Do not create duplicate milestones under new names for equivalent work.
+
+### Cross-Chat Sync Contract
+Before significant work, read the Notion roadmap and GitHub PRISM master when available.
+After significant work, synchronize:
+1. GitHub artifact/code,
+2. Notion progress,
+3. rationale/blockers.
+Only then promote status in the master roadmap.
+
+### State Contract
+DESIGN -> IMPLEMENTED -> EXECUTED -> VERIFIED -> PRODUCTION.
+A completion statement from another chat is promoted only after evidence is checked.
