@@ -1,0 +1,6 @@
+{
+  "schema":"prism.schedule-mutation/v0.1",
+  "required":["mutation_id","authority","event_date","observed_at","mutation_type","affected_scope","source_id","content_hash"],
+  "mutation_type_enum":["CANCELLED_RACE","CANCELLED_MEETING","POSTPONED","SUBSTITUTE_MEETING","RACE_NUMBER_CHANGE","START_TIME_CHANGE","RUNNER_CHANGE","SCRATCH","CORRECTION","OTHER"],
+  "effect":"invalidate only artifacts whose declared dependency scope intersects affected_scope"
+}
