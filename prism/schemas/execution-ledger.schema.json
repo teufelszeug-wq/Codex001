@@ -1,0 +1,7 @@
+{
+  "schema":"prism.execution-ledger/v0.1",
+  "required":["run_id","node_id","race_scope","started_at","code_version","schema_version","upstream_hashes","decision","status"],
+  "decision_enum":["RUN","SKIP_CACHE_HIT","INVALIDATED_RERUN","FORCED_RERUN"],
+  "status_enum":["STARTED","SUCCESS","FAILED","SKIPPED"],
+  "optional":["finished_at","output_artifact_id","output_hash","invalidation_reason","error_class","error_message"]
+}
