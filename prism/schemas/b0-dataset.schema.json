@@ -1,0 +1,11 @@
+{
+  "schema":"prism.b0-dataset/v0.1",
+  "required_race_fields":["race_id","authority","date","venue","race_no","surface","distance"],
+  "required_runner_fields":["race_id","runner_key","horse_no","carried_weight"],
+  "optional_runner_fields":["frame_no","horse_id","horse_name","jockey_id","jockey_name","trainer_id","trainer_name","sex","age"],
+  "prohibited_prediction_inputs":["finish_position","result_time","result_margin","result_last3f","payout","winning_horse","post_result_revision"],
+  "temporal_requirement":["PRE_CERTIFIED","PRE_AVAILABLE"],
+  "missingness":"explicit",
+  "ambiguous_identity":"reject_or_quarantine",
+  "manifest_hash":"sha256"
+}
