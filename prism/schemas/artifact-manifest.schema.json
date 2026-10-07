@@ -1,0 +1,26 @@
+{
+  "schema": "prism.artifact-manifest/v0.1",
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "authority",
+    "race_scope",
+    "source_ids",
+    "schema_version",
+    "content_hash",
+    "created_at",
+    "available_at",
+    "temporal_class",
+    "upstream_hashes",
+    "status"
+  ],
+  "status_enum": ["DESIGN","IMPLEMENTED","EXECUTED","VERIFIED","PRODUCTION"],
+  "temporal_class_enum": ["PRE_CERTIFIED","PRE_AVAILABLE","LATE_PRE","POST_ONLY","UNKNOWN_TIMESTAMP"],
+  "cache_key": ["artifact_type","race_scope","schema_version","upstream_hashes"],
+  "immutability": {
+    "prediction_snapshot": true,
+    "market_snapshot": true,
+    "result_snapshot": true
+  },
+  "rerun_rule": "rerun only when declared upstream hashes, code version, schema version, or explicit force flag changes"
+}
