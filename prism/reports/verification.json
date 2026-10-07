@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "new_tests": 12,
+  "failures": 0,
+  "errors": 0,
+  "legacy_direct_tests": [
+    "test_100k_gate_fails_when_short",
+    "test_archive_hash",
+    "test_incomplete_snapshot_blocks_discussion",
+    "test_learning_requires_evidence",
+    "test_quality_chain"
+  ],
+  "duplicate_regression": {
+    "status": "FAIL",
+    "audit_scope": "structural_only",
+    "training_achievement_verified": false,
+    "duplicate_sessions": 34,
+    "unique_sessions": 1,
+    "qualified_chars": 0,
+    "chars": 2891,
+    "turns": 9,
+    "topics": 1,
+    "challenges": 1,
+    "rebuttals": 1,
+    "position_revisions": 1,
+    "minority_opinions": 1,
+    "speaker_ratio": {
+      "りお": 0.2222222222222222,
+      "能力AI": 0.4444444444444444,
+      "反証AI": 0.1111111111111111,
+      "ValueAI": 0.2222222222222222
+    },
+    "chains": 1,
+    "complete_chains": 1,
+    "evidence_turns": 2,
+    "reasons": [
+      "duplicate_sessions",
+      "chars_below_100k:2891",
+      "session_quality_fail"
+    ]
+  },
+  "source_sha256": {
+    "src/prism_mdisc/__init__.py": "30547a8d170cd72191e9c28d1819ca615c833c577067df51899b70b09fc294df",
+    "src/prism_mdisc/core.py": "07b4b4d2a6b3a4acd189a429a080923ca6eff478ebd84bf8bd867602eadf0b86",
+    "src/prism_mdisc/evidence_audit.py": "a6b29dd7cfb4585d1fc7e8f1803b9185b6c75f49b37dfc69f19f3a64860c0632",
+    "tests/test_audit_revision.py": "a8fa3097391c6321d4cd20ead784ffaa8b9a1880291fcf796bea205e34656a26",
+    "tests/test_mdisc.py": "c0c22d025b6b3c3750e917e1b7619876a9bcdfcba0e4e41cea82c363786f317f",
+    "scripts/verify.py": "3448dffc6aaebfc84914ae1d0b8a1d35261154e670f4765228f539f120f76396"
+  },
+  "training_achievement_verified": false,
+  "production_deployed": false
+}

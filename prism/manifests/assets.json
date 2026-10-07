@@ -1,0 +1,49 @@
+{
+  "as_of": "2026-10-08",
+  "scope": "Known artifacts reviewed in this task; not a complete historical inventory",
+  "assets": [
+    {
+      "name": "PRISM_January_Replay_v0.9.13.zip",
+      "size_bytes": 16034856,
+      "sha256": "35e077fa2eb2dd65e3676e3a854320a70c066fe18878e22b4992db1992e24d3b",
+      "phase": "D",
+      "status": "BLOCKED",
+      "note": "Acquired ZIP could not be opened with standard zipfile; report-backed counts only. Cause not established.",
+      "migration_target": null,
+      "raw_published": false
+    },
+    {
+      "name": "PRISM_M-DISC_v1.0.tar.gz",
+      "size_bytes": 15235,
+      "sha256": "1722e2eec3d94aeecc5dc6bfa1b996b6773d3ec357dbb26f95939833e3c70f17",
+      "phase": "C",
+      "status": "MIGRATION_CANDIDATE",
+      "note": "Version 1.0 source reviewed and revised to 1.1; synthetic checks only.",
+      "migration_target": "src/prism_mdisc/",
+      "raw_published": false
+    },
+    {
+      "name": "PRISM_M-PAPER_v1.4_M3_VERTICAL_GRID_COMPLETE_2026-10-05.zip",
+      "size_bytes": 1438315,
+      "sha256": "cc75bf8133ab0a680d02b0a9be7a1a0252b8d24878a55b64db7d03e6cdb50d16",
+      "phase": "E",
+      "status": "PARTIALLY_INSPECTED",
+      "note": "Manifest checked; selected page previews inspected; full publication acceptance pending.",
+      "migration_target": null,
+      "raw_published": false
+    },
+    {
+      "name": "PRISM_MDISC_1_1_REPLAN_20261007.zip",
+      "phase": "A/C",
+      "status": "SUPERSEDED_PLAN",
+      "note": "Code migrated; prior paper-centric roadmap superseded by GitHub six-phase master.",
+      "raw_published": false
+    }
+  ],
+  "missing": [
+    "Canonical January runner package",
+    "AI registry role/name reconciliation",
+    "Full engine reproducible source baseline"
+  ],
+  "publication": "Metadata and project code only"
+}

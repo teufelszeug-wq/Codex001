@@ -263,3 +263,18 @@ The foundation gate is closed. Added executable pipeline, deterministic cache te
 Historical January raw-package recovery and strict point-in-time certification remain open work in Phase B/D. No missing raw asset is treated as recovered.
 
 Next active work: Phase B B0 dataset reconstruction and reproducible baseline.
+
+
+## Organization and M-DISC integration — 2026-10-08
+
+- [Integration status and open work](docs/STATUS.md)
+- [Directory responsibilities](docs/ORGANIZATION.md)
+- [Reviewed artifact hashes](manifests/assets.json)
+- Structural M-DISC source: `src/prism_mdisc/`
+- Run synthetic verification: `cd prism && python3 scripts/verify.py`
+
+The Phase A foundation handoff above is preserved. Historical asset debt belongs
+to Phase B/D. Earlier percentages are estimates, not measured completion rates.
+This integration adds a Phase C structural-audit module; real-race discussion,
+semantic acceptance, learning integration and production release remain open.
+
