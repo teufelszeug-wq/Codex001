@@ -125,7 +125,7 @@ This compresses 16 top-level milestones into 6 true development phases.
 
 | Phase | Estimated maturity | Status |
 |---|---:|---|
-| A Foundation & Governance | 50-60% | IN PROGRESS |
+| A Foundation & Governance | 60-65% | IN PROGRESS |
 | B Core Prediction Engine | 30-40% | IN PROGRESS |
 | C Deliberation & Learning | 35-45% | DESIGN + PARTIAL IMPLEMENTATION |
 | D Validation & Research | 40-50% | ACTIVE |
@@ -230,3 +230,27 @@ Only then promote status in the master roadmap.
 ### State Contract
 DESIGN -> IMPLEMENTED -> EXECUTED -> VERIFIED -> PRODUCTION.
 A completion statement from another chat is promoted only after evidence is checked.
+
+
+## Phase A worklog — 2026-10-07
+
+Implemented governance artifacts:
+- `docs/canon/PRISM_CANON.md`
+- `docs/canon/SOURCE_PROVENANCE_REGISTRY.md`
+- `docs/canon/A_PIPELINE.md`
+- `schemas/artifact-manifest.schema.json`
+- `schemas/execution-ledger.schema.json`
+- `schemas/schedule-mutation.schema.json`
+- `docs/roadmap/PHASE_A_ASSET_RECOVERY.md`
+- `docs/decisions/PHASE_A_AI_PANEL_20261007.md`
+
+Planning change: **A-Pipeline — Shared Data & Incremental Execution** was added as a Phase-A subtrack, not a new major milestone.
+
+Remaining Phase-A blockers:
+1. recover/rebuild January raw race/runner assets;
+2. canonicalize AI Registry;
+3. implement executable Collector/Cache/Dependency Runner;
+4. run deterministic representative-race acceptance test;
+5. complete Feature Coverage Census and temporal evidence ledger.
+
+Phase A is not COMPLETE. The new contracts are IMPLEMENTED; the incremental runner has not yet been EXECUTED/VERIFIED.
