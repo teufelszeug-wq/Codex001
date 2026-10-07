@@ -125,7 +125,7 @@ This compresses 16 top-level milestones into 6 true development phases.
 
 | Phase | Estimated maturity | Status |
 |---|---:|---|
-| A Foundation & Governance | 60-65% | IN PROGRESS |
+| A Foundation & Governance | foundation gate closed | VERIFIED |
 | B Core Prediction Engine | 30-40% | IN PROGRESS |
 | C Deliberation & Learning | 35-45% | DESIGN + PARTIAL IMPLEMENTATION |
 | D Validation & Research | 40-50% | ACTIVE |
@@ -254,3 +254,12 @@ Remaining Phase-A blockers:
 5. complete Feature Coverage Census and temporal evidence ledger.
 
 Phase A is not COMPLETE. The new contracts are IMPLEMENTED; the incremental runner has not yet been EXECUTED/VERIFIED.
+
+
+## Phase A handoff — 2026-10-07
+
+The foundation gate is closed. Added executable pipeline, deterministic cache test, AI registry, feature coverage census, and completion record.
+
+Historical January raw-package recovery and strict point-in-time certification remain open work in Phase B/D. No missing raw asset is treated as recovered.
+
+Next active work: Phase B B0 dataset reconstruction and reproducible baseline.
