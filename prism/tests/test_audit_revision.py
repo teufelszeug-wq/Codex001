@@ -22,6 +22,26 @@ def bundle():
     return dict(race_id='r1',horse_ids=['h1'],ai_ids=sessions[0].participants,sessions=sessions,topic_by_session={s.session_id:s.race.topic for s in sessions},evidence=[e],cutoff='2026-01-01T09:00:00+09:00',judgments=j)
 
 class AuditRegression(unittest.TestCase):
+    def test_revealed_results_rejected_before_archive(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            worker=DailyOrchestrator(DiscussionArchive(root),DailyGate(),LearningRegistry())
+            with self.assertRaisesRegex(RuntimeError,'result-revealed'):
+                worker.run_discussion_stage(SnapshotManifest('2026-01-01',1,1,'fixture',True),[fixture()])
+            self.assertEqual(list(root.iterdir()),[])
+
+    def test_reversed_chain_fails_session_and_daily_gate(self):
+        s=fixture()
+        s.turns[:-1]=reversed(s.turns[:-1])
+        self.assertEqual(audit_session(s).chain_complete,0)
+        self.assertFalse(audit_session(s).quality_pass)
+        self.assertEqual(DailyGate(min_chars=1).evaluate([s])['status'],'FAIL')
+
+    def test_intervening_discussion_preserves_ordered_chain(self):
+        s=fixture()
+        s.turns.insert(2,Turn('反証役','専門',Move.QUESTION,'追加の問い',evidence_type=EvidenceType.DATA,evidence_ref='e1'))
+        self.assertTrue(audit_session(s).quality_pass)
+
     def test_repeat_does_not_increase_total(self):
         s=fixture();report=DailyGate(min_chars=1).evaluate([s]*35)
         self.assertEqual(report['status'],'FAIL')

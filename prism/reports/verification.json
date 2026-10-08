@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "synthetic_only": true,
-  "new_tests": 12,
+  "new_tests": 15,
   "failures": 0,
   "errors": 0,
   "legacy_direct_tests": [
@@ -42,9 +42,9 @@
   },
   "source_sha256": {
     "src/prism_mdisc/__init__.py": "30547a8d170cd72191e9c28d1819ca615c833c577067df51899b70b09fc294df",
-    "src/prism_mdisc/core.py": "07b4b4d2a6b3a4acd189a429a080923ca6eff478ebd84bf8bd867602eadf0b86",
+    "src/prism_mdisc/core.py": "ef8173ef8702eab67392d211dc26750e9548c84ae0e6fdd3067a0471b785c627",
     "src/prism_mdisc/evidence_audit.py": "a6b29dd7cfb4585d1fc7e8f1803b9185b6c75f49b37dfc69f19f3a64860c0632",
-    "tests/test_audit_revision.py": "a8fa3097391c6321d4cd20ead784ffaa8b9a1880291fcf796bea205e34656a26",
+    "tests/test_audit_revision.py": "c7dc713be1c8bec9fc9209c4f2458644e3f26c57f7a181a583625a8c55ef5b25",
     "tests/test_mdisc.py": "c0c22d025b6b3c3750e917e1b7619876a9bcdfcba0e4e41cea82c363786f317f",
     "scripts/verify.py": "3448dffc6aaebfc84914ae1d0b8a1d35261154e670f4765228f539f120f76396"
   },

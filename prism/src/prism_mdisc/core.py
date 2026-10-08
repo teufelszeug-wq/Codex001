@@ -36,7 +36,15 @@ class Audit:
     chars:int; turns:int; topics:int; challenges:int; rebuttals:int; reevaluations:int; minority:int
     evidence_turns:int; speaker_ratio:Dict[str,float]; chain_count:int; chain_complete:int; quality_pass:bool; reasons:List[str]
 
-REQUIRED_CHAIN={Move.QUESTION,Move.CLAIM,Move.CHALLENGE,Move.EVIDENCE,Move.REBUTTAL,Move.REEVALUATION,Move.RIO_SUMMARY}
+REQUIRED_CHAIN=(Move.QUESTION,Move.CLAIM,Move.CHALLENGE,Move.EVIDENCE,Move.REBUTTAL,Move.REEVALUATION,Move.RIO_SUMMARY)
+
+def ordered_chain_complete(moves):
+    """Required moves must occur in order; intervening discussion is allowed."""
+    position=0
+    for move in moves:
+        if position<len(REQUIRED_CHAIN) and move==REQUIRED_CHAIN[position]:
+            position+=1
+    return position==len(REQUIRED_CHAIN)
 HORSE_RE=re.compile(r'(?<!\d)(\d{1,2})\s*[^\s、。]+')
 
 def text_fingerprint(s:Session)->str:
@@ -57,7 +65,7 @@ def audit_session(s:Session)->Audit:
         bucket.append(m)
         if m==Move.RIO_SUMMARY:
             chain_count+=1
-            if REQUIRED_CHAIN.issubset(set(bucket)): complete+=1
+            if ordered_chain_complete(bucket): complete+=1
             bucket=[]
     reasons=[]
     if len(set(s.participants))<2 or len(set(s.participants))!=len(s.participants): reasons.append('invalid_participants')
@@ -140,6 +148,7 @@ class SnapshotManifest:
     @property
     def coverage(self): return self.frozen_races/max(1,self.expected_races)
     def assert_reviewable(self):
+        if self.result_revealed: raise RuntimeError('Pre-race discussion rejects result-revealed snapshots')
         if self.coverage<1.0: raise RuntimeError(f'Snapshot incomplete: {self.frozen_races}/{self.expected_races}')
 
 class DailyOrchestrator:

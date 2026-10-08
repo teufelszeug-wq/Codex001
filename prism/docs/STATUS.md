@@ -16,7 +16,7 @@ organization/integration task within Phase A, not a seventh milestone.
 
 - Preserve the master six-phase plan and map the former DISC/M4.6a task to C.
 - Establish code/tests/docs/manifests/reports separation without moving other projects.
-- Provide one standard-library verification command for 12 regression tests and
+- Provide one standard-library verification command for 15 regression tests and
   five legacy function tests, plus the duplicate-session reproduction.
 - Track known source artifacts without publishing private download links or raw data.
 - Keep code verification, real-race execution, and production approval separate.
@@ -67,3 +67,13 @@ Foundation test rerun: the committed test used a stale sibling import. Updated
 its path to ../../src/foundation/pipeline.mjs. Seven assertions now pass; the
 console count was corrected from six to seven. Evidence: reports/foundation-verification.json.
 Run: node tests/foundation/pipeline.test.mjs from prism/.
+
+## Review fixes — 2026-10-08
+
+Both automated review findings addressed: result-revealed snapshots are rejected
+before any pre-race archive writes, and required dialogue moves must occur in
+order (intervening discussion is allowed). Added three regression tests.
+M-DISC: 15 unittest cases plus five legacy function checks pass.
+Foundation: seven assertions passed in the prior integration check.
+This verifies the scoped organization/audit integration; Phase B dataset
+reconstruction, semantic acceptance and production operation remain separate.
