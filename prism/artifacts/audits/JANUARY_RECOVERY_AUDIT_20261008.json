@@ -1,0 +1,61 @@
+{
+  "nar_races": 1078,
+  "nar_runner_rows": 11394,
+  "duplicate_races": 0,
+  "duplicate_runners": 0,
+  "orphan_runners": 0,
+  "frame_and_horse_separate": true,
+  "temporal_class": "UNKNOWN_TIMESTAMP",
+  "approved_b0_rows": 0,
+  "reason": "No per-row pre-race availability proof; candidates explicitly NOT_PIT_APPROVED",
+  "runs": {
+    "ordinal_revalidated_v4": {
+      "status": "VERIFIED_STORED_RESEARCH",
+      "races": 1354,
+      "authority_counts": {
+        "NAR": 1078,
+        "JRA": 276
+      },
+      "predictions": 1354,
+      "reviews": 1354,
+      "events": 4063,
+      "terminal_hash": "67d68a8505730f427f22ac5985e0172a5a85968f69f52d600402265f989e2279",
+      "errors": {},
+      "settlement": {
+        "stake_yen": 135400,
+        "payout_yen": 86520,
+        "refund_yen": 1200,
+        "profit_yen": -48880
+      },
+      "legacy_payout_includes_refund": true,
+      "refund_excluded_roi": 0.6357675111773472,
+      "forecast_rerun": false,
+      "strict_pit_certified": false,
+      "b0_reproduced": false
+    },
+    "next_day_sensitivity_v4": {
+      "status": "VERIFIED_STORED_RESEARCH",
+      "races": 1354,
+      "authority_counts": {
+        "NAR": 1078,
+        "JRA": 276
+      },
+      "predictions": 1354,
+      "reviews": 1354,
+      "events": 4063,
+      "terminal_hash": "0e5075af8e13eb6eccf6a3ffe3350e53024a4c454c073635ac1e0a09e129de2a",
+      "errors": {},
+      "settlement": {
+        "stake_yen": 135400,
+        "payout_yen": 87200,
+        "refund_yen": 1200,
+        "profit_yen": -48200
+      },
+      "legacy_payout_includes_refund": true,
+      "refund_excluded_roi": 0.6408345752608048,
+      "forecast_rerun": false,
+      "strict_pit_certified": false,
+      "b0_reproduced": false
+    }
+  }
+}

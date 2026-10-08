@@ -1,0 +1,10 @@
+{
+  "source_sha256": "35e077fa2eb2dd65e3676e3a854320a70c066fe18878e22b4992db1992e24d3b",
+  "source_bytes": 16034856,
+  "verified_entries": 5912,
+  "verified_bytes": 73808607,
+  "consumed_bytes": 16034856,
+  "stop": "EOF_AFTER_LOCAL_ENTRY",
+  "archive_complete": false,
+  "verification": "Local CRC32 and length only; no central-directory completeness claim"
+}

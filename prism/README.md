@@ -278,3 +278,14 @@ to Phase B/D. Earlier percentages are estimates, not measured completion rates.
 This integration adds a Phase C structural-audit module; real-race discussion,
 semantic acceptance, learning integration and production release remain open.
 
+
+
+## Phase B research evidence — 2026-10-08
+
+See [recovery and B0 execution evidence](docs/roadmap/PHASE_B_EVIDENCE_20261008.md).
+January raw archives have now been recovered from v0.9.12; canonical dataset
+hashes match the recorded 1,354-race replay. An explicit B0-only ordinal ability
+research baseline has run deterministically. These findings supersede earlier
+NOT_RECOVERED statements only for the listed assets. Strict PIT, full model
+ablation/calibration/market integration and Phase B completion remain open.
+

@@ -1,0 +1,17 @@
+{
+  "mode": "EVALUATOR_RECONSTRUCTION_NOT_PIT",
+  "datasets": {
+    "january": {
+      "races": 1354,
+      "runners": 15376,
+      "canonical_hash": "334df05a0bb4ea688c703645296fc87e7a168288764ae14b3d0d6606547bdce0",
+      "temporal_class": "UNKNOWN_TIMESTAMP"
+    },
+    "bootstrap": {
+      "races": 1598,
+      "runners": 17782,
+      "canonical_hash": "281942a68f04ccd0ff7f9efec2b9aa6fd5c2e7786e4c41481d5367b5bc2255d9",
+      "temporal_class": "UNKNOWN_TIMESTAMP"
+    }
+  }
+}

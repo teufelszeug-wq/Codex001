@@ -1,0 +1,41 @@
+{
+  "status": "EXECUTED_RESEARCH_NOT_STRICT_PIT",
+  "races": 1354,
+  "authorities": {
+    "NAR": 1078,
+    "JRA": 276
+  },
+  "config": {
+    "version": "B0-ordinal-ability-research-1",
+    "half_life_days": 180,
+    "temperature": 18,
+    "cold_start_prior": 50,
+    "surface_history_separated": true,
+    "stake_yen": 100,
+    "same_time_batch_lock": true,
+    "strict_pit": false
+  },
+  "config_hash": "a19379ec9bfaca7972b5f4122f76a0e291ed17eabd29001988471af52fcb0497",
+  "settlement": {
+    "stake_yen": 135400,
+    "payout_excluding_refund_yen": 88290,
+    "refund_yen": 1200,
+    "profit_yen": -45910,
+    "hits": 344,
+    "cold_start_runners": 3343
+  },
+  "refund_excluded_roi": 0.6578986587183309,
+  "log_loss": 2.2135876770632046,
+  "brier": 0.8639981452562884,
+  "terminal_hash": "9b811107b040ebb8f41b4552b3441ecb139a664ee5c872fa48221cc5b4874253",
+  "strict_pit": false,
+  "phase_b_complete": false,
+  "limitations": [
+    "reconstructed entrant metadata",
+    "provisional/composite identities",
+    "unknown historical availability",
+    "no speed/class normalization",
+    "cold-start explicit prior",
+    "not full PRISM"
+  ]
+}
