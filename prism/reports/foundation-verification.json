@@ -1,0 +1,83 @@
+{
+  "assertions": 7,
+  "status": "PASS",
+  "first": [
+    {
+      "node_id": "INGEST",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "3fa5d57370f14b917e06f764f180ca4e298e67452a96f5518fd84094dc2fd5e6"
+    },
+    {
+      "node_id": "VALIDATE",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "17259d59bb15e40ef0b19926fd1730159516cfa9c3abeb01d926533d67b9660f"
+    },
+    {
+      "node_id": "NORMALIZE",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "9a0218b1a2ae74f6674f727df3c4e5a1f2bd537338af79f49597a4b982411dcd"
+    },
+    {
+      "node_id": "FEATURE",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "1b23ba8d1fc09064bc16b464679588c2df7f79ac65f3eb9f685261e261b95ba1"
+    }
+  ],
+  "second": [
+    {
+      "node_id": "INGEST",
+      "decision": "SKIP_CACHE_HIT",
+      "status": "SKIPPED",
+      "output_hash": "3fa5d57370f14b917e06f764f180ca4e298e67452a96f5518fd84094dc2fd5e6"
+    },
+    {
+      "node_id": "VALIDATE",
+      "decision": "SKIP_CACHE_HIT",
+      "status": "SKIPPED",
+      "output_hash": "17259d59bb15e40ef0b19926fd1730159516cfa9c3abeb01d926533d67b9660f"
+    },
+    {
+      "node_id": "NORMALIZE",
+      "decision": "SKIP_CACHE_HIT",
+      "status": "SKIPPED",
+      "output_hash": "9a0218b1a2ae74f6674f727df3c4e5a1f2bd537338af79f49597a4b982411dcd"
+    },
+    {
+      "node_id": "FEATURE",
+      "decision": "SKIP_CACHE_HIT",
+      "status": "SKIPPED",
+      "output_hash": "1b23ba8d1fc09064bc16b464679588c2df7f79ac65f3eb9f685261e261b95ba1"
+    }
+  ],
+  "changed": [
+    {
+      "node_id": "INGEST",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "78cccc2146ae53f0059e98e8308154abfdf1fed195aed87667301a03d8911635"
+    },
+    {
+      "node_id": "VALIDATE",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "d67b291983627348214e09d1a9d1be109eafc9d9a73066c872afd85e4fd642b0"
+    },
+    {
+      "node_id": "NORMALIZE",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "e3b0904e76bf4f0b77b09a52135aa35c211d464bea4e65bc53376a7b20b47678"
+    },
+    {
+      "node_id": "FEATURE",
+      "decision": "RUN",
+      "status": "SUCCESS",
+      "output_hash": "035d1381427e0b108f5b8fe8904fc2ffa760c42585e8bda675129ae0e4758426"
+    }
+  ],
+  "hash": "1b23ba8d1fc09064bc16b464679588c2df7f79ac65f3eb9f685261e261b95ba1"
+}
