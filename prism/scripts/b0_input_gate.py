@@ -5,7 +5,11 @@ from datetime import datetime
 from math import isfinite
 
 PROHIBITED={'finish_position','result_time','result_margin','result_last3f','payout',
-            'winning_horse','post_result_revision','odds','popularity','market','result'}
+            'winning_horse','post_result_revision','odds','popularity','market','result','results','win_payouts'}
+RACE_FIELDS={'race_id','authority','date','venue','race_no','surface','distance','cutoff','provenance','runners'}
+RUNNER_FIELDS={'race_id','runner_key','horse_no','carried_weight','frame_no','horse_id','horse_name',
+               'jockey_id','jockey_name','trainer_id','trainer_name','sex','age','identity_status','provenance'}
+PROVENANCE_FIELDS={'temporal_class','source_id','content_hash','available_at'}
 
 def instant(value):
     parsed=datetime.fromisoformat(value.replace('Z','+00:00'))
@@ -20,10 +24,12 @@ def forbidden(value):
 
 def validate(dataset):
     errors=[];race_ids=set();runner_keys=set()
+    if set(dataset)-{'races'}:errors.append('unrecognized_dataset_fields')
     if forbidden(dataset):errors.append('prohibited_prediction_input')
     if not dataset.get('races'):errors.append('empty_dataset')
     for race in dataset.get('races',[]):
         rid=race.get('race_id');race_errors=[]
+        if set(race)-RACE_FIELDS:race_errors.append('unrecognized_race_fields')
         for field in ('race_id','authority','date','venue','race_no','surface','distance'):
             if race.get(field) in (None,''):race_errors.append('missing_race_'+field)
         if rid in race_ids:race_errors.append('duplicate_race')
@@ -33,6 +39,7 @@ def validate(dataset):
         except (KeyError,ValueError,TypeError,AttributeError):cutoff=None;race_errors.append('invalid_cutoff')
         for item in [race]+race.get('runners',[]):
             evidence=item.get('provenance',{})
+            if set(evidence)-PROVENANCE_FIELDS:race_errors.append('unrecognized_provenance_fields')
             if evidence.get('temporal_class') not in ('PRE_CERTIFIED','PRE_AVAILABLE'):
                 race_errors.append('unapproved_temporal_class')
             if not evidence.get('source_id') or not evidence.get('content_hash'):
@@ -43,6 +50,7 @@ def validate(dataset):
             except (KeyError,ValueError,TypeError,AttributeError):race_errors.append('unknown_availability')
         numbers=set()
         for runner in race.get('runners',[]):
+            if set(runner)-RUNNER_FIELDS:race_errors.append('unrecognized_runner_fields')
             for field in ('race_id','runner_key','horse_no','carried_weight'):
                 if runner.get(field) in (None,''):race_errors.append('missing_runner_'+field)
             if runner.get('race_id')!=rid:race_errors.append('orphan_runner')

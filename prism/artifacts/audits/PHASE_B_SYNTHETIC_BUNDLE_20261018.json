@@ -1,0 +1,2082 @@
+{
+  "market_values": {
+    "candidate_values": [
+      {
+        "bet_type": "PLACE",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 1455.26716401125,
+        "fair_odds": 1.2859526943536326,
+        "gross_return_ratio": 15.5526716401125,
+        "key": "f3b73c040622046e2b6acd388b383990ba4f0cd6577065d60c2ec3f44f19e79d",
+        "legs": [
+          "h1"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 14.5526716401125,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.777633582005625,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIDE",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 1394.004843207534,
+        "fair_odds": 1.3386837459684042,
+        "gross_return_ratio": 14.94004843207534,
+        "key": "352445580bdacdef66471a46776e48161d8c86b517b10d43830ad4b9f742b805",
+        "legs": [
+          "h1",
+          "h2"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 13.94004843207534,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.747002421603767,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "TRIO",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 688.6235238797422,
+        "fair_odds": 2.5360643443156805,
+        "gross_return_ratio": 7.886235238797422,
+        "key": "3748196554025b1a46aeb61872503fe3fe139e177b4fbb16a2c22e545b13d08d",
+        "legs": [
+          "h1",
+          "h2",
+          "h3"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 6.886235238797422,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.3943117619398711,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "FRAME",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 680.7689191033145,
+        "fair_odds": 2.561577377205191,
+        "gross_return_ratio": 7.807689191033145,
+        "key": "291781f245aa5e1440f78176b488ef85fafdbefab9b30036f5f6110de5800b8e",
+        "legs": [
+          "1",
+          "1"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 6.807689191033145,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.39038445955165724,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "QUINELLA",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 680.7689191033145,
+        "fair_odds": 2.561577377205191,
+        "gross_return_ratio": 7.807689191033145,
+        "key": "af96cce636b1e8394363797facb0dcdda9212c61669d9223949f8d30a5c6aa41",
+        "legs": [
+          "h1",
+          "h2"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 6.807689191033145,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.39038445955165724,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "EXACTA",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 357.38409860448115,
+        "fair_odds": 4.3726924615485645,
+        "gross_return_ratio": 4.573840986044812,
+        "key": "52357e6e85c6c778797cc53bb42190b5ec4b6dfd799b824dd879dc46bca8f8d4",
+        "legs": [
+          "h1",
+          "h2"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 3.5738409860448117,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.22869204930224057,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIN",
+        "decimal_odds": 5.0,
+        "expected_profit_yen": 136.5346705959304,
+        "fair_odds": 2.113855016434967,
+        "gross_return_ratio": 2.365346705959304,
+        "key": "c955071c9fa82796a26e1e0f214fab0ea5f32269114c38b1db6d4978a8b0a9ca",
+        "legs": [
+          "h1"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 1.365346705959304,
+        "normalized_market_proxy": 0.290500451438153,
+        "nvalue_longshot": false,
+        "probability": 0.47306934119186084,
+        "quoted_high": 5.0,
+        "relative_market_value": 1.6284633598670204,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "TRIFECTA",
+        "decimal_odds": 20.0,
+        "expected_profit_yen": 130.4759410193105,
+        "fair_odds": 8.677695342753497,
+        "gross_return_ratio": 2.304759410193105,
+        "key": "843a96d35b3f12c45ee0fa0f91ba99c57021ea56366030344d09e1a3c330424e",
+        "legs": [
+          "h1",
+          "h2",
+          "h3"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 1.304759410193105,
+        "normalized_market_proxy": null,
+        "nvalue_longshot": true,
+        "probability": 0.11523797050965524,
+        "quoted_high": 25.0,
+        "relative_market_value": null,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIN",
+        "decimal_odds": 7.0,
+        "expected_profit_yen": 78.31049967713601,
+        "fair_odds": 3.925736292969168,
+        "gross_return_ratio": 1.7831049967713601,
+        "key": "39507612169605f3d36120c898d97a60e89c26154c77d6fc1eb3bc39c01edfbf",
+        "legs": [
+          "h2"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 0.7831049967713601,
+        "normalized_market_proxy": 0.20750032245582353,
+        "nvalue_longshot": false,
+        "probability": 0.25472928525305144,
+        "quoted_high": 7.0,
+        "relative_market_value": 1.2276091055582956,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIN",
+        "decimal_odds": 9.0,
+        "expected_profit_yen": 23.445691477546738,
+        "fair_odds": 7.290655422864224,
+        "gross_return_ratio": 1.2344569147754674,
+        "key": "a8513aa05745db1878f21168547e3df4c633a8ffeea78197edea3e8b182897e5",
+        "legs": [
+          "h3"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": 0.23445691477546737,
+        "normalized_market_proxy": 0.16138913968786275,
+        "nvalue_longshot": false,
+        "probability": 0.13716187941949637,
+        "quoted_high": 9.0,
+        "relative_market_value": 0.8498829579535307,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIN",
+        "decimal_odds": 11.0,
+        "expected_profit_yen": -18.757900359163916,
+        "fair_odds": 13.539778081351907,
+        "gross_return_ratio": 0.8124209964083609,
+        "key": "1b713847f120e3c9efa21a10ecff2be63a9bd59d2f80f4d2ed2eb429087a82a4",
+        "legs": [
+          "h4"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": -0.18757900359163915,
+        "normalized_market_proxy": 0.132045659744615,
+        "nvalue_longshot": false,
+        "probability": 0.0738564542189419,
+        "quoted_high": 11.0,
+        "relative_market_value": 0.5593251180067951,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIN",
+        "decimal_odds": 13.0,
+        "expected_profit_yen": -48.30038504912333,
+        "fair_odds": 25.145254974049973,
+        "gross_return_ratio": 0.5169961495087667,
+        "key": "bd39400514d4f0e182085ad6f4de7045f44528843e729d7a3a6e1e5de6514ca6",
+        "legs": [
+          "h5"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": -0.4830038504912333,
+        "normalized_market_proxy": 0.11173094286082808,
+        "nvalue_longshot": false,
+        "probability": 0.03976893457759744,
+        "quoted_high": 13.0,
+        "relative_market_value": 0.35593483380099616,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      },
+      {
+        "bet_type": "WIN",
+        "decimal_odds": 15.0,
+        "expected_profit_yen": -67.8788419914219,
+        "fair_odds": 46.69819187712403,
+        "gross_return_ratio": 0.3212115800857811,
+        "key": "5f38709ecf6920065b18a875f3a2e399cfacc077c2fb2ca4e493c154effe2e51",
+        "legs": [
+          "h6"
+        ],
+        "market_proxy_is_true_probability": false,
+        "net_ev": -0.6787884199142189,
+        "normalized_market_proxy": 0.09683348381271766,
+        "nvalue_longshot": false,
+        "probability": 0.021414105339052077,
+        "quoted_high": 15.0,
+        "relative_market_value": 0.22114360132357078,
+        "stake_yen": 100,
+        "status": "REFERENCE"
+      }
+    ],
+    "execution_allowed": false,
+    "market_hash": "2c4acb9ed7b8edcf08f78f40cc80a8b2537f87b29a5e747a80ca96a3ed3c0670",
+    "mode": "SYNTHETIC",
+    "note": "Research candidates only; no betting execution or profitability claim.",
+    "nvalue_reviews": [
+      {
+        "ability_recheck": {
+          "agent": "N-VALUE-ABILITY-RECHECK",
+          "gap_from_base": 0.0,
+          "history_rows": 1,
+          "method": "best_recent3_vs_decay-v1",
+          "note": "Correlated history is not added again to the main probability.",
+          "probability_override": false,
+          "recent_peak_score": 100.0,
+          "status": "AVAILABLE"
+        },
+        "agent": "N-VALUE-POST-LOCK",
+        "automatic_adoption": false,
+        "decision": "NO_PRICE_EDGE",
+        "horse_id": "h1",
+        "market_relative_value": 1.6284633598670204,
+        "net_ev": 1.365346705959304,
+        "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+        "price_edge": false
+      },
+      {
+        "ability_recheck": {
+          "agent": "N-VALUE-ABILITY-RECHECK",
+          "gap_from_base": 0.0,
+          "history_rows": 1,
+          "method": "best_recent3_vs_decay-v1",
+          "note": "Correlated history is not added again to the main probability.",
+          "probability_override": false,
+          "recent_peak_score": 88.88888888888889,
+          "status": "AVAILABLE"
+        },
+        "agent": "N-VALUE-POST-LOCK",
+        "automatic_adoption": false,
+        "decision": "NO_PRICE_EDGE",
+        "horse_id": "h2",
+        "market_relative_value": 1.2276091055582956,
+        "net_ev": 0.7831049967713601,
+        "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+        "price_edge": false
+      },
+      {
+        "ability_recheck": {
+          "agent": "N-VALUE-ABILITY-RECHECK",
+          "gap_from_base": -1.4210854715202004e-14,
+          "history_rows": 1,
+          "method": "best_recent3_vs_decay-v1",
+          "note": "Correlated history is not added again to the main probability.",
+          "probability_override": false,
+          "recent_peak_score": 77.77777777777777,
+          "status": "AVAILABLE"
+        },
+        "agent": "N-VALUE-POST-LOCK",
+        "automatic_adoption": false,
+        "decision": "NO_PRICE_EDGE",
+        "horse_id": "h3",
+        "market_relative_value": 0.8498829579535307,
+        "net_ev": 0.23445691477546737,
+        "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+        "price_edge": false
+      },
+      {
+        "ability_recheck": {
+          "agent": "N-VALUE-ABILITY-RECHECK",
+          "gap_from_base": 0.0,
+          "history_rows": 1,
+          "method": "best_recent3_vs_decay-v1",
+          "note": "Correlated history is not added again to the main probability.",
+          "probability_override": false,
+          "recent_peak_score": 66.66666666666667,
+          "status": "AVAILABLE"
+        },
+        "agent": "N-VALUE-POST-LOCK",
+        "automatic_adoption": false,
+        "decision": "NO_PRICE_EDGE",
+        "horse_id": "h4",
+        "market_relative_value": 0.5593251180067951,
+        "net_ev": -0.18757900359163915,
+        "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+        "price_edge": false
+      },
+      {
+        "ability_recheck": {
+          "agent": "N-VALUE-ABILITY-RECHECK",
+          "gap_from_base": 0.0,
+          "history_rows": 1,
+          "method": "best_recent3_vs_decay-v1",
+          "note": "Correlated history is not added again to the main probability.",
+          "probability_override": false,
+          "recent_peak_score": 55.55555555555556,
+          "status": "AVAILABLE"
+        },
+        "agent": "N-VALUE-POST-LOCK",
+        "automatic_adoption": false,
+        "decision": "NO_PRICE_EDGE",
+        "horse_id": "h5",
+        "market_relative_value": 0.35593483380099616,
+        "net_ev": -0.4830038504912333,
+        "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+        "price_edge": false
+      },
+      {
+        "ability_recheck": {
+          "agent": "N-VALUE-ABILITY-RECHECK",
+          "gap_from_base": 0.0,
+          "history_rows": 1,
+          "method": "best_recent3_vs_decay-v1",
+          "note": "Correlated history is not added again to the main probability.",
+          "probability_override": false,
+          "recent_peak_score": 44.44444444444444,
+          "status": "AVAILABLE"
+        },
+        "agent": "N-VALUE-POST-LOCK",
+        "automatic_adoption": false,
+        "decision": "NO_PRICE_EDGE",
+        "horse_id": "h6",
+        "market_relative_value": 0.22114360132357078,
+        "net_ev": -0.6787884199142189,
+        "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+        "price_edge": false
+      }
+    ],
+    "plan": {
+      "decision": "CANDIDATES",
+      "expected_profit_yen": 4296.974949878977,
+      "objective": "MAX_SUM_EXPECTED_PROFIT_WITHIN_POOL_NOT_RISK_OPTIMAL",
+      "plan_hash": "e37c0ff3910ecf9f73daa5d834767e385964fb243e15137bda06aec52531b612",
+      "pool_limit": 20,
+      "pool_truncated": false,
+      "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+      "race_id": "TEST|20260101|X|1",
+      "stake_yen": 500,
+      "tickets": [
+        {
+          "bet_type": "PLACE",
+          "decimal_odds": 20.0,
+          "expected_profit_yen": 1455.26716401125,
+          "fair_odds": 1.2859526943536326,
+          "gross_return_ratio": 15.5526716401125,
+          "key": "f3b73c040622046e2b6acd388b383990ba4f0cd6577065d60c2ec3f44f19e79d",
+          "legs": [
+            "h1"
+          ],
+          "market_proxy_is_true_probability": false,
+          "net_ev": 14.5526716401125,
+          "normalized_market_proxy": null,
+          "nvalue_longshot": true,
+          "probability": 0.777633582005625,
+          "quoted_high": 25.0,
+          "relative_market_value": null,
+          "stake_yen": 100,
+          "status": "CANDIDATE"
+        },
+        {
+          "bet_type": "WIDE",
+          "decimal_odds": 20.0,
+          "expected_profit_yen": 1394.004843207534,
+          "fair_odds": 1.3386837459684042,
+          "gross_return_ratio": 14.94004843207534,
+          "key": "352445580bdacdef66471a46776e48161d8c86b517b10d43830ad4b9f742b805",
+          "legs": [
+            "h1",
+            "h2"
+          ],
+          "market_proxy_is_true_probability": false,
+          "net_ev": 13.94004843207534,
+          "normalized_market_proxy": null,
+          "nvalue_longshot": true,
+          "probability": 0.747002421603767,
+          "quoted_high": 25.0,
+          "relative_market_value": null,
+          "stake_yen": 100,
+          "status": "CANDIDATE"
+        },
+        {
+          "bet_type": "TRIO",
+          "decimal_odds": 20.0,
+          "expected_profit_yen": 688.6235238797422,
+          "fair_odds": 2.5360643443156805,
+          "gross_return_ratio": 7.886235238797422,
+          "key": "3748196554025b1a46aeb61872503fe3fe139e177b4fbb16a2c22e545b13d08d",
+          "legs": [
+            "h1",
+            "h2",
+            "h3"
+          ],
+          "market_proxy_is_true_probability": false,
+          "net_ev": 6.886235238797422,
+          "normalized_market_proxy": null,
+          "nvalue_longshot": true,
+          "probability": 0.3943117619398711,
+          "quoted_high": 25.0,
+          "relative_market_value": null,
+          "stake_yen": 100,
+          "status": "CANDIDATE"
+        },
+        {
+          "bet_type": "FRAME",
+          "decimal_odds": 20.0,
+          "expected_profit_yen": 680.7689191033145,
+          "fair_odds": 2.561577377205191,
+          "gross_return_ratio": 7.807689191033145,
+          "key": "291781f245aa5e1440f78176b488ef85fafdbefab9b30036f5f6110de5800b8e",
+          "legs": [
+            "1",
+            "1"
+          ],
+          "market_proxy_is_true_probability": false,
+          "net_ev": 6.807689191033145,
+          "normalized_market_proxy": null,
+          "nvalue_longshot": true,
+          "probability": 0.39038445955165724,
+          "quoted_high": 25.0,
+          "relative_market_value": null,
+          "stake_yen": 100,
+          "status": "CANDIDATE"
+        },
+        {
+          "bet_type": "WIN",
+          "decimal_odds": 7.0,
+          "expected_profit_yen": 78.31049967713601,
+          "fair_odds": 3.925736292969168,
+          "gross_return_ratio": 1.7831049967713601,
+          "key": "39507612169605f3d36120c898d97a60e89c26154c77d6fc1eb3bc39c01edfbf",
+          "legs": [
+            "h2"
+          ],
+          "market_proxy_is_true_probability": false,
+          "net_ev": 0.7831049967713601,
+          "normalized_market_proxy": 0.20750032245582353,
+          "nvalue_longshot": false,
+          "probability": 0.25472928525305144,
+          "quoted_high": 7.0,
+          "relative_market_value": 1.2276091055582956,
+          "stake_yen": 100,
+          "status": "CANDIDATE"
+        }
+      ]
+    },
+    "prediction_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+    "race_id": "TEST|20260101|X|1"
+  },
+  "normalization": {
+    "mappings": [
+      "past ordinal percentile",
+      "workout relative-time proxy",
+      "body-weight/assessment proxy",
+      "jockey smoothed win-rate proxy"
+    ],
+    "normalized_hash": "6ac8bc4e74de841d238e5e009f283ac0ef50631bb24f250be580f17615272309",
+    "normalizer": "structured-normalizer-v1-experimental",
+    "note": "Reference times, assessment, and other signals require independent upstream evidence; mappings are not validated speed figures.",
+    "raw_hash": "bf66286beff3ef172d4ae76bf4a57276d4a6b813d82090861db10da8fd364dde",
+    "source_authenticity_verified": false
+  },
+  "prediction": {
+    "ability_rechecks": {
+      "h1": {
+        "agent": "N-VALUE-ABILITY-RECHECK",
+        "gap_from_base": 0.0,
+        "history_rows": 1,
+        "method": "best_recent3_vs_decay-v1",
+        "note": "Correlated history is not added again to the main probability.",
+        "probability_override": false,
+        "recent_peak_score": 100.0,
+        "status": "AVAILABLE"
+      },
+      "h2": {
+        "agent": "N-VALUE-ABILITY-RECHECK",
+        "gap_from_base": 0.0,
+        "history_rows": 1,
+        "method": "best_recent3_vs_decay-v1",
+        "note": "Correlated history is not added again to the main probability.",
+        "probability_override": false,
+        "recent_peak_score": 88.88888888888889,
+        "status": "AVAILABLE"
+      },
+      "h3": {
+        "agent": "N-VALUE-ABILITY-RECHECK",
+        "gap_from_base": -1.4210854715202004e-14,
+        "history_rows": 1,
+        "method": "best_recent3_vs_decay-v1",
+        "note": "Correlated history is not added again to the main probability.",
+        "probability_override": false,
+        "recent_peak_score": 77.77777777777777,
+        "status": "AVAILABLE"
+      },
+      "h4": {
+        "agent": "N-VALUE-ABILITY-RECHECK",
+        "gap_from_base": 0.0,
+        "history_rows": 1,
+        "method": "best_recent3_vs_decay-v1",
+        "note": "Correlated history is not added again to the main probability.",
+        "probability_override": false,
+        "recent_peak_score": 66.66666666666667,
+        "status": "AVAILABLE"
+      },
+      "h5": {
+        "agent": "N-VALUE-ABILITY-RECHECK",
+        "gap_from_base": 0.0,
+        "history_rows": 1,
+        "method": "best_recent3_vs_decay-v1",
+        "note": "Correlated history is not added again to the main probability.",
+        "probability_override": false,
+        "recent_peak_score": 55.55555555555556,
+        "status": "AVAILABLE"
+      },
+      "h6": {
+        "agent": "N-VALUE-ABILITY-RECHECK",
+        "gap_from_base": 0.0,
+        "history_rows": 1,
+        "method": "best_recent3_vs_decay-v1",
+        "note": "Correlated history is not added again to the main probability.",
+        "probability_override": false,
+        "recent_peak_score": 44.44444444444444,
+        "status": "AVAILABLE"
+      }
+    },
+    "calibration_hash": "a459b3904fcd07d3c2e3d16a2146c60b38f21b57f24a4943317b6e2afaa8dad2",
+    "calibration_status": "FITTED_HISTORICAL",
+    "config_hash": "4055507bfd1b78b84d3e015e8dffe805e956d2178cd79d61f5d1b76c9451627c",
+    "coverage": {
+      "h1": {
+        "base_ability": "AVAILABLE",
+        "bias_tbi_ssi": "AVAILABLE",
+        "condition": "AVAILABLE",
+        "course_surface_class": "AVAILABLE",
+        "jockey": "AVAILABLE",
+        "pace": "AVAILABLE",
+        "sectional": "AVAILABLE",
+        "specialist": "AVAILABLE",
+        "state_recency_rotation": "AVAILABLE",
+        "surface_specific": "AVAILABLE",
+        "workout": "AVAILABLE"
+      },
+      "h2": {
+        "base_ability": "AVAILABLE",
+        "bias_tbi_ssi": "AVAILABLE",
+        "condition": "AVAILABLE",
+        "course_surface_class": "AVAILABLE",
+        "jockey": "AVAILABLE",
+        "pace": "AVAILABLE",
+        "sectional": "AVAILABLE",
+        "specialist": "AVAILABLE",
+        "state_recency_rotation": "AVAILABLE",
+        "surface_specific": "AVAILABLE",
+        "workout": "AVAILABLE"
+      },
+      "h3": {
+        "base_ability": "AVAILABLE",
+        "bias_tbi_ssi": "AVAILABLE",
+        "condition": "AVAILABLE",
+        "course_surface_class": "AVAILABLE",
+        "jockey": "AVAILABLE",
+        "pace": "AVAILABLE",
+        "sectional": "AVAILABLE",
+        "specialist": "AVAILABLE",
+        "state_recency_rotation": "AVAILABLE",
+        "surface_specific": "AVAILABLE",
+        "workout": "AVAILABLE"
+      },
+      "h4": {
+        "base_ability": "AVAILABLE",
+        "bias_tbi_ssi": "AVAILABLE",
+        "condition": "AVAILABLE",
+        "course_surface_class": "AVAILABLE",
+        "jockey": "AVAILABLE",
+        "pace": "AVAILABLE",
+        "sectional": "AVAILABLE",
+        "specialist": "AVAILABLE",
+        "state_recency_rotation": "AVAILABLE",
+        "surface_specific": "AVAILABLE",
+        "workout": "AVAILABLE"
+      },
+      "h5": {
+        "base_ability": "AVAILABLE",
+        "bias_tbi_ssi": "AVAILABLE",
+        "condition": "AVAILABLE",
+        "course_surface_class": "AVAILABLE",
+        "jockey": "AVAILABLE",
+        "pace": "AVAILABLE",
+        "sectional": "AVAILABLE",
+        "specialist": "AVAILABLE",
+        "state_recency_rotation": "AVAILABLE",
+        "surface_specific": "AVAILABLE",
+        "workout": "AVAILABLE"
+      },
+      "h6": {
+        "base_ability": "AVAILABLE",
+        "bias_tbi_ssi": "AVAILABLE",
+        "condition": "AVAILABLE",
+        "course_surface_class": "AVAILABLE",
+        "jockey": "AVAILABLE",
+        "pace": "AVAILABLE",
+        "sectional": "AVAILABLE",
+        "specialist": "AVAILABLE",
+        "state_recency_rotation": "AVAILABLE",
+        "surface_specific": "AVAILABLE",
+        "workout": "AVAILABLE"
+      }
+    },
+    "cutoff": "2026-01-01T10:00:00+09:00",
+    "disabled_modules": [],
+    "features": {
+      "horses": {
+        "h1": {
+          "availability": {
+            "base_ability": "AVAILABLE",
+            "bias_tbi_ssi": "AVAILABLE",
+            "condition": "AVAILABLE",
+            "course_surface_class": "AVAILABLE",
+            "jockey": "AVAILABLE",
+            "pace": "AVAILABLE",
+            "sectional": "AVAILABLE",
+            "specialist": "AVAILABLE",
+            "state_recency_rotation": "AVAILABLE",
+            "surface_specific": "AVAILABLE",
+            "workout": "AVAILABLE"
+          },
+          "barrier_no": 1,
+          "base_ability": 100.0,
+          "components": {
+            "bias_tbi_ssi": -0.7053333333333333,
+            "condition": 1.425,
+            "course_surface_class": 0.0,
+            "jockey": 0.18939393939393945,
+            "pace": 0.024982806879705804,
+            "sectional": 0.56,
+            "specialist": 1.4666666666666668,
+            "state_recency_rotation": 1.12,
+            "surface_specific": 0.0,
+            "workout": 0.5454545454545456
+          },
+          "frame_no": 1,
+          "horse_no": 1,
+          "missing": [],
+          "pace_scenarios": {
+            "HIGH": -0.017500000000000043,
+            "MIDDLE": 0.19,
+            "SLOW": 0.3975000000000001,
+            "VERY_HIGH": -0.2250000000000001,
+            "VERY_SLOW": 0.6050000000000001
+          }
+        },
+        "h2": {
+          "availability": {
+            "base_ability": "AVAILABLE",
+            "bias_tbi_ssi": "AVAILABLE",
+            "condition": "AVAILABLE",
+            "course_surface_class": "AVAILABLE",
+            "jockey": "AVAILABLE",
+            "pace": "AVAILABLE",
+            "sectional": "AVAILABLE",
+            "specialist": "AVAILABLE",
+            "state_recency_rotation": "AVAILABLE",
+            "surface_specific": "AVAILABLE",
+            "workout": "AVAILABLE"
+          },
+          "barrier_no": 2,
+          "base_ability": 88.88888888888889,
+          "components": {
+            "bias_tbi_ssi": -0.3216666666666666,
+            "condition": 1.4093749999999987,
+            "course_surface_class": 0.0,
+            "jockey": 0.15151515151515138,
+            "pace": 0.030888078505758254,
+            "sectional": 0.52,
+            "specialist": 1.3333333333333335,
+            "state_recency_rotation": 1.04,
+            "surface_specific": 0.0,
+            "workout": 0.4363636363636364
+          },
+          "frame_no": 1,
+          "horse_no": 2,
+          "missing": [],
+          "pace_scenarios": {
+            "HIGH": -0.007500000000000062,
+            "MIDDLE": 0.18,
+            "SLOW": 0.36750000000000005,
+            "VERY_HIGH": -0.19500000000000012,
+            "VERY_SLOW": 0.5550000000000002
+          }
+        },
+        "h3": {
+          "availability": {
+            "base_ability": "AVAILABLE",
+            "bias_tbi_ssi": "AVAILABLE",
+            "condition": "AVAILABLE",
+            "course_surface_class": "AVAILABLE",
+            "jockey": "AVAILABLE",
+            "pace": "AVAILABLE",
+            "sectional": "AVAILABLE",
+            "specialist": "AVAILABLE",
+            "state_recency_rotation": "AVAILABLE",
+            "surface_specific": "AVAILABLE",
+            "workout": "AVAILABLE"
+          },
+          "barrier_no": 3,
+          "base_ability": 77.77777777777779,
+          "components": {
+            "bias_tbi_ssi": 0.06200000000000007,
+            "condition": 1.3937500000000003,
+            "course_surface_class": 0.0,
+            "jockey": 0.1136363636363636,
+            "pace": 0.03679335013181073,
+            "sectional": 0.48,
+            "specialist": 1.2000000000000002,
+            "state_recency_rotation": 0.96,
+            "surface_specific": 0.0,
+            "workout": 0.32727272727272716
+          },
+          "frame_no": 2,
+          "horse_no": 3,
+          "missing": [],
+          "pace_scenarios": {
+            "HIGH": 0.0024999999999999745,
+            "MIDDLE": 0.17,
+            "SLOW": 0.3375,
+            "VERY_HIGH": -0.16500000000000006,
+            "VERY_SLOW": 0.5050000000000001
+          }
+        },
+        "h4": {
+          "availability": {
+            "base_ability": "AVAILABLE",
+            "bias_tbi_ssi": "AVAILABLE",
+            "condition": "AVAILABLE",
+            "course_surface_class": "AVAILABLE",
+            "jockey": "AVAILABLE",
+            "pace": "AVAILABLE",
+            "sectional": "AVAILABLE",
+            "specialist": "AVAILABLE",
+            "state_recency_rotation": "AVAILABLE",
+            "surface_specific": "AVAILABLE",
+            "workout": "AVAILABLE"
+          },
+          "barrier_no": 4,
+          "base_ability": 66.66666666666667,
+          "components": {
+            "bias_tbi_ssi": 0.44566666666666666,
+            "condition": 1.3781249999999992,
+            "course_surface_class": 0.0,
+            "jockey": 0.07575757575757584,
+            "pace": 0.04269862175786318,
+            "sectional": 0.44,
+            "specialist": 1.0666666666666669,
+            "state_recency_rotation": 0.88,
+            "surface_specific": 0.0,
+            "workout": 0.21818181818181798
+          },
+          "frame_no": 3,
+          "horse_no": 4,
+          "missing": [],
+          "pace_scenarios": {
+            "HIGH": 0.012499999999999983,
+            "MIDDLE": 0.16,
+            "SLOW": 0.3075,
+            "VERY_HIGH": -0.13500000000000004,
+            "VERY_SLOW": 0.45500000000000007
+          }
+        },
+        "h5": {
+          "availability": {
+            "base_ability": "AVAILABLE",
+            "bias_tbi_ssi": "AVAILABLE",
+            "condition": "AVAILABLE",
+            "course_surface_class": "AVAILABLE",
+            "jockey": "AVAILABLE",
+            "pace": "AVAILABLE",
+            "sectional": "AVAILABLE",
+            "specialist": "AVAILABLE",
+            "state_recency_rotation": "AVAILABLE",
+            "surface_specific": "AVAILABLE",
+            "workout": "AVAILABLE"
+          },
+          "barrier_no": 5,
+          "base_ability": 55.55555555555556,
+          "components": {
+            "bias_tbi_ssi": 0.8293333333333335,
+            "condition": 1.3625000000000005,
+            "course_surface_class": 0.0,
+            "jockey": 0.037878787878787776,
+            "pace": 0.04860389338391559,
+            "sectional": 0.4,
+            "specialist": 0.9333333333333332,
+            "state_recency_rotation": 0.8,
+            "surface_specific": 0.0,
+            "workout": 0.1090909090909092
+          },
+          "frame_no": 4,
+          "horse_no": 5,
+          "missing": [],
+          "pace_scenarios": {
+            "HIGH": 0.022499999999999937,
+            "MIDDLE": 0.15,
+            "SLOW": 0.2775000000000001,
+            "VERY_HIGH": -0.10500000000000012,
+            "VERY_SLOW": 0.40500000000000014
+          }
+        },
+        "h6": {
+          "availability": {
+            "base_ability": "AVAILABLE",
+            "bias_tbi_ssi": "AVAILABLE",
+            "condition": "AVAILABLE",
+            "course_surface_class": "AVAILABLE",
+            "jockey": "AVAILABLE",
+            "pace": "AVAILABLE",
+            "sectional": "AVAILABLE",
+            "specialist": "AVAILABLE",
+            "state_recency_rotation": "AVAILABLE",
+            "surface_specific": "AVAILABLE",
+            "workout": "AVAILABLE"
+          },
+          "barrier_no": 6,
+          "base_ability": 44.44444444444444,
+          "components": {
+            "bias_tbi_ssi": 1.213,
+            "condition": 1.3468749999999994,
+            "course_surface_class": 0.0,
+            "jockey": 0.0,
+            "pace": 0.054509165009968066,
+            "sectional": 0.36,
+            "specialist": 0.8,
+            "state_recency_rotation": 0.72,
+            "surface_specific": 0.0,
+            "workout": 0.0
+          },
+          "frame_no": 5,
+          "horse_no": 6,
+          "missing": [],
+          "pace_scenarios": {
+            "HIGH": 0.03249999999999997,
+            "MIDDLE": 0.14,
+            "SLOW": 0.24750000000000005,
+            "VERY_HIGH": -0.07500000000000007,
+            "VERY_SLOW": 0.3550000000000001
+          }
+        }
+      },
+      "note": "Coefficients are experimental defaults; validate performance in Phase D.",
+      "pace_distribution": {
+        "HIGH": 0.3759119245013462,
+        "MIDDLE": 0.3401391751747265,
+        "SLOW": 0.11322249584858213,
+        "VERY_HIGH": 0.15283438323694618,
+        "VERY_SLOW": 0.01789202123839899
+      },
+      "surface_route": "DIRT"
+    },
+    "frames": {
+      "h1": "1",
+      "h2": "1",
+      "h3": "2",
+      "h4": "3",
+      "h5": "4",
+      "h6": "5"
+    },
+    "input_hash": "6ac8bc4e74de841d238e5e009f283ac0ef50631bb24f250be580f17615272309",
+    "lock_hash": "e5812adb534fd34c641c68617d66ae25684bb1d1903472e48a1b06164c038f74",
+    "locked_at": "2026-01-01T09:55:00+09:00",
+    "mode": "SYNTHETIC",
+    "model_version": "prism-core-engine-0.1-experimental",
+    "monte_carlo": {
+      "runs": 10000,
+      "sampling_model": "CALIBRATED_PACE_MIXTURE_JOINT",
+      "seed": 42,
+      "top2": {
+        "h1": 0.7692,
+        "h2": 0.5668,
+        "h3": 0.3329,
+        "h4": 0.1797,
+        "h5": 0.0978,
+        "h6": 0.0536
+      },
+      "top3": {
+        "h1": 0.9288,
+        "h2": 0.8144,
+        "h3": 0.5986,
+        "h4": 0.3525,
+        "h5": 0.1994,
+        "h6": 0.1063
+      },
+      "win": {
+        "h1": 0.4697,
+        "h2": 0.2615,
+        "h3": 0.1384,
+        "h4": 0.0683,
+        "h5": 0.0407,
+        "h6": 0.0214
+      }
+    },
+    "performance_validated": false,
+    "probabilities": {
+      "top2": {
+        "h1": 0.7776335820056249,
+        "h2": 0.5603523706608426,
+        "h3": 0.32680497794852575,
+        "h4": 0.18182282838146094,
+        "h5": 0.09942908320174615,
+        "h6": 0.05395715780179949
+      },
+      "top3": {
+        "h1": 0.9323659474640087,
+        "h2": 0.8084637826341181,
+        "h3": 0.5967766092723358,
+        "h4": 0.3542663539102069,
+        "h5": 0.19887310327199298,
+        "h6": 0.10925420344733741
+      },
+      "win": {
+        "h1": 0.4730693411918608,
+        "h2": 0.25472928525305144,
+        "h3": 0.13716187941949637,
+        "h4": 0.07385645421894191,
+        "h5": 0.03976893457759744,
+        "h6": 0.02141410533905208
+      }
+    },
+    "race_id": "TEST|20260101|X|1",
+    "rank_distribution": [
+      [
+        [
+          "h1",
+          "h2",
+          "h3"
+        ],
+        0.11523797050965524
+      ],
+      [
+        [
+          "h1",
+          "h2",
+          "h4"
+        ],
+        0.062051009488619406
+      ],
+      [
+        [
+          "h1",
+          "h2",
+          "h5"
+        ],
+        0.03341200809631008
+      ],
+      [
+        [
+          "h1",
+          "h2",
+          "h6"
+        ],
+        0.017991061207655833
+      ],
+      [
+        [
+          "h1",
+          "h3",
+          "h2"
+        ],
+        0.08047802606304298
+      ],
+      [
+        [
+          "h1",
+          "h3",
+          "h4"
+        ],
+        0.02333378248937584
+      ],
+      [
+        [
+          "h1",
+          "h3",
+          "h5"
+        ],
+        0.012564342728076406
+      ],
+      [
+        [
+          "h1",
+          "h3",
+          "h6"
+        ],
+        0.006765421823322935
+      ],
+      [
+        [
+          "h1",
+          "h4",
+          "h2"
+        ],
+        0.037279372305512606
+      ],
+      [
+        [
+          "h1",
+          "h4",
+          "h3"
+        ],
+        0.020073486745108962
+      ],
+      [
+        [
+          "h1",
+          "h4",
+          "h5"
+        ],
+        0.005820130102030268
+      ],
+      [
+        [
+          "h1",
+          "h4",
+          "h6"
+        ],
+        0.0031339231726865927
+      ],
+      [
+        [
+          "h1",
+          "h5",
+          "h2"
+        ],
+        0.01866891139524404
+      ],
+      [
+        [
+          "h1",
+          "h5",
+          "h3"
+        ],
+        0.010052490988597007
+      ],
+      [
+        [
+          "h1",
+          "h5",
+          "h4"
+        ],
+        0.005412885825487887
+      ],
+      [
+        [
+          "h1",
+          "h5",
+          "h6"
+        ],
+        0.00156942527588125
+      ],
+      [
+        [
+          "h1",
+          "h6",
+          "h2"
+        ],
+        0.009687494311232796
+      ],
+      [
+        [
+          "h1",
+          "h6",
+          "h3"
+        ],
+        0.00521634871013972
+      ],
+      [
+        [
+          "h1",
+          "h6",
+          "h4"
+        ],
+        0.0028088092561818403
+      ],
+      [
+        [
+          "h1",
+          "h6",
+          "h5"
+        ],
+        0.0015124406976991525
+      ],
+      [
+        [
+          "h2",
+          "h1",
+          "h3"
+        ],
+        0.08147677381533383
+      ],
+      [
+        [
+          "h2",
+          "h1",
+          "h4"
+        ],
+        0.043872007429361835
+      ],
+      [
+        [
+          "h2",
+          "h1",
+          "h5"
+        ],
+        0.023623359852259197
+      ],
+      [
+        [
+          "h2",
+          "h1",
+          "h6"
+        ],
+        0.012720269152461806
+      ],
+      [
+        [
+          "h2",
+          "h3",
+          "h1"
+        ],
+        0.036470463138021575
+      ],
+      [
+        [
+          "h2",
+          "h3",
+          "h4"
+        ],
+        0.005693857701663631
+      ],
+      [
+        [
+          "h2",
+          "h3",
+          "h5"
+        ],
+        0.0030659330814763047
+      ],
+      [
+        [
+          "h2",
+          "h3",
+          "h6"
+        ],
+        0.0016508940774624438
+      ],
+      [
+        [
+          "h2",
+          "h4",
+          "h1"
+        ],
+        0.01778634298385119
+      ],
+      [
+        [
+          "h2",
+          "h4",
+          "h3"
+        ],
+        0.00515700267392602
+      ],
+      [
+        [
+          "h2",
+          "h4",
+          "h5"
+        ],
+        0.0014952367202798065
+      ],
+      [
+        [
+          "h2",
+          "h4",
+          "h6"
+        ],
+        0.0008051317741013686
+      ],
+      [
+        [
+          "h2",
+          "h5",
+          "h1"
+        ],
+        0.00911452759379015
+      ],
+      [
+        [
+          "h2",
+          "h5",
+          "h3"
+        ],
+        0.002642687207971153
+      ],
+      [
+        [
+          "h2",
+          "h5",
+          "h4"
+        ],
+        0.0014229914001127975
+      ],
+      [
+        [
+          "h2",
+          "h5",
+          "h6"
+        ],
+        0.0004125881287760061
+      ],
+      [
+        [
+          "h2",
+          "h6",
+          "h1"
+        ],
+        0.004783383687516931
+      ],
+      [
+        [
+          "h2",
+          "h6",
+          "h3"
+        ],
+        0.0013869082146626011
+      ],
+      [
+        [
+          "h2",
+          "h6",
+          "h4"
+        ],
+        0.0007468006464180223
+      ],
+      [
+        [
+          "h2",
+          "h6",
+          "h5"
+        ],
+        0.0004021259736047605
+      ],
+      [
+        [
+          "h3",
+          "h1",
+          "h2"
+        ],
+        0.04914740554162618
+      ],
+      [
+        [
+          "h3",
+          "h1",
+          "h4"
+        ],
+        0.014249822179083107
+      ],
+      [
+        [
+          "h3",
+          "h1",
+          "h5"
+        ],
+        0.00767298913663929
+      ],
+      [
+        [
+          "h3",
+          "h1",
+          "h6"
+        ],
+        0.004131618351687712
+      ],
+      [
+        [
+          "h3",
+          "h2",
+          "h1"
+        ],
+        0.031501122872191305
+      ],
+      [
+        [
+          "h3",
+          "h2",
+          "h4"
+        ],
+        0.004918034792633095
+      ],
+      [
+        [
+          "h3",
+          "h2",
+          "h5"
+        ],
+        0.0026481814320491724
+      ],
+      [
+        [
+          "h3",
+          "h2",
+          "h6"
+        ],
+        0.0014259501762144823
+      ],
+      [
+        [
+          "h3",
+          "h4",
+          "h1"
+        ],
+        0.007039641062844861
+      ],
+      [
+        [
+          "h3",
+          "h4",
+          "h2"
+        ],
+        0.0037905850618161594
+      ],
+      [
+        [
+          "h3",
+          "h4",
+          "h5"
+        ],
+        0.000591801816687659
+      ],
+      [
+        [
+          "h3",
+          "h4",
+          "h6"
+        ],
+        0.00031866467814464284
+      ],
+      [
+        [
+          "h3",
+          "h5",
+          "h1"
+        ],
+        0.0036335967479797344
+      ],
+      [
+        [
+          "h3",
+          "h5",
+          "h2"
+        ],
+        0.001956558834304863
+      ],
+      [
+        [
+          "h3",
+          "h5",
+          "h4"
+        ],
+        0.0005672920612805528
+      ],
+      [
+        [
+          "h3",
+          "h5",
+          "h6"
+        ],
+        0.00016448352405043693
+      ],
+      [
+        [
+          "h3",
+          "h6",
+          "h1"
+        ],
+        0.001913877991838671
+      ],
+      [
+        [
+          "h3",
+          "h6",
+          "h2"
+        ],
+        0.0010305543141523716
+      ],
+      [
+        [
+          "h3",
+          "h6",
+          "h4"
+        ],
+        0.00029880343581611377
+      ],
+      [
+        [
+          "h3",
+          "h6",
+          "h5"
+        ],
+        0.00016089540845596592
+      ],
+      [
+        [
+          "h4",
+          "h1",
+          "h2"
+        ],
+        0.021210137212943195
+      ],
+      [
+        [
+          "h4",
+          "h1",
+          "h3"
+        ],
+        0.011420844342526005
+      ],
+      [
+        [
+          "h4",
+          "h1",
+          "h5"
+        ],
+        0.0033113806721068134
+      ],
+      [
+        [
+          "h4",
+          "h1",
+          "h6"
+        ],
+        0.0017830571857741357
+      ],
+      [
+        [
+          "h4",
+          "h2",
+          "h1"
+        ],
+        0.014312731259199858
+      ],
+      [
+        [
+          "h4",
+          "h2",
+          "h3"
+        ],
+        0.004149859245515833
+      ],
+      [
+        [
+          "h4",
+          "h2",
+          "h5"
+        ],
+        0.001203222985672257
+      ],
+      [
+        [
+          "h4",
+          "h2",
+          "h6"
+        ],
+        0.000647892883909296
+      ],
+      [
+        [
+          "h4",
+          "h3",
+          "h1"
+        ],
+        0.006558454921554096
+      ],
+      [
+        [
+          "h4",
+          "h3",
+          "h2"
+        ],
+        0.0035314842165584657
+      ],
+      [
+        [
+          "h4",
+          "h3",
+          "h5"
+        ],
+        0.0005513499244430222
+      ],
+      [
+        [
+          "h4",
+          "h3",
+          "h6"
+        ],
+        0.00029688274285850685
+      ],
+      [
+        [
+          "h4",
+          "h5",
+          "h1"
+        ],
+        0.001692633571568893
+      ],
+      [
+        [
+          "h4",
+          "h5",
+          "h2"
+        ],
+        0.0009114222076001701
+      ],
+      [
+        [
+          "h4",
+          "h5",
+          "h3"
+        ],
+        0.0004907685657096835
+      ],
+      [
+        [
+          "h4",
+          "h5",
+          "h6"
+        ],
+        7.66215590859962e-05
+      ],
+      [
+        [
+          "h4",
+          "h6",
+          "h1"
+        ],
+        0.0008929313599941166
+      ],
+      [
+        [
+          "h4",
+          "h6",
+          "h2"
+        ],
+        0.0004808118768374974
+      ],
+      [
+        [
+          "h4",
+          "h6",
+          "h3"
+        ],
+        0.00025890043105177517
+      ],
+      [
+        [
+          "h4",
+          "h6",
+          "h5"
+        ],
+        7.50670540322832e-05
+      ],
+      [
+        [
+          "h5",
+          "h1",
+          "h2"
+        ],
+        0.010244645063232163
+      ],
+      [
+        [
+          "h5",
+          "h1",
+          "h3"
+        ],
+        0.005516353740076659
+      ],
+      [
+        [
+          "h5",
+          "h1",
+          "h4"
+        ],
+        0.002970351022527913
+      ],
+      [
+        [
+          "h5",
+          "h1",
+          "h6"
+        ],
+        0.0008612327526929814
+      ],
+      [
+        [
+          "h5",
+          "h2",
+          "h1"
+        ],
+        0.007074122973741487
+      ],
+      [
+        [
+          "h5",
+          "h2",
+          "h3"
+        ],
+        0.0020510881545891166
+      ],
+      [
+        [
+          "h5",
+          "h2",
+          "h4"
+        ],
+        0.0011044368811324295
+      ],
+      [
+        [
+          "h5",
+          "h2",
+          "h6"
+        ],
+        0.0003202251784395468
+      ],
+      [
+        [
+          "h5",
+          "h3",
+          "h1"
+        ],
+        0.0032650530720813855
+      ],
+      [
+        [
+          "h5",
+          "h3",
+          "h2"
+        ],
+        0.0017581114928712932
+      ],
+      [
+        [
+          "h5",
+          "h3",
+          "h4"
+        ],
+        0.0005097534526503968
+      ],
+      [
+        [
+          "h5",
+          "h3",
+          "h6"
+        ],
+        0.00014780047878613106
+      ],
+      [
+        [
+          "h5",
+          "h4",
+          "h1"
+        ],
+        0.0016325460033677062
+      ],
+      [
+        [
+          "h5",
+          "h4",
+          "h2"
+        ],
+        0.0008790671832211881
+      ],
+      [
+        [
+          "h5",
+          "h4",
+          "h3"
+        ],
+        0.0004733465135284133
+      ],
+      [
+        [
+          "h5",
+          "h4",
+          "h6"
+        ],
+        7.390152154585413e-05
+      ],
+      [
+        [
+          "h5",
+          "h6",
+          "h1"
+        ],
+        0.0004469050961344131
+      ],
+      [
+        [
+          "h5",
+          "h6",
+          "h2"
+        ],
+        0.00024064279250008433
+      ],
+      [
+        [
+          "h5",
+          "h6",
+          "h3"
+        ],
+        0.0001295778845765617
+      ],
+      [
+        [
+          "h5",
+          "h6",
+          "h4"
+        ],
+        6.977331990171833e-05
+      ],
+      [
+        [
+          "h6",
+          "h1",
+          "h2"
+        ],
+        0.005216348710139716
+      ],
+      [
+        [
+          "h6",
+          "h1",
+          "h3"
+        ],
+        0.0028088092561818403
+      ],
+      [
+        [
+          "h6",
+          "h1",
+          "h4"
+        ],
+        0.0015124406976991522
+      ],
+      [
+        [
+          "h6",
+          "h1",
+          "h5"
+        ],
+        0.0008143946994106292
+      ],
+      [
+        [
+          "h6",
+          "h2",
+          "h1"
+        ],
+        0.0036429269408235405
+      ],
+      [
+        [
+          "h6",
+          "h2",
+          "h3"
+        ],
+        0.0010562410746656756
+      ],
+      [
+        [
+          "h6",
+          "h2",
+          "h4"
+        ],
+        0.0005687482337548502
+      ],
+      [
+        [
+          "h6",
+          "h2",
+          "h5"
+        ],
+        0.00030625102101888396
+      ],
+      [
+        [
+          "h6",
+          "h3",
+          "h1"
+        ],
+        0.0016875026918781039
+      ],
+      [
+        [
+          "h6",
+          "h3",
+          "h2"
+        ],
+        0.0009086593058086013
+      ],
+      [
+        [
+          "h6",
+          "h3",
+          "h4"
+        ],
+        0.00026346062279238133
+      ],
+      [
+        [
+          "h6",
+          "h3",
+          "h5"
+        ],
+        0.00014186450430484336
+      ],
+      [
+        [
+          "h6",
+          "h4",
+          "h1"
+        ],
+        0.0008450788730345293
+      ],
+      [
+        [
+          "h6",
+          "h4",
+          "h2"
+        ],
+        0.0004550449739281218
+      ],
+      [
+        [
+          "h6",
+          "h4",
+          "h3"
+        ],
+        0.00024502583321309575
+      ],
+      [
+        [
+          "h6",
+          "h4",
+          "h5"
+        ],
+        7.104416368998189e-05
+      ],
+      [
+        [
+          "h6",
+          "h5",
+          "h1"
+        ],
+        0.00043852261697133324
+      ],
+      [
+        [
+          "h6",
+          "h5",
+          "h2"
+        ],
+        0.00023612911070281585
+      ],
+      [
+        [
+          "h6",
+          "h5",
+          "h3"
+        ],
+        0.00012714741678095036
+      ],
+      [
+        [
+          "h6",
+          "h5",
+          "h4"
+        ],
+        6.846459225303275e-05
+      ]
+    ],
+    "rank_model": "CALIBRATED_PACE_MIXTURE_PL_NOT_PHYSICAL_RACE_SIMULATION",
+    "scenario_win_uncalibrated": {
+      "HIGH": {
+        "h1": 0.47281963919849707,
+        "h2": 0.25472723608653647,
+        "h3": 0.13723195786511314,
+        "h4": 0.07393245633574232,
+        "h5": 0.03983043151806553,
+        "h6": 0.02145827899604548
+      },
+      "MIDDLE": {
+        "h1": 0.47335407445578986,
+        "h2": 0.2547319653534453,
+        "h3": 0.13708210761136974,
+        "h4": 0.07376971398584226,
+        "h5": 0.0396986214786036,
+        "h6": 0.021363517114949188
+      },
+      "SLOW": {
+        "h1": 0.4738881751610166,
+        "h2": 0.25473619015106314,
+        "h3": 0.13693214976429893,
+        "h4": 0.07360718407523109,
+        "h5": 0.039567169264566285,
+        "h6": 0.02126913158382392
+      },
+      "VERY_HIGH": {
+        "h1": 0.47228487018649623,
+        "h2": 0.2547220014635647,
+        "h3": 0.13738169932054597,
+        "h4": 0.07409541068206703,
+        "h5": 0.039962599904477245,
+        "h6": 0.021553418442848873
+      },
+      "VERY_SLOW": {
+        "h1": 0.4744219405217987,
+        "h2": 0.2547399113682195,
+        "h3": 0.1367820855260523,
+        "h4": 0.07344486704249675,
+        "h5": 0.03943607435246064,
+        "h6": 0.02117512118897198
+      }
+    },
+    "schema": "prism.engine.prediction/v1",
+    "scores": {
+      "h1": 104.62616462506153,
+      "h2": 93.48869742194009,
+      "h3": 82.35123021881869,
+      "h4": 71.21376301569725,
+      "h5": 60.07629581257582,
+      "h6": 48.938828609454404
+    },
+    "source_authenticity_verified": false,
+    "uncertainty": {
+      "mc_standard_errors": {
+        "h1": 0.004992742128491713,
+        "h2": 0.004357089355148928,
+        "h3": 0.0034401816558665603,
+        "h4": 0.002615371453334062,
+        "h5": 0.0019541588067544615,
+        "h6": 0.0014476028955338568
+      },
+      "missing_feature_count": 0,
+      "normalized_entropy": 0.7690393420334161,
+      "note": "Entropy and MC sampling error are not predictive confidence intervals."
+    },
+    "win": {
+      "h1": 0.4730693411918608,
+      "h2": 0.25472928525305144,
+      "h3": 0.13716187941949637,
+      "h4": 0.07385645421894191,
+      "h5": 0.03976893457759744,
+      "h6": 0.02141410533905208
+    }
+  },
+  "production_deployed": false,
+  "schema": "prism.engine.bundle/v1",
+  "settlement": {
+    "effective_stake_yen": 500,
+    "gross_stake_yen": 500,
+    "payout_yen": 1400,
+    "profit_yen": 900,
+    "refund_yen": 0,
+    "roi": 2.8,
+    "rows": [
+      {
+        "key": "f3b73c040622046e2b6acd388b383990ba4f0cd6577065d60c2ec3f44f19e79d",
+        "payout_yen": 350,
+        "profit_yen": 250,
+        "refund_yen": 0,
+        "stake_yen": 100
+      },
+      {
+        "key": "352445580bdacdef66471a46776e48161d8c86b517b10d43830ad4b9f742b805",
+        "payout_yen": 350,
+        "profit_yen": 250,
+        "refund_yen": 0,
+        "stake_yen": 100
+      },
+      {
+        "key": "3748196554025b1a46aeb61872503fe3fe139e177b4fbb16a2c22e545b13d08d",
+        "payout_yen": 350,
+        "profit_yen": 250,
+        "refund_yen": 0,
+        "stake_yen": 100
+      },
+      {
+        "key": "291781f245aa5e1440f78176b488ef85fafdbefab9b30036f5f6110de5800b8e",
+        "payout_yen": 350,
+        "profit_yen": 250,
+        "refund_yen": 0,
+        "stake_yen": 100
+      },
+      {
+        "key": "39507612169605f3d36120c898d97a60e89c26154c77d6fc1eb3bc39c01edfbf",
+        "payout_yen": 0,
+        "profit_yen": -100,
+        "refund_yen": 0,
+        "stake_yen": 100
+      }
+    ]
+  },
+  "training_achievement_verified": false
+}
