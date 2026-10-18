@@ -126,7 +126,7 @@ This compresses 16 top-level milestones into 6 true development phases.
 | Phase | Estimated maturity | Status |
 |---|---:|---|
 | A Foundation & Governance | foundation gate closed | VERIFIED |
-| B Core Prediction Engine | 30-40% | IN PROGRESS |
+| B Core Prediction Engine | reference integration gate passed | VERIFIED (synthetic engineering); empirical models open |
 | C Deliberation & Learning | 35-45% | DESIGN + PARTIAL IMPLEMENTATION |
 | D Validation & Research | 40-50% | ACTIVE |
 | E M-PAPER / Publishing | 65-75% | ADVANCED DESIGN + PROTOTYPE |
@@ -277,4 +277,31 @@ The Phase A foundation handoff above is preserved. Historical asset debt belongs
 to Phase B/D. Earlier percentages are estimates, not measured completion rates.
 This integration adds a Phase C structural-audit module; real-race discussion,
 semantic acceptance, learning integration and production release remain open.
+
+
+
+## Phase B research evidence — 2026-10-08
+
+See [recovery and B0 execution evidence](docs/roadmap/PHASE_B_EVIDENCE_20261008.md).
+January raw archives have now been recovered from v0.9.12; canonical dataset
+hashes match the recorded 1,354-race replay. An explicit B0-only ordinal ability
+research baseline has run deterministically. These findings supersede earlier
+NOT_RECOVERED statements only for the listed assets. Strict PIT, full model
+ablation/calibration/market integration and Phase B completion remain open.
+
+
+
+## Phase B experimental integration gate — 2026-10-18
+
+The one-race engineering path now runs from structured observations through
+normalization, five pace scenarios, probability calibration and lock, post-lock
+Value, eight ticket types, fixed-100-yen portfolio selection and settlement.
+83 synthetic tests pass; independent bundle replays are byte-identical.
+
+See [acceptance scope and the eleven-domain mapping](docs/roadmap/PHASE_B_ENGINE_ACCEPTANCE_20261018.md)
+and [the runbook](docs/ENGINE_RUNBOOK.md). This is **experimental engineering
+acceptance only**, not completed trained specialist models, genuine historical
+PIT certification, Full PRISM performance validation or production approval.
+N-Value is an independent deterministic reference challenger, not a completed
+trained persona model. Full model evaluation remains open in Phase D/C.
 

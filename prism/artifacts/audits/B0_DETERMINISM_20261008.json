@@ -1,0 +1,23 @@
+{
+  "status": "DETERMINISTIC_RESEARCH_VERIFIED",
+  "races": 1354,
+  "runs": 3,
+  "files": {
+    "predictions.jsonl": "99cd06571e81280e5eb4896744c9bf31489f71f7ec8739670c354bee8c13a342",
+    "evaluations.jsonl": "5d4e10cc7bdbd466c673be211b9aa5f9c645da726378371686cf0d85c11ed4e3",
+    "events.jsonl": "683937968b1e300b7d84419aec9ff41ba1b49de32d29bf247ac726fb0f134870",
+    "summary.json": "cc5d2a4863e84a32a8a69744d4e23b77b4cbab7ae7378ba8a5099f748ceb3c8c"
+  },
+  "phase_b_complete": false,
+  "strict_pit": false,
+  "source_sha256": {
+    "src/research/isolation.py": "1169d9f2c3d9d9be76c7435360b52406fe0191c13669c1ffde43616199e419ff",
+    "src/research/b0_worker.py": "123c2140a9a31734135d1b31abdf0e809bf09ccfbac3a9309e156753ab271d5d",
+    "src/research/archive_sources.py": "003c34f6fdeca1d2d3912500936db97ce52eecf490f3b131e1276006fcdc518a",
+    "scripts/b0_input_gate.py": "24bc3c04efa0b020335be1706a0c49be2f73fb4a2a43575e377f8b06c8ef808d",
+    "scripts/run_b0_research.py": "564f358985ecf3a674d75e943d2bff126ec1ad0716bf96deae078d0428c862aa",
+    "scripts/audit_recovered_january.py": "a3641f10d2a21de0f0c8ad65eba43aba50621e57a027d4b60e65a9bf4f8d4317",
+    "scripts/recover_local_zip.py": "7d04cb0f8f77dc0bdd5300086809662b23f8f0fbbd80f0ee8055d55e2fe9da46",
+    "scripts/build_january_research_dataset.py": "19acecb2ad19c73beec029382e243504ff991aabf67a4d537f56e10cb7134038"
+  }
+}
