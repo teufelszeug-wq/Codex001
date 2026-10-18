@@ -11,7 +11,7 @@ The full local prototype includes the Tokyo 1R official-roster fixture, source l
 6. Mark single-model character simulations distinctly from independent expert execution.
 
 ## Local results
-- JRA Tokyo 1R on October 18, 2026: 12 of 12 named horses, 19 speaker roles, 90 turns, 4,816 spoken characters in B-01.
+- JRA Tokyo 1R on October 18, 2026: 12 of 12 named horses, 19 speaker roles, 90 turns, 4,635 spoken characters in B-01.
 - Four dialogue variant configurations use the SAME retrospective fixture (B-01, A-02, A-03, A-11).
 - Twelve scenario prerequisite gates are unit-tested with synthetic inputs.
 - 34 local tests passed. Verified forward prediction score samples: 0.
