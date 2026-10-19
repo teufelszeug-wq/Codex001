@@ -1,4 +1,20 @@
-# PRISM status — 2026-10-18
+# PRISM status — 2026-10-19
+
+Latest: [A–E integration and next gates](roadmap/PHASE_ABCDE_PARALLEL_20261019.md).
+Source versioning now feeds one shared as-of conversation prefetch. A fitted
+residual model was compared on 701 identical held-out January races: adding
+jockey/body features improves log loss from 2.182309 to 2.135385, while the
+fixed-100-yen return remains 87.39% and profit -8,790 yen. Body alone has worse
+Brier; no blanket improvement or production adoption is claimed.
+
+Legacy history import support is implemented, but the inspected sources are
+generators/fictional demos: actual eligible imports remain zero. The private
+DB has not been modified. A real 14-runner research paper is generated outside
+public Git; visual/print QA remains open. The four candidates and scoring rules
+are [frozen for February](decisions/FEBRUARY_RESEARCH_FREEZE_20261019.md), whose
+input data has not yet been verified. Full A–E completion remains open.
+
+## Previous integration — 2026-10-18
 
 The current plan is the user's four-step B → D → C → February/E plan,
 with A–E engineering work proceeding in parallel against shared race/input/

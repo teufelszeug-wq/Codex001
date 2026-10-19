@@ -145,6 +145,14 @@ class PaperTests(unittest.TestCase):
         del self.bundle['market_values']
         self.assertIn('候補作成なし', render_paper(self.bundle))
 
+    def test_validated_racecard_names_and_escape(self):
+        self.bundle['racecard'] = [dict(horse_id=r['horse_id'],horse_no=r['horse_no'],frame_no=r['frame_no'],name='<牡馬>'+r['horse_id']) for r in self.bundle['raw']['runners']]
+        html = render_paper(self.bundle)
+        self.assertIn('&lt;牡馬&gt;h1',html)
+        self.assertNotIn('馬名未収録',html)
+        self.bundle['racecard'][0]['horse_no']=99
+        with self.assertRaises(ValueError):render_paper(self.bundle)
+
 
 if __name__ == '__main__':
     unittest.main()

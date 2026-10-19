@@ -6,6 +6,7 @@ No name-based identity lookup, prose-based selection inference, or automatic pic
 from datetime import datetime, timezone, timedelta
 import json
 from .store import digest, text
+from .updates import SourceUpdates
 
 
 def stamp(value):
@@ -30,7 +31,8 @@ def race_time(metadata):
     return None,'UNKNOWN_RACE_TIME'
 
 
-def agent_horse_memory(store, agent_id, horse_id, as_of, current_race_id=None, limit=20):
+def agent_horse_memory(store, agent_id, horse_id, as_of, current_race_id=None, limit=20,
+                       _observation_selection=None):
     text(agent_id,'agent_id');text(horse_id,'horse_id');when=stamp(as_of)
     if type(limit) is not int or not 1<=limit<=200: raise ValueError('limit must be 1..200')
     conn=store.connection
@@ -109,8 +111,12 @@ def agent_horse_memory(store, agent_id, horse_id, as_of, current_race_id=None, l
                 'turn_id':turn['turn_id'],'assessment_hash':a['content_hash'],'history_type':history_type,
                 'explicitly_recorded':True,'inferred_from_prose':False,'independent_execution_verified':False})
     evidence=[]
+    managed,selected=(_observation_selection if _observation_selection is not None else
+                      SourceUpdates(store).observation_selection([horse_id],as_of=as_of))
     for obs in conn.execute('SELECT * FROM observations WHERE horse_id=? ORDER BY id',(horse_id,)):
         if obs['race_id'] not in prior: continue
+        if obs['id'] in managed and obs['id'] not in selected:
+            excluded['invalid_observations']+=1;continue
         if obs['phase']!='PRE' or obs['temporal_class']!='PRE_AVAILABLE' or obs['available_at'] is None:
             excluded['post_or_unknown_observations']+=1;continue
         try: at=stamp(obs['available_at'])
@@ -148,6 +154,8 @@ def agent_horse_memory(store, agent_id, horse_id, as_of, current_race_id=None, l
                            'Unknown-time observations and POST results are counted but not copied as PRE factual evidence.',
                            'A prior explicit TOP_PICK is not a recommendation for the current race.',
                            'Separate source-scoped horse IDs are never joined using display names.']}
+    if managed:
+        out['temporal_notes'].append('Versioned evidence uses accepted facts at as_of; superseded, pending and later-recorded versions are excluded.')
     out['memory_hash']=digest(out)
     return out
 
@@ -279,7 +287,9 @@ def prepare_race_memory(store, race_id, as_of, agent_ids):
     names={entry['horse_id']:{k:entry[k] for k in ('display_name','identity_status')} for entry in entries}
     riders={entry['horse_id']:(None if entry['jockey_id'] is None else {'jockey_id':entry['jockey_id'],
              'display_name':entry['jockey_name'],'identity_status':entry['jockey_status']}) for entry in entries}
-    memories={agent:{row['horse_id']:agent_horse_memory(store,agent,row['horse_id'],as_of,current_race_id=race_id)
+    selection=SourceUpdates(store).observation_selection([row['horse_id'] for row in runners],as_of=as_of)
+    memories={agent:{row['horse_id']:agent_horse_memory(store,agent,row['horse_id'],as_of,current_race_id=race_id,
+                                                    _observation_selection=selection)
                      for row in runners} for agent in sorted(agent_ids)}
     refs={}
     for group in memories.values():

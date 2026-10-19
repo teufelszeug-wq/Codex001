@@ -10,6 +10,8 @@ from prism_records import RecordStore
 from prism_records.discussion import save_discussion
 from prism_records.memory import agent_horse_memory,prepare_race_memory,verify_race_memory
 from prism_records.store import digest
+from prism_records.updates import SourceUpdates
+from unittest.mock import patch
 
 
 class MemoryTests(unittest.TestCase):
@@ -84,6 +86,52 @@ class MemoryTests(unittest.TestCase):
         self.save(selection=True);before=list(self.store.conn.iterdump())
         a=self.memory();b=self.memory()
         self.assertEqual(a,b);self.assertEqual(before,list(self.store.conn.iterdump()))
+    def versioned_observations(self):
+        updates=SourceUpdates(self.store)
+        args={'subject_type':'HORSE','entity_id':self.horse,'race_id':self.context['race_id'],
+              'fact_key':'workout','schema_id':'workout/v1','source_ref':'synthetic:workout',
+              'temporal_class':'PRE_AVAILABLE','phase':'PRE'}
+        first=updates.append(**args,payload={'seconds':52},available_at='2026-01-01T08:00:00+09:00',
+                             recorded_at='2026-01-01T09:00:00+09:00')['version']
+        second=updates.append(**args,payload={'seconds':51},available_at='2026-01-01T08:30:00+09:00',
+                              recorded_at='2026-01-03T09:00:00+09:00',prior_id=first['id'],correction=True)['version']
+        return first,second
+    def test_later_recorded_correction_hidden_until_recorded(self):
+        old,new=self.versioned_observations()
+        m=self.memory(as_of='2026-01-02T12:00:00+09:00')
+        self.assertEqual([r['observation_id'] for r in m['eligible_pre_observation_refs']],[old['observation_id']])
+        self.assertEqual(m['excluded']['invalid_observations'],1)
+        self.assertNotIn(new['observation_id'],str(m['eligible_pre_observation_refs']))
+    def test_correction_replaces_old_evidence_in_memory(self):
+        old,new=self.versioned_observations()
+        m=self.memory(as_of='2026-01-04T12:00:00+09:00')
+        self.assertEqual([r['observation_id'] for r in m['eligible_pre_observation_refs']],[new['observation_id']])
+        self.assertNotIn(old['observation_id'],str(m['eligible_pre_observation_refs']))
+    def test_legacy_observation_without_ledger_still_available(self):
+        obs=self.store.add_observation(self.horse,self.context['race_id'],{'phase':'PRE','score':1},'legacy',
+            '2026-01-01T08:00:00+09:00','PRE_AVAILABLE')
+        before=list(self.store.conn.iterdump())
+        self.assertEqual(self.memory()['eligible_pre_observation_refs'][0]['observation_id'],obs)
+        self.assertEqual(before,list(self.store.conn.iterdump()))
+        self.assertFalse(SourceUpdates(self.store)._has_schema())
+    def test_roster_prefetch_reads_update_ledger_once_for_all_agents(self):
+        self.versioned_observations()
+        self.store.add_race('next-memory',{'cutoff':'2026-01-05T12:00:00+09:00'})
+        self.store.add_entry('next-memory',1,self.horse)
+        original=SourceUpdates.observation_selection
+        calls=[]
+        def wrapped(instance,*args,**kwargs):
+            calls.append(1)
+            return original(instance,*args,**kwargs)
+        with patch.object(SourceUpdates,'observation_selection',wrapped):
+            snapshot=prepare_race_memory(self.store,'next-memory','2026-01-04T12:00:00+09:00',['RIO','OTHER'])
+        self.assertEqual(len(calls),1)
+        self.assertEqual(len(snapshot['shared_pre_observation_refs']),1)
+    def test_update_ledger_tamper_stops_memory(self):
+        self.versioned_observations()
+        self.store.conn.execute('DROP TRIGGER fact_no_update')
+        self.store.conn.execute("UPDATE entity_fact_versions SET review_status='PENDING_CONFLICT'")
+        with self.assertRaisesRegex(ValueError,'ledger integrity'): self.memory()
     def test_bad_timezone_rejected(self):
         with self.assertRaises(ValueError):self.memory(as_of='2026-01-02T12:00:00')
     def test_archived_schedule_count_is_not_availability_proof(self):

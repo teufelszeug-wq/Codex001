@@ -73,14 +73,24 @@ def render_paper(bundle, discussion=None, validation=None):
     validation aggregate deliberately cannot stand in for this race's evidence.
     """
     pred, raw, horses, market = _check(bundle)
+    names = {}
+    if 'racecard' in bundle:
+        # Reuse the exchange contract: exact ID, number, frame and full coverage.
+        # Names remain supplied editorial metadata, not certified source facts.
+        from prism_exchange import build_manifest
+        checked = dict(bundle)
+        checked.setdefault('training_achievement_verified', False)
+        checked.setdefault('production_deployed', False)
+        build_manifest(checked)
+        names = {row['horse_id']: row.get('name') or '馬名未収録' for row in bundle['racecard']}
     mode = {'SYNTHETIC': '人工入力・架空レース', 'HISTORICAL_RECONSTRUCTION': '過去再構成・当時取得の証明なし',
             'PRE_AVAILABLE': '事前時刻整合・外部出典真正性未認証'}[pred['mode']]
     ordered = sorted(horses.values(), key=lambda r: r['horse_no'])
     race = raw['race']
-    # The engine input schema intentionally has no horse-name field. Do not
-    # fabricate a plausible name or silently read one from unbound metadata.
+    # Engine inputs intentionally omit names; only validated racecard metadata
+    # can provide them, never a name guessed from a horse ID.
     card = ''.join('<div class="runner" data-horse-id="' + _text(r['horse_id']) + '"><b>枠番 '
-                   + str(r['frame_no']) + '</b><b>馬番 ' + str(r['horse_no']) + '</b><span>馬名未収録</span>'
+                   + str(r['frame_no']) + '</b><b>馬番 ' + str(r['horse_no']) + '</b><span>' + _text(names.get(r['horse_id'], '馬名未収録')) + '</span>'
                    '<span>馬ＩＤ ' + _text(r['horse_id']) + '</span><span>負担重量 '
                    + _text(r['carried_weight']) + '</span></div>' for r in ordered)
     conditions = '<p>' + _text(race['venue']) + '　' + _text(race['surface']) + '　' + str(race['distance_m']) + 'ｍ　' + _text(race['direction']) + '</p><p>締切 ' + _text(race['cutoff']) + '</p>'
@@ -93,7 +103,7 @@ def render_paper(bundle, discussion=None, validation=None):
     for r in ordered:
         hid = r['horse_id']
         missing = pred['features']['horses'][hid].get('missing', [])
-        coverage.append('<p><b>馬番 ' + str(r['horse_no']) + '</b>　能力指標 ' + format(pred['features']['horses'][hid]['base_ability'], '.2f')
+        coverage.append('<p><b>馬番 ' + str(r['horse_no']) + '　' + _text(names.get(hid, '馬名未収録')) + '</b>　能力指標 ' + format(pred['features']['horses'][hid]['base_ability'], '.2f')
                         + '　欠測 ' + (_text('・'.join(missing)) if missing else 'なし') + '</p>')
     dialogue = '<p>座談会未実施。実際の発言や独立したＡＩ検討を生成した記録ではない。</p>'
     if discussion is not None:
@@ -118,7 +128,7 @@ def render_paper(bundle, discussion=None, validation=None):
         _panel('座談会接続', dialogue),
         _panel('観測の限界', '<p>固定係数の実験モデル。欠測を取得済みと扱わず、ハッシュ一致を出典真正性の証明と扱わない。</p><p>調教・馬体・血統・騎手・陣営コメントを網羅した編集取材は未完。</p>')])
 
-    probabilities = ''.join('<p>馬番 ' + str(horses[h]['horse_no']) + '　勝率 ' + format(p * 100, '.2f') + '％</p>'
+    probabilities = ''.join('<p>馬番 ' + str(horses[h]['horse_no']) + '　' + _text(names.get(h, '馬名未収録')) + '　勝率 ' + format(p * 100, '.2f') + '％</p>'
                             for h, p in sorted(pred['win'].items(), key=lambda x: (-x[1], x[0])))
     tickets = '<p>市場データ接続なし。候補作成なし。</p>'
     if market is not None:
