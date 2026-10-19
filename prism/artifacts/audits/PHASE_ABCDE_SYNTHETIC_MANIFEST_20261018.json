@@ -1,0 +1,49 @@
+{
+  "artifacts": {
+    "discussion_context": {
+      "cache_key": "7daa05b5014a3aca9678b2f5664e5f10a917b5ceeaf2c1c150db9cbcba7ca273",
+      "depends_on": [],
+      "payload_hash": "b5f4289d36ff55eeb82f0cc272779b0b7238e046b10ddda2c0ed306af93f5fc9",
+      "stage": "PRE"
+    },
+    "paper": {
+      "cache_key": "e85e1cc5cab1e7bf2fa93c3affcb1939cd0707769d579ea8305432ae47e1d4da",
+      "depends_on": [
+        "discussion_context"
+      ],
+      "payload_hash": "0fd2621da3923487805d164ab61eb7c05b26c17bd9832850927df24b7e741079",
+      "stage": "PRE"
+    }
+  },
+  "bundle_hash": "757b19c633442c26caf9f332c5ea704f2a4ef7f09a72cd061a36849d51561f16",
+  "execution_allowed": false,
+  "input_hash": "94bb7b93e0a6a3b170cecfe6812a92cdebc72a0e3282dc009db77deb2cb97218",
+  "integrity_scope": "SHA256 integrity and identity binding; not signatures or source truth",
+  "manifest_hash": "fd825db85d00b7ea51104a2c36447d461cb5c5a6d8311dfd6606f45b688c4886",
+  "mode": "SYNTHETIC",
+  "performance_validated": false,
+  "pre_bundle_hash": "d664c578f93466ca1fcb2d9dad91c89057dad21d7e18fc8d6da6c971a3cb0b6f",
+  "pre_leakage_check": "Known result-bearing keys and explicit dependency stages; not semantic proof",
+  "prediction_hash": "9e6d5c6fe1baaca5fa3d97bc82e7cd595db62e041b288bd1304aa71da1fa5c77",
+  "production_deployed": false,
+  "provenance": {
+    "cutoff": "2026-01-01T10:00:00+09:00",
+    "declared_input_mode": "SYNTHETIC",
+    "input_hash": "94bb7b93e0a6a3b170cecfe6812a92cdebc72a0e3282dc009db77deb2cb97218",
+    "locked_at": "2026-01-01T09:55:00+09:00",
+    "normalization": null,
+    "prediction_hash": "9e6d5c6fe1baaca5fa3d97bc82e7cd595db62e041b288bd1304aa71da1fa5c77",
+    "raw_input_payload_reverified": true,
+    "source_authenticity_verified": false,
+    "source_ref": {
+      "available_at": "2026-01-01T09:00:00+09:00",
+      "content_hash": "ef4f4ce65911f992d9117bf2436e54447a80205388f65dd9b34a774ce2aeee85",
+      "source_id": "SYNTHETIC_ONLY"
+    },
+    "strict_pit_certified": false,
+    "timestamp_scope": "NOT_FORWARD_CERTIFIED"
+  },
+  "race_id": "TEST|20260101|X|1",
+  "schema": "prism.exchange.manifest/v1",
+  "training_achievement_verified": false
+}

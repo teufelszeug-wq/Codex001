@@ -1,0 +1,23 @@
+{
+  "artifacts": {
+    "discussion_audit.json": "3cbe65298da3804a4c0eca8cbea60e6d73e37dfca8ac62757eaf7b189439193c",
+    "discussion_context.json": "b5f4289d36ff55eeb82f0cc272779b0b7238e046b10ddda2c0ed306af93f5fc9",
+    "paper.html": "0fd2621da3923487805d164ab61eb7c05b26c17bd9832850927df24b7e741079",
+    "pre_artifacts.json": "9cff83b6a32ef9e731d6a53ecb9647b70fc1d41b306588f72b67277f290fe065",
+    "pre_bundle.json": "757b19c633442c26caf9f332c5ea704f2a4ef7f09a72cd061a36849d51561f16",
+    "pre_manifest.json": "61bde7fb0470e178900048f95b71791ce65a8c7bbb1c380dc17fbd03b1b1b0a5"
+  },
+  "discussion_status": "NOT_EXECUTED",
+  "execution_allowed": false,
+  "full_phase_abcde_complete": false,
+  "input_hash": "94bb7b93e0a6a3b170cecfe6812a92cdebc72a0e3282dc009db77deb2cb97218",
+  "mode": "SYNTHETIC",
+  "phase_d_scope": "Independent coverage-matched research; not performance evidence for this race",
+  "pre_manifest_hash": "fd825db85d00b7ea51104a2c36447d461cb5c5a6d8311dfd6606f45b688c4886",
+  "prediction_hash": "9e6d5c6fe1baaca5fa3d97bc82e7cd595db62e041b288bd1304aa71da1fa5c77",
+  "production_deployed": false,
+  "race_id": "TEST|20260101|X|1",
+  "real_race_performance_validated": false,
+  "release_hash": "e149bbe056fe8666256daafa8d5fa9604849d49fb74d458a439d7bb72f061b35",
+  "schema": "prism.cross-phase.release/v1"
+}

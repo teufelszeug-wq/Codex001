@@ -1,0 +1,285 @@
+{
+  "experts": {
+    "CAREER_AGGREGATE": {
+      "brier": 0.8767457973814863,
+      "calibration": {
+        "bins": [
+          {
+            "count": 10838,
+            "lower": 0.0,
+            "mean_probability": 0.06901511639974878,
+            "observed_fractional_win_rate": 0.05983576305591438,
+            "upper": 0.1
+          },
+          {
+            "count": 4288,
+            "lower": 0.1,
+            "mean_probability": 0.12762102924131083,
+            "observed_fractional_win_rate": 0.1435401119402985,
+            "upper": 0.2
+          },
+          {
+            "count": 234,
+            "lower": 0.2,
+            "mean_probability": 0.22753075181551266,
+            "observed_fractional_win_rate": 0.34615384615384615,
+            "upper": 0.3
+          },
+          {
+            "count": 14,
+            "lower": 0.3,
+            "mean_probability": 0.328904578457733,
+            "observed_fractional_win_rate": 0.5,
+            "upper": 0.4
+          },
+          {
+            "count": 2,
+            "lower": 0.4,
+            "mean_probability": 0.4641675247748922,
+            "observed_fractional_win_rate": 1.0,
+            "upper": 0.5
+          },
+          {
+            "count": 0,
+            "lower": 0.5,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.6
+          },
+          {
+            "count": 0,
+            "lower": 0.6,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.7
+          },
+          {
+            "count": 0,
+            "lower": 0.7,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.8
+          },
+          {
+            "count": 0,
+            "lower": 0.8,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.9
+          },
+          {
+            "count": 0,
+            "lower": 0.9,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 1.0
+          }
+        ],
+        "ece": 0.012940404726908713,
+        "method": "pooled-runner-equal-width-10-fractional-deadheat",
+        "runner_count": 15376
+      },
+      "log_loss": 2.269092405696824,
+      "races": 1354
+    },
+    "PAI_DAI_CAI": {
+      "brier": 0.8636029391963203,
+      "calibration": {
+        "bins": [
+          {
+            "count": 11188,
+            "lower": 0.0,
+            "mean_probability": 0.0348299623710588,
+            "observed_fractional_win_rate": 0.05300321773328567,
+            "upper": 0.1
+          },
+          {
+            "count": 2140,
+            "lower": 0.1,
+            "mean_probability": 0.14290925081630415,
+            "observed_fractional_win_rate": 0.12663551401869158,
+            "upper": 0.2
+          },
+          {
+            "count": 1113,
+            "lower": 0.2,
+            "mean_probability": 0.2442290395700107,
+            "observed_fractional_win_rate": 0.18508535489667566,
+            "upper": 0.3
+          },
+          {
+            "count": 503,
+            "lower": 0.3,
+            "mean_probability": 0.3413377314885085,
+            "observed_fractional_win_rate": 0.25646123260437376,
+            "upper": 0.4
+          },
+          {
+            "count": 262,
+            "lower": 0.4,
+            "mean_probability": 0.4426179504410096,
+            "observed_fractional_win_rate": 0.3053435114503817,
+            "upper": 0.5
+          },
+          {
+            "count": 117,
+            "lower": 0.5,
+            "mean_probability": 0.5451910761594942,
+            "observed_fractional_win_rate": 0.39316239316239315,
+            "upper": 0.6
+          },
+          {
+            "count": 39,
+            "lower": 0.6,
+            "mean_probability": 0.6373484321573473,
+            "observed_fractional_win_rate": 0.5384615384615384,
+            "upper": 0.7
+          },
+          {
+            "count": 13,
+            "lower": 0.7,
+            "mean_probability": 0.7349202909108031,
+            "observed_fractional_win_rate": 0.5384615384615384,
+            "upper": 0.8
+          },
+          {
+            "count": 1,
+            "lower": 0.8,
+            "mean_probability": 0.812972703377917,
+            "observed_fractional_win_rate": 1.0,
+            "upper": 0.9
+          },
+          {
+            "count": 0,
+            "lower": 0.9,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 1.0
+          }
+        ],
+        "ece": 0.026471046863841774,
+        "method": "pooled-runner-equal-width-10-fractional-deadheat",
+        "runner_count": 15376
+      },
+      "log_loss": 2.2121049964178225,
+      "races": 1354
+    },
+    "UNIFORM": {
+      "brier": 0.9063592521413606,
+      "calibration": {
+        "bins": [
+          {
+            "count": 10295,
+            "lower": 0.0,
+            "mean_probability": 0.07673627974745371,
+            "observed_fractional_win_rate": 0.07673627974745022,
+            "upper": 0.1
+          },
+          {
+            "count": 5046,
+            "lower": 0.1,
+            "mean_probability": 0.11038446294094553,
+            "observed_fractional_win_rate": 0.11038446294094333,
+            "upper": 0.2
+          },
+          {
+            "count": 35,
+            "lower": 0.2,
+            "mean_probability": 0.2000000000000001,
+            "observed_fractional_win_rate": 0.2,
+            "upper": 0.3
+          },
+          {
+            "count": 0,
+            "lower": 0.3,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.4
+          },
+          {
+            "count": 0,
+            "lower": 0.4,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.5
+          },
+          {
+            "count": 0,
+            "lower": 0.5,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.6
+          },
+          {
+            "count": 0,
+            "lower": 0.6,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.7
+          },
+          {
+            "count": 0,
+            "lower": 0.7,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.8
+          },
+          {
+            "count": 0,
+            "lower": 0.8,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.9
+          },
+          {
+            "count": 0,
+            "lower": 0.9,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 1.0
+          }
+        ],
+        "ece": 3.065879149584017e-15,
+        "method": "pooled-runner-equal-width-10-fractional-deadheat",
+        "runner_count": 15376
+      },
+      "log_loss": 2.4033717689567613,
+      "races": 1354
+    }
+  },
+  "input_hash": "ea2819017fab7c776a7f2e7510ab0d64f699669a8ab3ba5181b628ae9e63af94",
+  "note": "Same archived races and runner coverage; experts share inputs and learned mixture history. This is not controlled causal feature attribution. No expert ticket payouts were inferred.",
+  "paired_races": 1354,
+  "profitability_comparison_available": false,
+  "report_hash": "21b35067a66d41ff0a9f3a2c4fd392fb154ca3d26b4a3051fc903d17d66431e5",
+  "schema": "prism.validation.experts/v1",
+  "scope": "ARCHIVED_PROBABILITY_ONLY",
+  "strict_pit_certified_races": 0,
+  "ticket_repriced": false
+}

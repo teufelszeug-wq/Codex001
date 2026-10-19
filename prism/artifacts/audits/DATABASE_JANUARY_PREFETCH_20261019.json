@@ -1,0 +1,17 @@
+{
+  "agents": [
+    "RIO",
+    "SHINOMIYA_RITSU"
+  ],
+  "as_of": "2026-10-19T10:40:00+09:00",
+  "past_top_picks_count": 0,
+  "rider_links": 16,
+  "runner_count": 16,
+  "schema": "prism.database-prefetch-audit/v1",
+  "scope": "RECOVERED_JANUARY_ENTRIES_CURRENT_READ_NOT_PIT_PROOF",
+  "snapshot_hash": "58bb12e5f73b8cb248e2dda39e2267d40559e688d085e6f4861b4fe10c89d65f",
+  "source_authenticity_verified": false,
+  "status": "PASS",
+  "target_race_hash": "d25ef2111cfdea28e2900e3aff4de5045608a8f1ed50f8798395ddcbcdcb8c91",
+  "training_achievement_verified": false
+}
