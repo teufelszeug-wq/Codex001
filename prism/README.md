@@ -2,6 +2,8 @@
 
 PRISM is the integrated successor to the RIO research/prediction/newspaper system.
 
+Current implementation and measured gates: [2026-10-19 A–E integration](docs/roadmap/PHASE_ABCDE_PARALLEL_20261019.md).
+
 ## 2026-10-05 restructuring
 
 The previous roadmap had too many top-level milestones and submilestones that had grown into major workstreams. PRISM is now managed as **6 true development phases**.
