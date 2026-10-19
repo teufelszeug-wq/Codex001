@@ -1,0 +1,26 @@
+{
+  "canonical_identity_verified": false,
+  "counts": {
+    "assessments": 0,
+    "discussions": 0,
+    "entries": 33158,
+    "horses": 14971,
+    "jockeys": 416,
+    "observations": 30752,
+    "races": 2952
+  },
+  "database_publicly_published": false,
+  "file_name": "prism_entities_verified_20261018.sqlite",
+  "foreign_key_violations": 0,
+  "integrity_check": [
+    "ok"
+  ],
+  "note": "Independent read-only verification of the final populated database. Earlier malformed candidate retained and not accepted.",
+  "schema": "prism.entity-database-verification/v1",
+  "sha256": "f03c074522e0587b7dd1947af44fb9a1a4d79c6cab1c81343d7ba208e1b60870",
+  "size_bytes": 136404992,
+  "source_authenticity_verified": false,
+  "status": "PASS",
+  "training_achievement_verified": false,
+  "unknown_timestamp_observations": 30752
+}

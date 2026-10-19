@@ -1,0 +1,43 @@
+{
+  "counts": {
+    "canonical_horse_ids_verified": 0,
+    "canonical_jockey_ids_verified": 0,
+    "december_entries": 17782,
+    "entries": 33158,
+    "extra_source_detail_observations": 15376,
+    "horses_provisional": 14971,
+    "imported_discussion_evaluations": 0,
+    "january_entries": 15376,
+    "jockey_name_buckets_provisional": 416,
+    "jra_detail_observations": 3982,
+    "nar_detail_observations": 11394,
+    "pre_certified_observations": 0,
+    "quarantined_observations": 15376,
+    "races": 2952
+  },
+  "idempotence": "Same receipt/source hash returns original receipt without modifying entity records; changed source is rejected.",
+  "importer_code_hash": "a0f4efb08e9dfe0842c63ed1374d2dbaf009a415eeca35ce2ef9d05a1fe56378",
+  "individual_records_published": false,
+  "limitations": [
+    "Horse IDs are source-scoped provisional composites, not official lifetime IDs.",
+    "Jockey exact-name buckets remain authority-scoped and same-name ambiguity is unresolved.",
+    "Historical observations have unknown publication time; POST ranks/payouts are stored separately.",
+    "December jockey links and detailed raw observations were not imported; January raw only.",
+    "No synthetic discussion evaluations or model-training achievement is created."
+  ],
+  "mock_discussion_evaluations_created": false,
+  "name_only_horse_merge_allowed": false,
+  "post_result_separated_from_reconstructed_pre": true,
+  "receipt_hash": "32132fbd18d215e42c40a1155d0867a20936bea54a4d6a740738fd7d105e168a",
+  "same_name_jockey_identity_verified": false,
+  "schema": "prism.entity-import-receipt/v1",
+  "source_bundle_hash": "c3da420f9972c6b9474e7b7a84cc29fa697a324ada61a7841450576626186890",
+  "source_hashes": {
+    "december_canonical_hash": "281942a68f04ccd0ff7f9efec2b9aa6fd5c2e7786e4c41481d5367b5bc2255d9",
+    "hold_candidate_collection_hash": "0fc351babaefe7bf9943078ec86e89d103cc1b7ee483bb44a6462bed3e935530",
+    "january_canonical_hash": "334df05a0bb4ea688c703645296fc87e7a168288764ae14b3d0d6606547bdce0",
+    "raw_source_collection_hash": "7553b1f6cdd305f259e29ae5373c11d49974c50e33fb209040e3c40aeaa94676"
+  },
+  "status": "RECOVERED_RECORDS_IMPORTED_NOT_CANONICAL_OR_PRE_CERTIFIED",
+  "trained_model_complete": false
+}

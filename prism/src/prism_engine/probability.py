@@ -85,13 +85,18 @@ def fit_calibration(rows,calibration_end,grid):
         if row['race_id'] in seen or timestamp(row['outcome_available_at'])>end:raise ValueError('calibration chronology/duplicate')
         seen.add(row['race_id']);p=row['probabilities'];w=row['winners']
         if not p or abs(sum(p.values())-1)>1e-8 or not w or len(w)!=len(set(w)) or not set(w)<=set(p):raise ValueError('calibration outcomes rejected')
-        for v in p.values():numeric(v,0,1)
+        # This PL/temperature implementation requires strictly positive mass.
+        # Clipping distinct small probabilities to a shared floor silently
+        # changes the model, even with identity temperature.
+        for v in p.values():
+            numeric(v,0,1)
+            if v<=0:raise ValueError('strictly positive calibration probabilities required')
     best=None
     for t in grid:
         numeric(t,.05,20);loss=0.
         for row in rows:
-            scores={k:log(max(p,1e-12)) for k,p in row['probabilities'].items()};scaled=softmax(scores,t)
-            loss-=sum(log(max(scaled[w],1e-12)) for w in row['winners'])/len(row['winners'])
+            scores={k:log(p) for k,p in row['probabilities'].items()};scaled=softmax(scores,t)
+            loss-=sum(log(scaled[w]) for w in row['winners'])/len(row['winners'])
         candidate=(loss/len(rows),t)
         if best is None or candidate<best:best=candidate
     if best is None:raise ValueError('temperature grid required')
@@ -106,4 +111,7 @@ def apply_calibration(win,artifact,race_id,cutoff):
     if artifact['artifact_hash']!=digest({k:v for k,v in artifact.items() if k!='artifact_hash'}):raise ValueError('calibration hash mismatch')
     if race_id in artifact['training_race_ids'] or timestamp(artifact['trained_until'])>=timestamp(cutoff):raise ValueError('calibration target leakage')
     if artifact['method']!='temperature-grid-v1':raise ValueError('calibration method rejected')
-    return softmax({k:log(max(v,1e-12)) for k,v in win.items()},artifact['temperature']),'FITTED_HISTORICAL'
+    for value in win.values():
+        numeric(value,0,1)
+        if value<=0:raise ValueError('strictly positive calibration probabilities required')
+    return softmax({k:log(v) for k,v in win.items()},artifact['temperature']),'FITTED_HISTORICAL'

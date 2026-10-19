@@ -123,25 +123,27 @@ This compresses 16 top-level milestones into 6 true development phases.
 
 ## Current status
 
-| Phase | Estimated maturity | Status |
+| Phase | Verified scope | Remaining acceptance |
 |---|---:|---|
-| A Foundation & Governance | foundation gate closed | VERIFIED |
-| B Core Prediction Engine | reference integration gate passed | VERIFIED (synthetic engineering); empirical models open |
-| C Deliberation & Learning | 35-45% | DESIGN + PARTIAL IMPLEMENTATION |
-| D Validation & Research | 40-50% | ACTIVE |
-| E M-PAPER / Publishing | 65-75% | ADVANCED DESIGN + PROTOTYPE |
-| F Product / Automation / Release | 15-25% | EARLY |
+| A Foundation & Governance | Foundation gate and hash-bound PRE/POST handoff | External source/PIT certification and canonical identity debt |
+| B Core Prediction Engine | Experimental 11-module engine, ablation diagnostics, recovered-feature census | Real-data adapters, learned specialist/condition/workout/jockey models and full empirical acceptance |
+| C Deliberation & Learning | Evidence-linked all-specialist/all-horse structural bridge and POST review | Independent execution, natural dialogue/semantic review and shadow adoption |
+| D Validation & Research | Matched January 1,354-race comparison and chronological calibration research | Full B0–B11 feature comparison, February control and genuine forward |
+| E M-PAPER / Publishing | Prediction-bound four-page vertical HTML renderer | Real editorial content, variable-length visual/print QA and publication acceptance |
+| F Product / Automation / Release | Design only in this work | Daily operation, monitoring and release gates |
 
-Overall dependency-weighted maturity: approximately 40%.
+No new overall completion percentage is measured. Earlier percentages were design
+estimates, not verified product-completion measurements.
 
 Publishing/design artifacts are ahead of the prediction engine, so artifact volume is higher than actual product completion.
 
 ## Recorded evidence
 
 - January research universe: JRA 276 + NAR 1,078 = 1,354 races.
-- Existing reports record limited research replay 1,354/1,354.
+- Recovered January research has been recomputed and compared on 1,354/1,354 races.
 - Strict historical point-in-time certification remains open.
-- Existing report records NAR 11,394 runner rows, but the raw runner package is not currently recovered.
+- NAR 11,394 runner rows and JRA 3,982 rows are recovered; raw versus normalized
+  feature coverage is measured separately. Recovery does not certify PRE availability.
 - Legacy RIO master records tested prediction-registry / market-separation / 100-yen settlement components.
 - N-Value production specification exists.
 - M-PAPER v1.4 canonical spec and golden fixtures exist.
@@ -160,14 +162,24 @@ Phase C and Phase E can continue in parallel, but production approval depends on
 
 ## Immediate execution order
 
-1. Close Phase A candidates: January canonical rebuild, Asset Recovery Ledger, Feature Coverage Census.
-2. Reproduce B0 on 1,354/1,354.
-3. Execute B2/B3/B4/B7 -> B1/B5/B6/B8 -> B9 -> B10 -> B11-O.
-4. Close VAL-4 and run VAL-5 February Historical Control.
-5. Start genuine-forward snapshots on unused future races.
-6. Connect specialist contribution / M-DISC / Learning Ledger to real race data.
-7. Feed real PRISM outputs into M-PAPER.
-8. Build automation / web product / release gate.
+1. Close the gap between experimental formulas and usable specialist/N-Value,
+   workout/condition/jockey models. Recover dropped raw features without promoting
+   unknown timestamps or current-race result fields to PRE.
+2. Compare ability-only and added elements on the same January cohort. Report
+   probability error, missingness, net returns and drawdown; absent features are
+   unavailable, not fabricated zero-value ablations.
+3. Audit PR #4 and integrate validated dialogue: Shinomiya Ritsu facilitates,
+   Rio questions, receives answers, and concludes; preserve every horse,
+   counterarguments and minority views. Structural PASS is not naturalness approval.
+4. Freeze January-selected rules before February control, then bind accepted
+   outputs into the vertical newspaper. Automation follows upstream acceptance.
+
+See [the parallel handoff and acceptance record](docs/roadmap/PHASE_ABCDE_PARALLEL_20261018.md).
+
+Horse/jockey source profiles and linked discussion opinions are implemented in
+`prism_records`. See [database contents, lookup and evaluation rules](docs/roadmap/ENTITY_DATABASE_20261018.md).
+The populated database is private; only code, synthetic tests and aggregate import
+evidence belong in this public repository.
 
 ## Status semantics
 

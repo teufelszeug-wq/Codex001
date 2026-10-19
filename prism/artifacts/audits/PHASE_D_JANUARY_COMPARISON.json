@@ -1,0 +1,365 @@
+{
+  "coverage": {
+    "available_by_run": {
+      "archived_next_day": 1354,
+      "archived_ordinal": 1354,
+      "b0_baseline": 1354
+    },
+    "excluded_noncommon_by_run": {
+      "archived_next_day": 0,
+      "archived_ordinal": 0,
+      "b0_baseline": 0
+    },
+    "paired_race_ids_hash": "22f14188078bea7cf079874d96774ccada40eb7d97b37824e370e9d06745ce36",
+    "paired_races": 1354
+  },
+  "definitions": {
+    "brier": "mean over races of sum over runners of squared error; dead-heat targets sum to 1",
+    "calibration": "descriptive pooled-runner bins, not fitted calibration or held-out certification",
+    "drawdown": "maximum peak-to-trough cumulative net profit, starting at zero; same timestamp lexical race ID order",
+    "effective_return_rate": "payout excluding refunds / (purchase minus refunds)",
+    "log_loss": "mean over races of mean negative log winner probability; floor 1e-15"
+  },
+  "february_verified": false,
+  "full_phase_b_real_data_validated": false,
+  "limitations": [
+    "Retrospective archived research; strict point-in-time certification remains absent.",
+    "No February evaluation and no full-feature new Phase B real-race performance validation.",
+    "Outcome consistency is cross-checked against archived reviews, not independently recertified official sources."
+  ],
+  "paired_comparisons": [
+    {
+      "changed_picks": 3,
+      "from": "archived_next_day",
+      "interpretation": "Descriptive matched-cohort differences, not causal or prospective superiority.",
+      "mean_paired_delta_to_minus_from": {
+        "brier": -0.00019944834312609768,
+        "log_loss": -0.0011146104859126036
+      },
+      "profit_delta_yen": -680,
+      "races": 1354,
+      "to": "archived_ordinal"
+    },
+    {
+      "changed_picks": 135,
+      "from": "archived_next_day",
+      "interpretation": "Descriptive matched-cohort differences, not causal or prospective superiority.",
+      "mean_paired_delta_to_minus_from": {
+        "brier": 0.018867728624532065,
+        "log_loss": 0.07798902767549004
+      },
+      "profit_delta_yen": 2290,
+      "races": 1354,
+      "to": "b0_baseline"
+    },
+    {
+      "changed_picks": 133,
+      "from": "archived_ordinal",
+      "interpretation": "Descriptive matched-cohort differences, not causal or prospective superiority.",
+      "mean_paired_delta_to_minus_from": {
+        "brier": 0.019067176967658164,
+        "log_loss": 0.07910363816140263
+      },
+      "profit_delta_yen": 2970,
+      "races": 1354,
+      "to": "b0_baseline"
+    }
+  ],
+  "phase_d_complete": false,
+  "report_hash": "db56e91df0eb872fc754af88c901d8d071c3be4800fa87bae5a6b75dc12062e4",
+  "runs": {
+    "archived_next_day": {
+      "brier": 0.845130416631757,
+      "calibration": {
+        "bins": [
+          {
+            "count": 11255,
+            "lower": 0.0,
+            "mean_probability": 0.06152498438381421,
+            "observed_fractional_win_rate": 0.0504220346512661,
+            "upper": 0.1
+          },
+          {
+            "count": 3301,
+            "lower": 0.1,
+            "mean_probability": 0.13589830702069053,
+            "observed_fractional_win_rate": 0.1516207209936383,
+            "upper": 0.2
+          },
+          {
+            "count": 667,
+            "lower": 0.2,
+            "mean_probability": 0.23662881703567704,
+            "observed_fractional_win_rate": 0.32083958020989506,
+            "upper": 0.3
+          },
+          {
+            "count": 128,
+            "lower": 0.3,
+            "mean_probability": 0.34107259186966293,
+            "observed_fractional_win_rate": 0.4609375,
+            "upper": 0.4
+          },
+          {
+            "count": 19,
+            "lower": 0.4,
+            "mean_probability": 0.43208901761419255,
+            "observed_fractional_win_rate": 0.47368421052631576,
+            "upper": 0.5
+          },
+          {
+            "count": 5,
+            "lower": 0.5,
+            "mean_probability": 0.5233596088674426,
+            "observed_fractional_win_rate": 0.6,
+            "upper": 0.6
+          },
+          {
+            "count": 1,
+            "lower": 0.6,
+            "mean_probability": 0.6207871837552046,
+            "observed_fractional_win_rate": 1.0,
+            "upper": 0.7
+          },
+          {
+            "count": 0,
+            "lower": 0.7,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.8
+          },
+          {
+            "count": 0,
+            "lower": 0.8,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.9
+          },
+          {
+            "count": 0,
+            "lower": 0.9,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 1.0
+          }
+        ],
+        "ece": 0.016254383355856793,
+        "method": "pooled-runner-equal-width-10-fractional-deadheat",
+        "runner_count": 15376
+      },
+      "effective_return_rate": 0.6408345752608048,
+      "effective_stake_yen": 134200,
+      "gross_return_rate_including_refund": 0.6440177252584933,
+      "gross_stake_yen": 135400,
+      "log_loss": 2.1355986493877173,
+      "max_drawdown_yen": 48420,
+      "payout_excluding_refund_yen": 86000,
+      "profit_yen": -48200,
+      "races": 1354,
+      "refund_yen": 1200,
+      "rows_hash": "142d68309267890ee28a5a886ce356835221f9ecc9dfd4be848e751106113592",
+      "winning_tickets": 368
+    },
+    "archived_ordinal": {
+      "brier": 0.8449309682886319,
+      "calibration": {
+        "bins": [
+          {
+            "count": 11248,
+            "lower": 0.0,
+            "mean_probability": 0.06123707934859165,
+            "observed_fractional_win_rate": 0.05045341394025604,
+            "upper": 0.1
+          },
+          {
+            "count": 3292,
+            "lower": 0.1,
+            "mean_probability": 0.13599644528967325,
+            "observed_fractional_win_rate": 0.1517314702308627,
+            "upper": 0.2
+          },
+          {
+            "count": 676,
+            "lower": 0.2,
+            "mean_probability": 0.23645809655622854,
+            "observed_fractional_win_rate": 0.3150887573964497,
+            "upper": 0.3
+          },
+          {
+            "count": 136,
+            "lower": 0.3,
+            "mean_probability": 0.34257849596100876,
+            "observed_fractional_win_rate": 0.45588235294117646,
+            "upper": 0.4
+          },
+          {
+            "count": 18,
+            "lower": 0.4,
+            "mean_probability": 0.4354133906494934,
+            "observed_fractional_win_rate": 0.4444444444444444,
+            "upper": 0.5
+          },
+          {
+            "count": 5,
+            "lower": 0.5,
+            "mean_probability": 0.5222593362591628,
+            "observed_fractional_win_rate": 0.6,
+            "upper": 0.6
+          },
+          {
+            "count": 1,
+            "lower": 0.6,
+            "mean_probability": 0.6199471577412924,
+            "observed_fractional_win_rate": 1.0,
+            "upper": 0.7
+          },
+          {
+            "count": 0,
+            "lower": 0.7,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.8
+          },
+          {
+            "count": 0,
+            "lower": 0.8,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 0.9
+          },
+          {
+            "count": 0,
+            "lower": 0.9,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 1.0
+          }
+        ],
+        "ece": 0.015777142106264238,
+        "method": "pooled-runner-equal-width-10-fractional-deadheat",
+        "runner_count": 15376
+      },
+      "effective_return_rate": 0.6357675111773472,
+      "effective_stake_yen": 134200,
+      "gross_return_rate_including_refund": 0.6389955686853767,
+      "gross_stake_yen": 135400,
+      "log_loss": 2.1344840389018014,
+      "max_drawdown_yen": 49100,
+      "payout_excluding_refund_yen": 85320,
+      "profit_yen": -48880,
+      "races": 1354,
+      "refund_yen": 1200,
+      "rows_hash": "c6839bc61ea5fb7fbf23b25eac0aa8828970ff44ceddbb7b1359857a51d08203",
+      "winning_tickets": 367
+    },
+    "b0_baseline": {
+      "brier": 0.8639981452562885,
+      "calibration": {
+        "bins": [
+          {
+            "count": 11185,
+            "lower": 0.0,
+            "mean_probability": 0.034790881627972774,
+            "observed_fractional_win_rate": 0.05274921770227984,
+            "upper": 0.1
+          },
+          {
+            "count": 2146,
+            "lower": 0.1,
+            "mean_probability": 0.14279874867321676,
+            "observed_fractional_win_rate": 0.12814538676607642,
+            "upper": 0.2
+          },
+          {
+            "count": 1107,
+            "lower": 0.2,
+            "mean_probability": 0.24428487342097763,
+            "observed_fractional_win_rate": 0.1842818428184282,
+            "upper": 0.3
+          },
+          {
+            "count": 504,
+            "lower": 0.3,
+            "mean_probability": 0.3412882878757722,
+            "observed_fractional_win_rate": 0.25793650793650796,
+            "upper": 0.4
+          },
+          {
+            "count": 265,
+            "lower": 0.4,
+            "mean_probability": 0.4428840214463718,
+            "observed_fractional_win_rate": 0.3018867924528302,
+            "upper": 0.5
+          },
+          {
+            "count": 116,
+            "lower": 0.5,
+            "mean_probability": 0.5464057182409484,
+            "observed_fractional_win_rate": 0.39655172413793105,
+            "upper": 0.6
+          },
+          {
+            "count": 39,
+            "lower": 0.6,
+            "mean_probability": 0.6372035074433691,
+            "observed_fractional_win_rate": 0.5384615384615384,
+            "upper": 0.7
+          },
+          {
+            "count": 13,
+            "lower": 0.7,
+            "mean_probability": 0.7364041496753335,
+            "observed_fractional_win_rate": 0.5384615384615384,
+            "upper": 0.8
+          },
+          {
+            "count": 1,
+            "lower": 0.8,
+            "mean_probability": 0.8137026366791326,
+            "observed_fractional_win_rate": 1.0,
+            "upper": 0.9
+          },
+          {
+            "count": 0,
+            "lower": 0.9,
+            "mean_probability": null,
+            "observed_fractional_win_rate": null,
+            "probability_sum": 0.0,
+            "target_sum": 0.0,
+            "upper": 1.0
+          }
+        ],
+        "ece": 0.026151181887935047,
+        "method": "pooled-runner-equal-width-10-fractional-deadheat",
+        "runner_count": 15376
+      },
+      "effective_return_rate": 0.6578986587183309,
+      "effective_stake_yen": 134200,
+      "gross_return_rate_including_refund": 0.660930576070901,
+      "gross_stake_yen": 135400,
+      "log_loss": 2.2135876770632033,
+      "max_drawdown_yen": 45990,
+      "payout_excluding_refund_yen": 88290,
+      "profit_yen": -45910,
+      "races": 1354,
+      "refund_yen": 1200,
+      "rows_hash": "fb83d4ea31353e2578e1d2e2e2727437328a25bcc60d17c249fa63da1a9417fd",
+      "winning_tickets": 344
+    }
+  },
+  "schema": "prism.validation.comparison/v1",
+  "scope": "ARCHIVED_JANUARY_RESEARCH_COMPARISON",
+  "strict_pit_certified_races": 0
+}

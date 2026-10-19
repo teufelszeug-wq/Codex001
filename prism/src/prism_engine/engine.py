@@ -42,11 +42,13 @@ def predict(raw,locked_at,config=None,calibration=None,disabled_modules=()):
     check_times(data)
     disabled=set(disabled_modules)
     if disabled-set(MODULES):raise ValueError('unknown ablation module')
-    fit=features(data,cfg);scores={};coverage={}
+    fit=features(data,cfg);scores={};coverage={};effective={}
     for horse,f in fit['horses'].items():
         score=cfg['cold_start_prior'] if 'base_ability' in disabled else f['base_ability']
+        effective[horse]={'base_ability':score}
         for name,value in f['components'].items():
-            if name not in disabled and value is not None:score+=value
+            applied=value if name not in disabled and value is not None else 0.
+            effective[horse][name]=applied;score+=applied
         scores[horse]=score;coverage[horse]={k:('DISABLED' if k in disabled else v) for k,v in f['availability'].items()}
     pace=fit['pace_distribution']
     scenarios={}
@@ -62,9 +64,21 @@ def predict(raw,locked_at,config=None,calibration=None,disabled_modules=()):
               'locked_at':locked_at,'mode':data['mode'],'input_hash':digest(data),'config_hash':digest(cfg),
               'calibration_hash':None if calibration is None else calibration['artifact_hash'],
               'calibration_status':cal_status,'disabled_modules':sorted(disabled),'scores':scores,
+              'ablation':{'schema':'prism.engine.ablation/v1','enabled_modules':[m for m in MODULES if m not in disabled],
+                          'disabled_modules':sorted(disabled),'effective_components':effective,
+                          'base_disabled_replacement':cfg['cold_start_prior'],
+                          'score_reconstruction_hash':digest(effective),
+                          'scope':'COMPONENT_REMOVAL_NOT_RAW_FIELD_REMOVAL_OR_REFITTED_MODEL',
+                          'diagnostic_features_retained':True,
+                          'dependency_notes':[
+                              'Base history decay remains part of base_ability when state_recency_rotation is disabled.',
+                              'course_surface_class residuals reference observed base ability even when base_ability is replaced by the prior.',
+                              'Style evidence can still contribute to bias_tbi_ssi when pace is disabled.',
+                              'Specialist and ability recheck diagnostics are retained; only specialist score addition is ablated.'],
+                          'scenario_scores_include_pace_replacement':'pace' not in disabled and fit['pace_distribution'] is not None},
               'features':fit,'coverage':coverage,'win':win,'probabilities':probabilities,'rank_distribution':ranks,
               'frames':{r['horse_id']:str(r['frame_no']) for r in data['runners']},
-              'monte_carlo':mc,'model_version':'prism-core-engine-0.1-experimental',
+              'monte_carlo':mc,'model_version':'prism-core-engine-0.2-experimental',
               'rank_model':'CALIBRATED_PACE_MIXTURE_PL_NOT_PHYSICAL_RACE_SIMULATION',
               'scenario_win_uncalibrated':scenarios,
               'ability_rechecks':ability_recheck(data,fit),
@@ -82,6 +96,8 @@ def post_market(lock,market,config=None):
     candidates=value_candidates(lock,market,cfg);plan=optimize(candidates,cfg)
     plan['race_id']=lock['race_id'];plan['prediction_hash']=lock['lock_hash'];plan['plan_hash']=digest(plan)
     return {'race_id':lock['race_id'],'prediction_hash':lock['lock_hash'],'market_hash':digest(market),
+            'observed_at':market['observed_at'],'opened_at':market['opened_at'],
+            'timestamps_are_declared_not_attested':True,
             'candidate_values':candidates,'nvalue_reviews':nvalue_review(lock,candidates,cfg['longshot_odds_min']),
             'plan':plan,'execution_allowed':False,'mode':lock['mode'],
             'note':'Research candidates only; no betting execution or profitability claim.'}

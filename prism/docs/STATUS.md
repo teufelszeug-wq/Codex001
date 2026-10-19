@@ -1,4 +1,37 @@
-# PRISM status — 2026-10-08
+# PRISM status — 2026-10-18
+
+The current plan is the user's four-step B → D → C → February/E plan,
+with A–E engineering work proceeding in parallel against shared race/input/
+prediction hashes. No seventh phase is introduced.
+
+| Phase | This integration | Not closed by this integration |
+|---|---|---|
+| A | Manifest, raw/racecard binding, immutable release, dependency-aware PRE/POST cache | Source authenticity, externally certified timestamps and identity resolution |
+| B | Ablation diagnostics, micro-probability calibration correction, feature recovery census | Trained specialist/N-Value/workout/condition/jockey models, full empirical acceptance |
+| C | Hash-bound evidence/response/coverage gates and POST error review | Independent meetings, natural-language quality and model learning/adoption |
+| D | 1,354-race matched comparison, old expert probability controls, chronological January calibration | Full new-engine B0–B11 replay, February and genuine forward |
+| E | Four-page vertical HTML from the actual engine schema | Real newspaper content, visual/print/stress QA |
+
+Evidence and precise boundaries:
+[parallel acceptance](roadmap/PHASE_ABCDE_PARALLEL_20261018.md),
+[machine report](../artifacts/audits/PHASE_ABCDE_ACCEPTANCE_20261018.json),
+[model readiness](../artifacts/audits/PHASE_B_MODEL_READINESS_20261018.json),
+[January comparison](../artifacts/audits/PHASE_D_JANUARY_COMPARISON.json).
+
+Strict historical PIT remains 0/1,354. No real bet, forward-performance approval,
+100k training achievement, production deployment or complete A–E product claim.
+PR #4 remains a separate draft; its structural checker is not silently merged
+or treated as independent AI execution evidence.
+
+Horse/jockey DB addition: 2,952 races / 33,158 entries, 14,971 provisional horse
+identities, 416 authority/name rider buckets, and 30,752 observations imported.
+Actual discussion/assessment rows remain zero. Private database contents are not
+published to GitHub. See [the database contract](roadmap/ENTITY_DATABASE_20261018.md).
+
+## Historical organization record — 2026-10-08
+
+The following records describe the earlier integration scope, not the current
+asset-recovery state. Read the dated updates above for current status.
 
 The six phases in ../README.md remain the master plan. This update is an
 organization/integration task within Phase A, not a seventh milestone.

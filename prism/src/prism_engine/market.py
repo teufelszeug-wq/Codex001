@@ -6,7 +6,7 @@ TYPES={'WIN':1,'PLACE':1,'QUINELLA':2,'EXACTA':2,'WIDE':2,'TRIO':3,'TRIFECTA':3,
 UNORDERED={'QUINELLA','WIDE','TRIO','FRAME'}
 
 def ticket_key(bet_type,legs):
-    if bet_type not in TYPES or len(legs)!=TYPES[bet_type] or any(not isinstance(x,str) or not x for x in legs):raise ValueError('ticket shape rejected')
+    if bet_type not in TYPES or not isinstance(legs,(list,tuple)) or len(legs)!=TYPES[bet_type] or any(not isinstance(x,str) or not x for x in legs):raise ValueError('ticket shape rejected')
     if bet_type!='FRAME' and len(set(legs))!=len(legs):raise ValueError('duplicate ticket leg')
     parts=tuple(sorted(legs)) if bet_type in UNORDERED else tuple(legs)
     return digest({'type':bet_type,'legs':parts})

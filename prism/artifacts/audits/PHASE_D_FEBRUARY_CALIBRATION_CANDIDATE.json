@@ -1,0 +1,28 @@
+{
+  "artifact_hash": "d395b4bb57d116e2e052bad5b68cfa475080b831ad472a8284382d37534eec0a",
+  "base_model": "B0-ordinal-ability-research-1",
+  "february_used": false,
+  "freeze_scope": "PROPOSED_FEBRUARY_RESEARCH_RULE",
+  "grid": [
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+    2.0,
+    3.0
+  ],
+  "method": "temperature-only-fixed-grid",
+  "pre_registered_in_january": false,
+  "production_adopted": false,
+  "refitted_on_holdout": false,
+  "schema": "prism.validation.frozen-calibration/v1",
+  "strict_pit_certified": false,
+  "temperature": 1.5,
+  "training_data_hash": "bda34629d8dae1a4f4a315fa457f3ddf437ebd9e39d7c88a39b58c3f0b5cdff1",
+  "training_dates": [
+    "20260101",
+    "20260115"
+  ],
+  "training_races": 653
+}

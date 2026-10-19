@@ -1,0 +1,252 @@
+{
+  "bet_policy_changed": false,
+  "february_verified": false,
+  "frozen_artifact": {
+    "artifact_hash": "d395b4bb57d116e2e052bad5b68cfa475080b831ad472a8284382d37534eec0a",
+    "base_model": "B0-ordinal-ability-research-1",
+    "february_used": false,
+    "freeze_scope": "PROPOSED_FEBRUARY_RESEARCH_RULE",
+    "grid": [
+      0.5,
+      0.75,
+      1.0,
+      1.25,
+      1.5,
+      2.0,
+      3.0
+    ],
+    "method": "temperature-only-fixed-grid",
+    "pre_registered_in_january": false,
+    "production_adopted": false,
+    "refitted_on_holdout": false,
+    "schema": "prism.validation.frozen-calibration/v1",
+    "strict_pit_certified": false,
+    "temperature": 1.5,
+    "training_data_hash": "bda34629d8dae1a4f4a315fa457f3ddf437ebd9e39d7c88a39b58c3f0b5cdff1",
+    "training_dates": [
+      "20260101",
+      "20260115"
+    ],
+    "training_races": 653
+  },
+  "holdout_after": {
+    "brier": 0.846409188782266,
+    "calibration": {
+      "bins": [
+        {
+          "count": 5576,
+          "lower": 0.0,
+          "mean_probability": 0.04846283809408891,
+          "observed_fractional_win_rate": 0.049766857962697274,
+          "upper": 0.1
+        },
+        {
+          "count": 1656,
+          "lower": 0.1,
+          "mean_probability": 0.14175024122038132,
+          "observed_fractional_win_rate": 0.1331521739130435,
+          "upper": 0.2
+        },
+        {
+          "count": 557,
+          "lower": 0.2,
+          "mean_probability": 0.23916463575384309,
+          "observed_fractional_win_rate": 0.2459605026929982,
+          "upper": 0.3
+        },
+        {
+          "count": 138,
+          "lower": 0.3,
+          "mean_probability": 0.3363995290162264,
+          "observed_fractional_win_rate": 0.37681159420289856,
+          "upper": 0.4
+        },
+        {
+          "count": 30,
+          "lower": 0.4,
+          "mean_probability": 0.4327654885466776,
+          "observed_fractional_win_rate": 0.3333333333333333,
+          "upper": 0.5
+        },
+        {
+          "count": 5,
+          "lower": 0.5,
+          "mean_probability": 0.5532388228195423,
+          "observed_fractional_win_rate": 0.6,
+          "upper": 0.6
+        },
+        {
+          "count": 1,
+          "lower": 0.6,
+          "mean_probability": 0.6458194367787791,
+          "observed_fractional_win_rate": 1.0,
+          "upper": 0.7
+        },
+        {
+          "count": 0,
+          "lower": 0.7,
+          "mean_probability": null,
+          "observed_fractional_win_rate": null,
+          "probability_sum": 0.0,
+          "target_sum": 0.0,
+          "upper": 0.8
+        },
+        {
+          "count": 0,
+          "lower": 0.8,
+          "mean_probability": null,
+          "observed_fractional_win_rate": null,
+          "probability_sum": 0.0,
+          "target_sum": 0.0,
+          "upper": 0.9
+        },
+        {
+          "count": 0,
+          "lower": 0.9,
+          "mean_probability": null,
+          "observed_fractional_win_rate": null,
+          "probability_sum": 0.0,
+          "target_sum": 0.0,
+          "upper": 1.0
+        }
+      ],
+      "ece": 0.004325345753447909,
+      "method": "pooled-runner-equal-width-10-fractional-deadheat",
+      "runner_count": 7963
+    },
+    "log_loss": 2.12732780772283,
+    "races": 701
+  },
+  "holdout_before": {
+    "brier": 0.8597831437012327,
+    "calibration": {
+      "bins": [
+        {
+          "count": 5781,
+          "lower": 0.0,
+          "mean_probability": 0.03597388370257704,
+          "observed_fractional_win_rate": 0.050596782563570315,
+          "upper": 0.1
+        },
+        {
+          "count": 1137,
+          "lower": 0.1,
+          "mean_probability": 0.14166487759122484,
+          "observed_fractional_win_rate": 0.1376429199648197,
+          "upper": 0.2
+        },
+        {
+          "count": 582,
+          "lower": 0.2,
+          "mean_probability": 0.24366742642060138,
+          "observed_fractional_win_rate": 0.1872852233676976,
+          "upper": 0.3
+        },
+        {
+          "count": 259,
+          "lower": 0.3,
+          "mean_probability": 0.3408759615779807,
+          "observed_fractional_win_rate": 0.27413127413127414,
+          "upper": 0.4
+        },
+        {
+          "count": 126,
+          "lower": 0.4,
+          "mean_probability": 0.44335460289591705,
+          "observed_fractional_win_rate": 0.3412698412698413,
+          "upper": 0.5
+        },
+        {
+          "count": 54,
+          "lower": 0.5,
+          "mean_probability": 0.550050809045566,
+          "observed_fractional_win_rate": 0.3148148148148148,
+          "upper": 0.6
+        },
+        {
+          "count": 15,
+          "lower": 0.6,
+          "mean_probability": 0.6382705230396873,
+          "observed_fractional_win_rate": 0.4,
+          "upper": 0.7
+        },
+        {
+          "count": 8,
+          "lower": 0.7,
+          "mean_probability": 0.7384390166338958,
+          "observed_fractional_win_rate": 0.625,
+          "upper": 0.8
+        },
+        {
+          "count": 1,
+          "lower": 0.8,
+          "mean_probability": 0.8137026366791326,
+          "observed_fractional_win_rate": 1.0,
+          "upper": 0.9
+        },
+        {
+          "count": 0,
+          "lower": 0.9,
+          "mean_probability": null,
+          "observed_fractional_win_rate": null,
+          "probability_sum": 0.0,
+          "target_sum": 0.0,
+          "upper": 1.0
+        }
+      ],
+      "ece": 0.021278733060083536,
+      "method": "pooled-runner-equal-width-10-fractional-deadheat",
+      "runner_count": 7963
+    },
+    "log_loss": 2.1823089777226925,
+    "races": 701
+  },
+  "holdout_dates": [
+    "20260116",
+    "20260131"
+  ],
+  "holdout_hash": "af7802309ef5a6300f33aa98c3352e92cce1df5ae77b018ad12260985fad4fc3",
+  "holdout_races": 701,
+  "note": "Grid selection uses January 1–15 only; January 16–31 is evaluation only. This retrospective experiment is not prospective evidence. The frozen candidate has not been applied to February or production.",
+  "report_hash": "b739cbad039f0b443222756e657dfea0a80f2586db30d291d7a3ee1f1f2b2850",
+  "schema": "prism.validation.chronological-calibration/v1",
+  "scope": "RETROSPECTIVE_JANUARY_SPLIT",
+  "search_train_only": [
+    {
+      "temperature": 0.5,
+      "train_log_loss": 2.9521367095983067
+    },
+    {
+      "temperature": 0.75,
+      "train_log_loss": 2.4287903834311946
+    },
+    {
+      "temperature": 1.0,
+      "train_log_loss": 2.2471655763552394
+    },
+    {
+      "temperature": 1.25,
+      "train_log_loss": 2.179344958494105
+    },
+    {
+      "temperature": 1.5,
+      "train_log_loss": 2.1561771053556864
+    },
+    {
+      "temperature": 2.0,
+      "train_log_loss": 2.156680863139157
+    },
+    {
+      "temperature": 3.0,
+      "train_log_loss": 2.1948546709669485
+    }
+  ],
+  "selected_temperature": 1.5,
+  "strict_pit_certified_races": 0,
+  "ticket_repriced": false,
+  "training_dates": [
+    "20260101",
+    "20260115"
+  ],
+  "training_races": 653
+}
