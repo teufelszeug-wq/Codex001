@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { GameState } from '../src/core/GameState.js';
+import { TurnManager } from '../src/core/TurnManager.js';
+import { DungeonGenerator } from '../src/dungeon/DungeonGenerator.js';
+import { FOVSystem } from '../src/dungeon/FOVSystem.js';
+import { SaveManager } from '../src/core/SaveManager.js';
+import { Path } from 'rot-js';
+test('40 seeds generate unique reachable spawns and stairs',()=>{for(let seed=0;seed<40;seed++)for(let floor=1;floor<=2;floor++){const d=new DungeonGenerator().generate(seed,floor);const coords=[d.start,d.stairs,...d.enemies].map(p=>`${p.x},${p.y}`);assert.equal(new Set(coords).size,coords.length);const path=[];new Path.AStar(d.stairs.x,d.stairs.y,(x,y)=>d.tiles[y]?.[x]===0,{topology:4}).compute(d.start.x,d.start.y,(x,y)=>path.push([x,y]));assert.ok(path.length>1);}});
+test('turn lock prevents interleaved actions and always releases',async()=>{let finish;let enemies=0;const turns=new TurnManager(()=>enemies++);const pending=turns.run(()=>new Promise(resolve=>{finish=resolve;}));assert.equal(await turns.run(()=>true),false);finish(true);await pending;assert.equal(enemies,1);assert.equal(turns.locked,false);await assert.rejects(turns.run(()=>{throw Error('test');}));assert.equal(turns.locked,false);});
+test('save restores defeated enemies and explored map, handles storage failures',()=>{const mem=new Map();globalThis.localStorage={setItem:(k,v)=>mem.set(k,v),getItem:k=>mem.get(k)||null,removeItem:k=>mem.delete(k)};const d=new DungeonGenerator().generate(42,1),s=new GameState({name:'リオ',playerX:d.start.x,playerY:d.start.y});s.snapshot={tiles:d.tiles,stairs:d.stairs,enemies:[{...d.enemies[0],hp:0}],explored:[`${s.playerX},${s.playerY}`]};assert.ok(SaveManager.save(s));assert.deepEqual(SaveManager.load().snapshot,s.snapshot);globalThis.localStorage.getItem=()=>'{bad';assert.equal(SaveManager.load(),null);globalThis.localStorage.setItem=()=>{throw Error('full');};assert.equal(SaveManager.save(s),false);});
+test('FOV records only in-bounds coordinates',()=>{const d=new DungeonGenerator().generate(11,1),f=new FOVSystem(d.tiles);f.compute(d.start.x,d.start.y);for(const key of f.explored){const [x,y]=key.split(',').map(Number);assert.ok(x>=0&&y>=0&&x<40&&y<32);}});

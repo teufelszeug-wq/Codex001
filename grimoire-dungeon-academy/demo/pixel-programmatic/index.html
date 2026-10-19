@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<title>GDA Programmatic Pixel Hero Demo</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0f18;--panel:#151b28;--line:#2b354a;--gold:#d5b45a;--text:#edf2ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#18233a,#090d15 60%);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:14px;touch-action:none;overscroll-behavior:none}
+.app{width:min(100%,780px);display:grid;gap:10px;align-content:start}
+header{display:flex;gap:10px;align-items:end;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:18px;margin:0;color:#fff}.sub{font-size:12px;color:#9faecc}
+.stage{background:#05070c;border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 16px 60px #0008}
+canvas{width:100%;aspect-ratio:4/3;display:block;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:8px;background:#111}
+.panel{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px}
+.status{font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c9d4eb}.status b{color:#fff}
+.controls{display:grid;grid-template-columns:58px 58px 58px;grid-template-rows:52px 52px 52px;gap:5px;user-select:none}.btn{border:1px solid #40506d;background:#212b3d;color:#fff;border-radius:12px;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;min-width:0}.btn:active,.btn.active{background:#3b4e70;transform:translateY(1px)}
+.up{grid-column:2;grid-row:1}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}.cast{grid-column:1/4;grid-row:3;font-size:13px;color:#fff2bd;border-color:#75622d}
+.elements{display:flex;flex-wrap:wrap;gap:6px}.el{border:1px solid #39465d;border-radius:999px;background:#111827;color:#dce6ff;padding:7px 10px;font-size:12px}.el.active{outline:2px solid #f7d46b;color:white}
+.note{font-size:11px;color:#91a0bd;padding:0 4px}.kbd{color:#e7c867}
+@media(max-width:520px){body{padding:8px}.panel{grid-template-columns:1fr}.controls{justify-self:center}.sub{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><h1>Grimoire Dungeon Academy — 1px Programmatic Hero</h1><div class="sub">32×32 / 4 directions / 6 walk frames / Idle A · Walk B · Cast C</div></div><div class="sub">No PNG · No library</div></header>
+<div class="stage"><canvas id="game" width="320" height="240" aria-label="programmatic pixel sprite demo"></canvas></div>
+<div class="panel">
+  <div>
+    <div id="status" class="status"></div>
+    <div class="elements" id="elements"></div>
+    <div class="note">PC: <span class="kbd">WASD / 矢印</span> 移動・<span class="kbd">Space</span> 詠唱・<span class="kbd">Q</span> 属性変更。スマホは右のボタン。</div>
+  </div>
+  <div class="controls">
+    <button class="btn up" data-move="up">▲</button><button class="btn left" data-move="left">◀</button><button class="btn down" data-move="down">▼</button><button class="btn right" data-move="right">▶</button><button class="btn cast" id="castBtn">✦ CAST / 詠唱</button>
+  </div>
+</div>
+</div>
+<script>
+(() => {
+'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d',{alpha:false});
+ctx.imageSmoothingEnabled=false;
+const statusEl=document.getElementById('status'), elementsEl=document.getElementById('elements');
+const elements={
+ Arcane:{book:'#8e7dff',glow:'#b9acff',name:'Arcane / 無'},
+ Fire:{book:'#e74c35',glow:'#ff9b52',name:'Fire / 炎'},
+ Ice:{book:'#59bde8',glow:'#a7e8ff',name:'Ice / 氷'},
+ Lightning:{book:'#f3ce3a',glow:'#fff38a',name:'Lightning / 雷'},
+ Dark:{book:'#8153c9',glow:'#c49aff',name:'Dark / 闇'},
+ Light:{book:'#f3e6ad',glow:'#fffbd5',name:'Light / 光'}
+};
+let elementKey='Dark';
+Object.entries(elements).forEach(([k,v])=>{const b=document.createElement('button');b.className='el'+(k===elementKey?' active':'');b.textContent=v.name;b.onclick=()=>setElement(k);b.dataset.element=k;elementsEl.appendChild(b)});
+function setElement(k){elementKey=k;document.querySelectorAll('.el').forEach(x=>x.classList.toggle('active',x.dataset.element===k));}
+
+const PALETTE={outline:'#0b0c12',hair:'#141722',hairHi:'#303649',skin:'#efc2a8',skinShadow:'#c78f7f',eye:'#44384f',navy:'#1e2c52',navyHi:'#2e4478',navyDark:'#10182e',gold:'#d3ad4d',cape:'#182343',boot:'#111727',white:'#f3e7cf'};
+class PixelSprite{
+ constructor(w=32,h=32){this.w=w;this.h=h;this.data=new Uint8ClampedArray(w*h*4);}
+ clear(){this.data.fill(0)}
+ set(x,y,color,a=255){x=x|0;y=y|0;if(x<0||y<0||x>=this.w||y>=this.h)return;const i=(y*this.w+x)*4;const c=hex(color);this.data[i]=c[0];this.data[i+1]=c[1];this.data[i+2]=c[2];this.data[i+3]=a;}
+ rect(x,y,w,h,color){for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++)this.set(x+xx,y+yy,color)}
+ line(x0,y0,x1,y1,color){let dx=Math.abs(x1-x0),sx=x0<x1?1:-1,dy=-Math.abs(y1-y0),sy=y0<y1?1:-1,err=dx+dy;for(;;){this.set(x0,y0,color);if(x0===x1&&y0===y1)break;const e2=2*err;if(e2>=dy){err+=dy;x0+=sx}if(e2<=dx){err+=dx;y0+=sy}}}
+ toImageData(){return new ImageData(this.data,this.w,this.h)}
+}
+function hex(v){if(Array.isArray(v))return v; if(v[0]==='#')v=v.slice(1);if(v.length===3)v=v.split('').map(x=>x+x).join('');const n=parseInt(v,16);return[(n>>16)&255,(n>>8)&255,n&255]}
+const off=document.createElement('canvas');off.width=32;off.height=32;const octx=off.getContext('2d');octx.imageSmoothingEnabled=false;const px=new PixelSprite();
+function outlineRect(s,x,y,w,h,c=PALETTE.outline){s.rect(x,y,w,1,c);s.rect(x,y+h-1,w,1,c);s.rect(x,y,1,h,c);s.rect(x+w-1,y,1,h,c)}
+function drawHero(dir,frame,pose,element){
+ px.clear(); const P=PALETTE,E=elements[element]; const bob=pose==='walk'?[0,1,1,0,-1,-1][frame]:0; const step=[-1,0,1,1,0,-1][frame]; const swing=[0,1,1,0,-1,-1][frame]; const y=bob;
+ // Layer 1: hair back and cape
+ const capeShift=pose==='walk'?-swing:0; px.rect(9,14+y,14,11,P.cape); px.rect(8+capeShift,18+y,3,7,P.cape); px.rect(21+capeShift,18+y,3,7,P.cape);
+ px.rect(9,3+y,14,14,P.hair); px.rect(7,8+y,4,17,P.hair); px.rect(21,8+y,4,17,P.hair); px.rect(9,23+y,4,4,P.hair); px.rect(19,23+y,4,4,P.hair);
+ // Layer 2: head silhouette / face
+ px.rect(10,4+y,12,10,P.hairHi); px.rect(9,6+y,14,5,P.hair); px.rect(10,8+y,12,7,P.skin); px.rect(10,13+y,12,2,P.skinShadow);
+ if(dir==='up'){px.rect(10,8+y,12,7,P.hair);px.rect(12,12+y,8,4,P.hairHi)}
+ else if(dir==='down'){
+   px.rect(11,8+y,10,2,P.hair); px.rect(12,11+y,3,1,P.eye); px.rect(17,11+y,3,1,P.eye); px.set(15,13+y,P.skinShadow);px.set(16,13+y,P.skinShadow);
+ } else if(dir==='left'){px.rect(10,8+y,4,5,P.hair);px.rect(15,11+y,3,1,P.eye);px.set(19,13+y,P.skinShadow)}
+ else {px.rect(18,8+y,4,5,P.hair);px.rect(14,11+y,3,1,P.eye);px.set(12,13+y,P.skinShadow)}
+ // Layer 3: torso / uniform
+ outlineRect(px,10,15+y,12,9); px.rect(11,16+y,10,7,P.navy);px.rect(12,16+y,8,2,P.navyHi);px.rect(15,16+y,2,7,P.gold);px.rect(11,16+y,10,1,P.gold);px.rect(9,17+y,2,6,P.navyDark);px.rect(21,17+y,2,6,P.navyDark);
+ // Layer 4: legs, six-frame walk
+ const l=pose==='walk'?step:0; px.rect(12+l,23+y,3,6,P.navyDark);px.rect(17-l,23+y,3,6,P.navyDark);px.rect(11+l,28+y,4,2,P.boot);px.rect(17-l,28+y,4,2,P.boot);
+ // Layer 5: hair front tips
+ px.rect(9,7+y,2,8,P.hair);px.rect(21,7+y,2,8,P.hair);px.rect(12,5+y,8,2,P.hairHi);px.set(11,7+y,P.hairHi);px.set(20,7+y,P.hairHi);
+ // Layer 6: grimoire based on A/B/C pose
+ if(pose==='idle'){
+   px.rect(11,18+y,10,6,P.outline);px.rect(12,19+y,8,4,E.book);px.rect(15,19+y,2,4,P.gold);px.set(13,20+y,E.glow);px.set(18,20+y,E.glow);
+ } else if(pose==='cast'){
+   px.rect(5,17+y,9,7,P.outline);px.rect(18,17+y,9,7,P.outline);px.rect(6,18+y,7,5,P.white);px.rect(19,18+y,7,5,P.white);px.rect(13,18+y,6,5,E.book);px.line(7,19+y,11,19+y,E.glow);px.line(20,19+y,24,19+y,E.glow);
+   // one-pixel magic motes
+   [[4,15],[27,15],[7,13],[24,12],[16,10],[3,20],[29,21]].forEach(([x0,y0])=>px.set(x0,y0+y,E.glow));
+ } else {
+   const bookY=19+y+swing;px.rect(3,bookY,7,8,P.outline);px.rect(4,bookY+1,5,6,E.book);px.rect(6,bookY+1,1,6,P.gold);px.set(5,bookY+3,E.glow);px.rect(9,18+y+swing,2,5,P.skinShadow);
+ }
+ octx.clearRect(0,0,32,32);octx.putImageData(px.toImageData(),0,0);return off;
+}
+
+const world={x:160,y:126,speed:54,dir:'down',frame:0,walkClock:0,lastMove:0,castUntil:0,castStart:0};
+const keys=new Set();let touchDir=null;let tPrev=performance.now();
+const walls=[{x:0,y:0,w:320,h:16},{x:0,y:224,w:320,h:16},{x:0,y:0,w:16,h:240},{x:304,y:0,w:16,h:240},{x:80,y:64,w:64,h:16},{x:192,y:48,w:16,h:64},{x:48,y:160,w:80,h:16},{x:208,y:160,w:64,h:16}];
+function collides(x,y){const r={x:x-9,y:y-6,w:18,h:12};return walls.some(w=>r.x<w.x+w.w&&r.x+r.w>w.x&&r.y<w.y+w.h&&r.y+r.h>w.y)}
+function cast(){const now=performance.now()/1000;world.castStart=now;world.castUntil=now+0.78;}
+function cycleElement(){const ks=Object.keys(elements),i=ks.indexOf(elementKey);setElement(ks[(i+1)%ks.length])}
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(k)){keys.add(k);e.preventDefault()}if(e.code==='Space'){cast();e.preventDefault()}if(k==='q')cycleElement()});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+for(const b of document.querySelectorAll('[data-move]')){const d=b.dataset.move;const down=e=>{e.preventDefault();touchDir=d;b.classList.add('active')};const up=e=>{e.preventDefault();if(touchDir===d)touchDir=null;b.classList.remove('active')};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)}
+document.getElementById('castBtn').addEventListener('pointerdown',e=>{e.preventDefault();cast()});
+function inputVector(){let x=0,y=0;const td=touchDir;if(keys.has('arrowleft')||keys.has('a')||td==='left')x--;if(keys.has('arrowright')||keys.has('d')||td==='right')x++;if(keys.has('arrowup')||keys.has('w')||td==='up')y--;if(keys.has('arrowdown')||keys.has('s')||td==='down')y++;if(x&&y){const q=Math.SQRT1_2;x*=q;y*=q}return{x,y}}
+function update(dt,time){
+ const now=time/1000,casting=now<world.castUntil;let moving=false;
+ if(!casting){const v=inputVector();moving=!!(v.x||v.y);if(moving){if(Math.abs(v.x)>Math.abs(v.y))world.dir=v.x<0?'left':'right';else world.dir=v.y<0?'up':'down';const nx=world.x+v.x*world.speed*dt,ny=world.y+v.y*world.speed*dt;if(!collides(nx,world.y))world.x=nx;if(!collides(world.x,ny))world.y=ny;world.lastMove=now;world.walkClock+=dt;world.frame=Math.floor(world.walkClock*9)%6}else world.walkClock=0;}
+ const pose=casting?'cast':moving?'walk':(now-world.lastMove>0.65?'idle':'walk');
+ return{pose,casting,moving,now};
+}
+function drawWorld(state){
+ ctx.fillStyle='#0f1420';ctx.fillRect(0,0,320,240);
+ // 16x16 stone floor tiles
+ for(let y=16;y<224;y+=16)for(let x=16;x<304;x+=16){const odd=((x>>4)+(y>>4))&1;ctx.fillStyle=odd?'#1c2534':'#202b3b';ctx.fillRect(x,y,16,16);ctx.fillStyle='#28364b';ctx.fillRect(x,y,16,1);ctx.fillRect(x,y,1,16);if(((x*3+y*5)>>4)%11===0){ctx.fillStyle='#33425b';ctx.fillRect(x+5,y+7,5,1)}}
+ for(const w of walls){ctx.fillStyle='#0b0f17';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.fillStyle='#344056';ctx.fillRect(w.x,w.y,w.w,3);ctx.fillStyle='#1c2532';for(let yy=w.y+4;yy<w.y+w.h;yy+=7)ctx.fillRect(w.x,yy,w.w,1)}
+ // small grimoire pedestal target
+ ctx.fillStyle='#5a4b78';ctx.fillRect(258,84,20,20);ctx.fillStyle=elements[elementKey].book;ctx.fillRect(263,88,10,12);ctx.fillStyle='#e0c568';ctx.fillRect(267,89,2,10);
+ // cast aura under hero
+ if(state.casting){const p=Math.min(1,(state.now-world.castStart)/.78);ctx.strokeStyle=elements[elementKey].glow;ctx.lineWidth=1;const r=8+Math.sin(p*Math.PI)*18;ctx.beginPath();ctx.arc(Math.round(world.x),Math.round(world.y+12),r,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i++){const a=i*Math.PI/4+p*2,r2=15+8*Math.sin(p*Math.PI);ctx.fillStyle=elements[elementKey].glow;ctx.fillRect(Math.round(world.x+Math.cos(a)*r2),Math.round(world.y+10+Math.sin(a)*r2),1,1)}}
+ const spr=drawHero(world.dir,world.frame,state.pose,elementKey);ctx.drawImage(spr,0,0,32,32,Math.round(world.x-32),Math.round(world.y-44),64,64);
+ // caption in logical canvas
+ ctx.fillStyle='#000a';ctx.fillRect(8,8,304,24);ctx.fillStyle='#e9eefb';ctx.font='8px monospace';ctx.fillText(`1px BUFFER  32x32 -> x2  ${elements[elementKey].name}  ${state.pose.toUpperCase()}`,14,23);
+ statusEl.innerHTML=`<b>描画:</b> ImageData 32×32を1pxずつ更新　<b>方向:</b> ${world.dir}　<b>frame:</b> ${world.frame+1}/6<br><b>Pose:</b> ${state.pose}　<b>Grimoire:</b> ${elements[elementKey].name}　<b>PNG:</b> 0枚`;
+}
+function loop(t){const dt=Math.min(.033,(t-tPrev)/1000);tPrev=t;drawWorld(update(dt,t));requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
