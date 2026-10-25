@@ -6,11 +6,26 @@
   "public_summary": "prism/artifacts/audits/PRISM_DLR_RUN118_PUBLIC_SUMMARY_20261025.md",
   "source_locator": "https://sp.keiba.go.jp/KeibaWebSP/TodayRaceInfo/S_DebaTable?k_babaCode=32&k_raceDate=2026%2F10%2F26&k_raceNo=10",
   "private_artifact_hashes": {
-    "daily_audit_report_20261025_run118.md": "7e7b3e8a3f1d8a0d5e5d9b7b0f3f9a9d",
-    "saga10_snapshot_run118.json": "recorded in local manifest_run118.json",
-    "roundtable_body_only_run118.txt": "recorded in local manifest_run118.json",
-    "events_run118.json": "recorded in local manifest_run118.json",
-    "topic_candidate_run118.json": "recorded in local manifest_run118.json"
+    "daily_audit_report_20261025_run118.md": {
+      "sha256": "0216af52c76495a4982a591b772f7abdbf9d25c23e60e8f4f98d6b3b18499cf8",
+      "bytes": 12215
+    },
+    "saga10_snapshot_run118.json": {
+      "sha256": "237c3c3289c877bad812416ea8e07755dc749c6fea3c15ecda09dafc5cf61c00",
+      "bytes": 18491
+    },
+    "roundtable_body_only_run118.txt": {
+      "sha256": "bd5cbcaab41a1e167877b32139a87d6cc30ad063ead479e771491d1a27c20e56",
+      "bytes": 8671
+    },
+    "events_run118.json": {
+      "sha256": "4b0a0aa1da56add93e1b90ee96af1bea457691c556188c87de245bda6a39a7f0",
+      "bytes": 3152
+    },
+    "topic_candidate_run118.json": {
+      "sha256": "f926aa63d66bc7f64749453a3814572fe074ab9b6a9d42969d9837ee5277f1c4",
+      "bytes": 1334
+    }
   },
-  "note": "No raw runner payload or full horse-by-horse derived snapshot is committed to the public repository. Exact SHA-256 values for all private artifacts are in the local bundle."
+  "note": "No raw runner payload or full horse-by-horse derived snapshot is committed to the public repository. Exact SHA-256 values are listed for the local private bundle."
 }
