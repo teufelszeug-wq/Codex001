@@ -1,0 +1,16 @@
+{
+  "run_id": "RUN118",
+  "date": "2026-10-25",
+  "status": "PARTIAL",
+  "private_artifacts_not_committed": true,
+  "public_summary": "prism/artifacts/audits/PRISM_DLR_RUN118_PUBLIC_SUMMARY_20261025.md",
+  "source_locator": "https://sp.keiba.go.jp/KeibaWebSP/TodayRaceInfo/S_DebaTable?k_babaCode=32&k_raceDate=2026%2F10%2F26&k_raceNo=10",
+  "private_artifact_hashes": {
+    "daily_audit_report_20261025_run118.md": "7e7b3e8a3f1d8a0d5e5d9b7b0f3f9a9d",
+    "saga10_snapshot_run118.json": "recorded in local manifest_run118.json",
+    "roundtable_body_only_run118.txt": "recorded in local manifest_run118.json",
+    "events_run118.json": "recorded in local manifest_run118.json",
+    "topic_candidate_run118.json": "recorded in local manifest_run118.json"
+  },
+  "note": "No raw runner payload or full horse-by-horse derived snapshot is committed to the public repository. Exact SHA-256 values for all private artifacts are in the local bundle."
+}
