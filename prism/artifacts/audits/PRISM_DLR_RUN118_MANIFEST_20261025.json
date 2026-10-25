@@ -4,11 +4,15 @@
   "status": "PARTIAL",
   "private_artifacts_not_committed": true,
   "public_summary": "prism/artifacts/audits/PRISM_DLR_RUN118_PUBLIC_SUMMARY_20261025.md",
-  "source_locator": "https://sp.keiba.go.jp/KeibaWebSP/TodayRaceInfo/S_DebaTable?k_babaCode=32&k_raceDate=2026%2F10%2F26&k_raceNo=10",
+  "source_locators": [
+    "https://sp.keiba.go.jp/KeibaWebSP/TodayRaceInfo/S_DebaTable?k_babaCode=32&k_raceDate=2026%2F10%2F26&k_raceNo=10",
+    "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/DebaTable?k_babaCode=20&k_raceDate=2026%2F10%2F26&k_raceNo=9",
+    "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/CompeteTable?k_babaCode=20&k_raceDate=2026%2F10%2F26&k_raceNo=9"
+  ],
   "private_artifact_hashes": {
     "daily_audit_report_20261025_run118.md": {
-      "sha256": "0216af52c76495a4982a591b772f7abdbf9d25c23e60e8f4f98d6b3b18499cf8",
-      "bytes": 12215
+      "sha256": "3f3420097607ebe88bca75f10b4b171015f78a4b2d2fb8a7fad0d95045be138f",
+      "bytes": 15648
     },
     "saga10_snapshot_run118.json": {
       "sha256": "237c3c3289c877bad812416ea8e07755dc749c6fea3c15ecda09dafc5cf61c00",
@@ -25,7 +29,23 @@
     "topic_candidate_run118.json": {
       "sha256": "f926aa63d66bc7f64749453a3814572fe074ab9b6a9d42969d9837ee5277f1c4",
       "bytes": 1334
+    },
+    "oi9_snapshot_run118.json": {
+      "sha256": "00819df1403484c21df1d85bb97c10c8c810c71255f014b207f619a95919dfc4",
+      "bytes": 14225
+    },
+    "roundtable_body_only_oi9r_run118.txt": {
+      "sha256": "f4ebc21a032bc02710b66cc88b80369d3f860a7e577fa4473a18e45ddb387d9d",
+      "bytes": 6568
+    },
+    "events_oi9_run118.json": {
+      "sha256": "5e5f361708936c94e6d1429b59f4c869ed4b8540fa64875acccbb51d30afaa36",
+      "bytes": 1954
+    },
+    "topic_candidate_oi9_run118.json": {
+      "sha256": "9979d3e0219ce26508b0d8c66213458c28499379ebe1942eeec00780e9323b83",
+      "bytes": 1191
     }
   },
-  "note": "No raw runner payload or full horse-by-horse derived snapshot is committed to the public repository. Exact SHA-256 values are listed for the local private bundle."
+  "note": "No raw runner payload or full horse-by-horse derived snapshots are committed to the public repository. Exact SHA-256 values are listed for the local private bundle."
 }
