@@ -2,8 +2,8 @@
 import unittest
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "prism_ops"))
-from forecast_completion_gate import validate_forecast, settle_forecast
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from prism_ops.forecast_completion_gate import validate_forecast, settle_forecast
 
 def fixture():
     return {"race_id":"synthetic-race","saved_at":"2026-11-06T19:00:00+09:00",
@@ -30,8 +30,8 @@ class ForecastGateTests(unittest.TestCase):
         self.assertFalse(validate_forecast(f)["complete"])
     def test_roi(self):
         r=settle_forecast(fixture(),{"race_id":"synthetic-race","official_source":"synthetic fixture",
-           "payouts_per_100":{"単勝:1":320}})
-        self.assertEqual(r["by_agent"]["rio"]["roi_pct"],320)
+           "ticket_outcomes":{"単勝:1":{"status":"won","payout_yen":320}}})
+        self.assertEqual(r["by_agent"]["rio"]["roi_pct_ex_refund"],320)
         self.assertIsNone(r["by_agent"]["EDITORIAL"]["roi_pct"])
 
 if __name__=="__main__": unittest.main()
