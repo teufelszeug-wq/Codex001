@@ -9,7 +9,7 @@ def fixture():
     return {"race_id":"synthetic-race","saved_at":"2026-11-06T19:00:00+09:00",
       "scheduled_off":"2026-11-07T15:00:00+09:00",
       "entries":[{"horse_no":1,"horse_name":"架空A"},{"horse_no":2,"horse_name":"架空B"}],
-      "agents":[{"agent_id":"rio","picks":[{"mark":"◎","horse_no":1}],
+      "required_agent_ids":["rio"],"agents":[{"agent_id":"rio","picks":[{"mark":"◎","horse_no":1}],
         "tickets":[{"bet_type":"単勝","selection":[1],"stake_yen":100}]}],
       "editorial":{"picks":[{"mark":"◎","horse_no":2}],"tickets":[],"pass_reason":"見送り"},
       "evidence":[{"kind":"form","source":"synthetic fixture","available_at":"2026-11-06T12:00:00+09:00"}]}
@@ -28,6 +28,15 @@ class ForecastGateTests(unittest.TestCase):
     def test_100_yen(self):
         f=fixture(); f["agents"][0]["tickets"][0]["stake_yen"]=200
         self.assertFalse(validate_forecast(f)["complete"])
+    def test_roster_missing(self):
+        f=fixture(); del f["required_agent_ids"]
+        self.assertIn("REQUIRED_AGENT_ROSTER_MISSING",validate_forecast(f)["errors"])
+    def test_roster_incomplete(self):
+        f=fixture(); f["required_agent_ids"].append("pace")
+        self.assertIn("AGENT_COVERAGE_INCOMPLETE",validate_forecast(f)["errors"])
+    def test_duplicate_ticket(self):
+        f=fixture(); f["agents"][0]["tickets"].append(dict(f["agents"][0]["tickets"][0]))
+        self.assertIn("rio:DUPLICATE_TICKET",validate_forecast(f)["errors"])
     def test_roi(self):
         r=settle_forecast(fixture(),{"race_id":"synthetic-race","official_source":"synthetic fixture",
            "ticket_outcomes":{"単勝:1":{"status":"won","payout_yen":320}}})
