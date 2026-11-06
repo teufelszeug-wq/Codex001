@@ -1,0 +1,37 @@
+"""Contract tests for the PRISM forecast completion gate. Synthetic fixtures only."""
+import unittest
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "prism_ops"))
+from forecast_completion_gate import validate_forecast, settle_forecast
+
+def fixture():
+    return {"race_id":"synthetic-race","saved_at":"2026-11-06T19:00:00+09:00",
+      "scheduled_off":"2026-11-07T15:00:00+09:00",
+      "entries":[{"horse_no":1,"horse_name":"架空A"},{"horse_no":2,"horse_name":"架空B"}],
+      "agents":[{"agent_id":"rio","picks":[{"mark":"◎","horse_no":1}],
+        "tickets":[{"bet_type":"単勝","selection":[1],"stake_yen":100}]}],
+      "editorial":{"picks":[{"mark":"◎","horse_no":2}],"tickets":[],"pass_reason":"見送り"},
+      "evidence":[{"kind":"form","source":"synthetic fixture","available_at":"2026-11-06T12:00:00+09:00"}]}
+
+class ForecastGateTests(unittest.TestCase):
+    def test_complete(self): self.assertTrue(validate_forecast(fixture())["complete"])
+    def test_no_ticket(self):
+        f=fixture(); f["agents"][0]["tickets"]=[]
+        self.assertFalse(validate_forecast(f)["complete"])
+    def test_late_lock(self):
+        f=fixture(); f["saved_at"]="2026-11-07T16:00:00+09:00"
+        self.assertFalse(validate_forecast(f)["complete"])
+    def test_future_evidence(self):
+        f=fixture(); f["evidence"][0]["available_at"]="2026-11-07T14:00:00+09:00"
+        self.assertFalse(validate_forecast(f)["complete"])
+    def test_100_yen(self):
+        f=fixture(); f["agents"][0]["tickets"][0]["stake_yen"]=200
+        self.assertFalse(validate_forecast(f)["complete"])
+    def test_roi(self):
+        r=settle_forecast(fixture(),{"race_id":"synthetic-race","official_source":"synthetic fixture",
+           "payouts_per_100":{"単勝:1":320}})
+        self.assertEqual(r["by_agent"]["rio"]["roi_pct"],320)
+        self.assertIsNone(r["by_agent"]["EDITORIAL"]["roi_pct"])
+
+if __name__=="__main__": unittest.main()
