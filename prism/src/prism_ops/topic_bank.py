@@ -31,11 +31,11 @@ def add_candidate(bank, topic):
 
 def coverage_gate(roundtable):
     topics = roundtable.get("topics", [])
-    covered = {t.get("theme") for t in topics if t.get("utterances") and t.get("evidence_status")}
+    covered = {t.get("theme") for t in topics if t.get("utterances") and t.get("evidence_status") in ("verified", "missing_documented")}
     missing = [theme for theme in REQUIRED if theme not in covered]
     participants = roundtable.get("participants", [])
     missing_agents = [a.get("agent_id") for a in participants
-                      if not a.get("marks") or not (a.get("tickets") or a.get("pass_reason"))]
+                      if not a.get("agent_id") or not a.get("marks") or not (a.get("tickets") or a.get("pass_reason"))]
     return {"complete":not missing and not missing_agents and bool(participants),
             "missing_themes":missing, "missing_agent_conclusions":missing_agents,
             "theme_count":len(covered)}
