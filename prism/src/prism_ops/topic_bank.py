@@ -8,7 +8,7 @@ CATEGORIES = ("能力", "展開", "馬場", "コース", "枠", "騎手", "血�
 
 def normalize_topic(value):
     value = unicodedata.normalize("NFKC", value).casefold()
-    return re.sub(r"[\\s\\W_]+", "", value, flags=re.UNICODE)
+    return re.sub(r"[\s\W_]+", "", value, flags=re.UNICODE)
 
 def topic_id(category, hypothesis, scope=""):
     canonical = "|".join(map(normalize_topic, (category, hypothesis, scope)))
