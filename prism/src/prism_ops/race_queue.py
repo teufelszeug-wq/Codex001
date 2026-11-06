@@ -60,8 +60,8 @@ def snapshot_gate(forecast, receipt, now):
                 errors.append("TRUSTED_TIMESTAMP_AFTER_OFF")
         else:
             errors.append("TRUSTED_TIMESTAMP_MISSING")
-        if _aware(now) >= _aware(forecast["scheduled_off"]):
-            errors.append("RACE_ALREADY_STARTED")
+        # Historical audits must not invalidate an authentic pre-off receipt merely
+        # because the audit runs after the race. Trusted saved time is checked above.
     except (KeyError, TypeError, ValueError):
         errors.append("INVALID_OFF_TIME")
     return {"verified_pre":not errors, "errors":errors, "sha256":v["sha256"]}
