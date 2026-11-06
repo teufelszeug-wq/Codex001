@@ -50,6 +50,16 @@ def snapshot_gate(forecast, receipt, now):
     if not receipt or not receipt.get("immutable_location"):
         errors.append("IMMUTABLE_LOCATION_MISSING")
     try:
+        if _aware(forecast["saved_at"]) > _aware(now):
+            errors.append("FUTURE_SAVED_AT")
+        if receipt and receipt.get("trusted_saved_at"):
+            trusted = _aware(receipt["trusted_saved_at"])
+            if trusted > _aware(now):
+                errors.append("FUTURE_TRUSTED_TIMESTAMP")
+            if trusted >= _aware(forecast["scheduled_off"]):
+                errors.append("TRUSTED_TIMESTAMP_AFTER_OFF")
+        else:
+            errors.append("TRUSTED_TIMESTAMP_MISSING")
         if _aware(now) >= _aware(forecast["scheduled_off"]):
             errors.append("RACE_ALREADY_STARTED")
     except (KeyError, TypeError, ValueError):
