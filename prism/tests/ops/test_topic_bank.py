@@ -17,11 +17,20 @@ class TopicBankTests(unittest.TestCase):
     def test_missing_theme(self):
         self.assertFalse(coverage_gate({"topics":[],"participants":[]})["complete"])
     def test_all_topics_and_tickets(self):
-        r={"topics":[{"theme":x,"utterances":["議論"],"evidence_status":"source verified"} for x in REQUIRED],
+        r={"topics":[{"theme":x,"utterances":["議論"],"evidence_status":"verified"} for x in REQUIRED],
            "participants":[{"agent_id":"rio","marks":[{"horse_no":1,"mark":"◎"}],"tickets":[{"bet_type":"単勝","selection":[1],"stake_yen":100}]}]}
         self.assertTrue(coverage_gate(r)["complete"])
     def test_no_agent_ticket(self):
-        r={"topics":[{"theme":x,"utterances":["議論"],"evidence_status":"missing documented"} for x in REQUIRED],
+        r={"topics":[{"theme":x,"utterances":["議論"],"evidence_status":"missing_documented"} for x in REQUIRED],
            "participants":[{"agent_id":"rio","marks":[{"horse_no":1,"mark":"◎"}],"tickets":[]}]}
         self.assertFalse(coverage_gate(r)["complete"])
+    def test_fake_evidence_label_rejected(self):
+        r={"topics":[{"theme":x,"utterances":["議論"],"evidence_status":"unverified"} for x in REQUIRED],
+           "participants":[{"agent_id":"rio","marks":[{"horse_no":1,"mark":"◎"}],"pass_reason":"見送り"}]}
+        self.assertFalse(coverage_gate(r)["complete"])
+    def test_missing_agent_id_rejected(self):
+        r={"topics":[{"theme":x,"utterances":["議論"],"evidence_status":"verified"} for x in REQUIRED],
+           "participants":[{"marks":[{"horse_no":1,"mark":"◎"}],"pass_reason":"見送り"}]}
+        self.assertFalse(coverage_gate(r)["complete"])
+
 if __name__=="__main__": unittest.main()
