@@ -57,18 +57,25 @@ def validate_forecast(forecast):
             "agent_count": len(agents), "sha256": digest(forecast)}
 
 def settle_forecast(forecast, official_result):
+    """Strict per-agent settlement. Never infer an unlisted outcome is a loss.
+
+    official_result.ticket_outcomes must explicitly adjudicate each ticket.
+    A caller must separately verify the official result source and its timestamp.
+    """
+    from prism_ops.settlement_fail_closed import settle_ticket_outcomes
+
     gate = validate_forecast(forecast)
     if not gate["complete"]:
         raise ValueError("invalid PRE forecast: " + repr(gate["errors"]))
-    if official_result.get("race_id") != forecast.get("race_id") or not official_result.get("official_source"):
-        raise ValueError("race/source mismatch")
-    payouts = official_result.get("payouts_per_100", {})
+    if official_result.get("race_id") != forecast.get("race_id"):
+        raise ValueError("race mismatch")
+    if not official_result.get("official_source"):
+        raise ValueError("missing official source")
+    outcomes = official_result.get("ticket_outcomes")
+    if not isinstance(outcomes, dict):
+        raise ValueError("MISSING_TICKET_OUTCOMES")
     report = {}
     for agent in [*forecast["agents"], dict(forecast["editorial"], agent_id="EDITORIAL")]:
-        tickets = agent.get("tickets", [])
-        stake = sum(t["stake_yen"] for t in tickets)
-        returned = sum(payouts.get(t["bet_type"] + ":" + "-".join(map(str, t["selection"])), 0) for t in tickets)
-        report[agent["agent_id"]] = {"stake_yen": stake, "payout_yen": returned,
-            "net_yen": returned - stake, "roi_pct": round(100 * returned / stake, 4) if stake else None}
+        report[agent["agent_id"]] = settle_ticket_outcomes(agent.get("tickets", []), outcomes)
     return {"race_id": forecast["race_id"], "forecast_sha256": gate["sha256"],
             "official_source": official_result["official_source"], "by_agent": report}
