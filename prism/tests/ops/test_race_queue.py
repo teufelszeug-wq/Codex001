@@ -21,4 +21,19 @@ class QueueTests(unittest.TestCase):
     def test_receipt_missing(self):
         f={"race_id":"test","saved_at":"2026-11-06T23:00:00+09:00","scheduled_off":"2026-11-07T15:35:00+09:00","entries":[{"horse_no":1,"horse_name":"架空"}],"agents":[{"agent_id":"rio","picks":[{"horse_no":1,"mark":"◎"}],"tickets":[{"bet_type":"単勝","selection":[1],"stake_yen":100}]}],"editorial":{"picks":[{"horse_no":1,"mark":"◎"}],"pass_reason":"見送り"}}
         self.assertIn("PERSISTENCE_READBACK_FAILED",snapshot_gate(f,None,"2026-11-06T23:00:00+09:00")["errors"])
+    def test_verified_pre_survives_post_race_audit(self):
+        from prism_ops.forecast_completion_gate import digest
+        f={"race_id":"synthetic","saved_at":"2026-11-07T09:00:00+09:00",
+           "scheduled_off":"2026-11-07T10:00:00+09:00",
+           "entries":[{"horse_no":1,"horse_name":"架空"}],
+           "required_agent_ids":["rio"],
+           "agents":[{"agent_id":"rio","picks":[{"horse_no":1,"mark":"◎"}],
+                      "tickets":[{"bet_type":"単勝","selection":[1],"stake_yen":100}]}],
+           "editorial":{"picks":[{"horse_no":1,"mark":"◎"}],"pass_reason":"見送り"}}
+        receipt={"readback_sha256":digest(f),"external_timestamp_verified":True,
+                 "immutable_location":"synthetic://receipt",
+                 "trusted_saved_at":"2026-11-07T09:00:00+09:00"}
+        self.assertTrue(snapshot_gate(f,receipt,"2026-11-07T11:00:00+09:00")["verified_pre"])
+        late={**receipt,"trusted_saved_at":"2026-11-07T10:01:00+09:00"}
+        self.assertIn("TRUSTED_TIMESTAMP_AFTER_OFF",snapshot_gate(f,late,"2026-11-07T11:00:00+09:00")["errors"])
 if __name__=="__main__":unittest.main()
