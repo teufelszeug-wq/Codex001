@@ -27,10 +27,19 @@ def validate_forecast(forecast):
     if not runners or len(numbers) != len(set(numbers)) or any(not r.get("horse_name") for r in runners):
         errors.append("INVALID_ENTRIES")
     known = set(numbers)
+    if any(type(n) is not int or n <= 0 for n in numbers):
+        errors.append("INVALID_HORSE_NUMBER")
     agents = forecast.get("agents", [])
     ids = [a.get("agent_id") for a in agents]
     if not agents or any(not i for i in ids) or len(ids) != len(set(ids)):
         errors.append("INVALID_AGENTS")
+    roster = forecast.get("required_agent_ids")
+    if roster is None:
+        errors.append("REQUIRED_AGENT_ROSTER_MISSING")
+    elif not isinstance(roster, list) or not roster or len(roster) != len(set(roster)) or any(not x for x in roster):
+        errors.append("INVALID_REQUIRED_AGENT_ROSTER")
+    elif set(ids) != set(roster):
+        errors.append("AGENT_COVERAGE_INCOMPLETE")
     for agent in [*agents, dict(forecast.get("editorial") or {}, agent_id="EDITORIAL")]:
         name = agent["agent_id"]
         picks = agent.get("picks", [])
@@ -39,7 +48,12 @@ def validate_forecast(forecast):
             errors.append(name + ":INVALID_PICKS")
         if not tickets and not agent.get("pass_reason"):
             errors.append(name + ":NO_TICKETS_OR_PASS")
+        seen_tickets = set()
         for ticket in tickets:
+            key = (ticket.get("bet_type"), tuple(ticket.get("selection") or []))
+            if key in seen_tickets:
+                errors.append(name + ":DUPLICATE_TICKET")
+            seen_tickets.add(key)
             if ticket.get("stake_yen") != 100:
                 errors.append(name + ":STAKE_NOT_100")
             if not ticket.get("bet_type") or not ticket.get("selection") or any(n not in known for n in ticket.get("selection", [])):
