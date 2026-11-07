@@ -35,13 +35,19 @@ def validate_forecast(forecast):
                 errors.append("SOURCE_NOT_PRE_RACE")
         except (ValueError, TypeError, KeyError):
             errors.append("INVALID_SOURCE_AS_OF")
-    if "input_snapshot" in forecast:
+    if "input_snapshot" not in forecast:
+        errors.append("INPUT_SNAPSHOT_MISSING")
+    else:
         if not isinstance(forecast["input_snapshot"], (dict, list)):
             errors.append("INVALID_INPUT_SNAPSHOT")
         elif forecast.get("input_hash") != digest(forecast["input_snapshot"]):
             errors.append("INPUT_HASH_MISMATCH")
+    # References alone do not establish external timestamp or immutability.
+    # Verification must be supplied by a separate trusted persistence verifier.
     if not forecast.get("immutable_ref") or not forecast.get("external_timestamp_proof"):
         errors.append("PRE_PROVENANCE_UNVERIFIED")
+    if forecast.get("persistence_readback_verified") is not True or forecast.get("external_timestamp_verified") is not True:
+        errors.append("PRE_PROVENANCE_NOT_INDEPENDENTLY_VERIFIED")
     if forecast.get("results_exposed") is not False:
         errors.append("RESULT_EXPOSURE_NOT_EXCLUDED")
     runners = forecast.get("entries", [])
