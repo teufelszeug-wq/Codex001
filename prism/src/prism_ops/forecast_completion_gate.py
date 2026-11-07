@@ -22,6 +22,14 @@ def validate_forecast(forecast):
     except (KeyError, ValueError, TypeError):
         errors.append("INVALID_TIME")
         lock = None
+    if not forecast.get("race_id") or not forecast.get("input_hash") or not forecast.get("forecast_version"):
+        errors.append("MISSING_FORECAST_IDENTITY")
+    if not forecast.get("source_as_of"):
+        errors.append("SOURCE_AS_OF_MISSING")
+    if not forecast.get("immutable_ref") or not forecast.get("external_timestamp_proof"):
+        errors.append("PRE_PROVENANCE_UNVERIFIED")
+    if forecast.get("results_exposed") is not False:
+        errors.append("RESULT_EXPOSURE_NOT_EXCLUDED")
     runners = forecast.get("entries", [])
     numbers = [r.get("horse_no") for r in runners]
     if not runners or len(numbers) != len(set(numbers)) or any(not r.get("horse_name") for r in runners):
@@ -44,7 +52,7 @@ def validate_forecast(forecast):
         name = agent["agent_id"]
         picks = agent.get("picks", [])
         tickets = agent.get("tickets", [])
-        if not picks or any(not p.get("mark") or p.get("horse_no") not in known for p in picks):
+        if not picks or any(not p.get("mark") or p.get("horse_no") not in known or not p.get("horse_name") or p.get("horse_name") != next((r.get("horse_name") for r in runners if r.get("horse_no") == p.get("horse_no")), None) for p in picks):
             errors.append(name + ":INVALID_PICKS")
         if not tickets and not agent.get("pass_reason"):
             errors.append(name + ":NO_TICKETS_OR_PASS")
