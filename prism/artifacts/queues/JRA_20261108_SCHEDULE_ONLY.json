@@ -1,0 +1,336 @@
+{
+  "schema": "prism_official_schedule_queue_v1",
+  "source": "https://www.jra.go.jp/keiba/calendar2026/2026/11/1108.html",
+  "source_kind": "JRA_PRELIMINARY_PROGRAM_NOT_FINAL_RACECARD",
+  "captured_run_at": "2026-11-08T03:04:40+09:00",
+  "jra_scheduled_races": 36,
+  "nar_scheduled_races": null,
+  "official_final_denominator": null,
+  "notes": "All race_ids are provisional internal identifiers; not JRA official race keys. Do not promote to PRE without official entry/withdrawal verification and immutable proof.",
+  "races": [
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-01",
+      "venue": "FUKUSHIMA",
+      "race_no": 1,
+      "scheduled_off": "2026-11-08T09:45:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-01",
+      "venue": "TOKYO",
+      "race_no": 1,
+      "scheduled_off": "2026-11-08T09:55:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-01",
+      "venue": "KYOTO",
+      "race_no": 1,
+      "scheduled_off": "2026-11-08T10:05:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-02",
+      "venue": "FUKUSHIMA",
+      "race_no": 2,
+      "scheduled_off": "2026-11-08T10:15:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-02",
+      "venue": "TOKYO",
+      "race_no": 2,
+      "scheduled_off": "2026-11-08T10:25:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-02",
+      "venue": "KYOTO",
+      "race_no": 2,
+      "scheduled_off": "2026-11-08T10:35:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-03",
+      "venue": "FUKUSHIMA",
+      "race_no": 3,
+      "scheduled_off": "2026-11-08T10:45:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-03",
+      "venue": "TOKYO",
+      "race_no": 3,
+      "scheduled_off": "2026-11-08T10:55:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-03",
+      "venue": "KYOTO",
+      "race_no": 3,
+      "scheduled_off": "2026-11-08T11:05:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-04",
+      "venue": "FUKUSHIMA",
+      "race_no": 4,
+      "scheduled_off": "2026-11-08T11:15:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-04",
+      "venue": "TOKYO",
+      "race_no": 4,
+      "scheduled_off": "2026-11-08T11:25:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-04",
+      "venue": "KYOTO",
+      "race_no": 4,
+      "scheduled_off": "2026-11-08T11:35:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-05",
+      "venue": "FUKUSHIMA",
+      "race_no": 5,
+      "scheduled_off": "2026-11-08T12:05:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-05",
+      "venue": "TOKYO",
+      "race_no": 5,
+      "scheduled_off": "2026-11-08T12:15:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-05",
+      "venue": "KYOTO",
+      "race_no": 5,
+      "scheduled_off": "2026-11-08T12:25:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-06",
+      "venue": "FUKUSHIMA",
+      "race_no": 6,
+      "scheduled_off": "2026-11-08T12:40:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-06",
+      "venue": "TOKYO",
+      "race_no": 6,
+      "scheduled_off": "2026-11-08T12:50:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-06",
+      "venue": "KYOTO",
+      "race_no": 6,
+      "scheduled_off": "2026-11-08T13:00:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-07",
+      "venue": "FUKUSHIMA",
+      "race_no": 7,
+      "scheduled_off": "2026-11-08T13:10:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-07",
+      "venue": "TOKYO",
+      "race_no": 7,
+      "scheduled_off": "2026-11-08T13:20:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-07",
+      "venue": "KYOTO",
+      "race_no": 7,
+      "scheduled_off": "2026-11-08T13:30:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-08",
+      "venue": "FUKUSHIMA",
+      "race_no": 8,
+      "scheduled_off": "2026-11-08T13:40:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-08",
+      "venue": "TOKYO",
+      "race_no": 8,
+      "scheduled_off": "2026-11-08T13:50:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-08",
+      "venue": "KYOTO",
+      "race_no": 8,
+      "scheduled_off": "2026-11-08T14:00:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-09",
+      "venue": "FUKUSHIMA",
+      "race_no": 9,
+      "scheduled_off": "2026-11-08T14:10:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-09",
+      "venue": "TOKYO",
+      "race_no": 9,
+      "scheduled_off": "2026-11-08T14:20:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-09",
+      "venue": "KYOTO",
+      "race_no": 9,
+      "scheduled_off": "2026-11-08T14:30:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-10",
+      "venue": "FUKUSHIMA",
+      "race_no": 10,
+      "scheduled_off": "2026-11-08T14:45:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-10",
+      "venue": "TOKYO",
+      "race_no": 10,
+      "scheduled_off": "2026-11-08T14:55:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-10",
+      "venue": "KYOTO",
+      "race_no": 10,
+      "scheduled_off": "2026-11-08T15:05:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-11",
+      "venue": "FUKUSHIMA",
+      "race_no": 11,
+      "scheduled_off": "2026-11-08T15:20:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-11",
+      "venue": "TOKYO",
+      "race_no": 11,
+      "scheduled_off": "2026-11-08T15:30:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-11",
+      "venue": "KYOTO",
+      "race_no": 11,
+      "scheduled_off": "2026-11-08T15:45:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-FUKUSHIMA-12",
+      "venue": "FUKUSHIMA",
+      "race_no": 12,
+      "scheduled_off": "2026-11-08T16:00:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-TOKYO-12",
+      "venue": "TOKYO",
+      "race_no": 12,
+      "scheduled_off": "2026-11-08T16:10:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    },
+    {
+      "race_id": "JRA-20261108-KYOTO-12",
+      "venue": "KYOTO",
+      "race_no": 12,
+      "scheduled_off": "2026-11-08T16:25:00+09:00",
+      "entries_status": "NOT_VERIFIED",
+      "forecast_status": "NOT_VERIFIED",
+      "settlement_status": "NOT_VERIFIED"
+    }
+  ]
+}
