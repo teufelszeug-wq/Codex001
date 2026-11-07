@@ -26,6 +26,20 @@ def validate_forecast(forecast):
         errors.append("MISSING_FORECAST_IDENTITY")
     if not forecast.get("source_as_of"):
         errors.append("SOURCE_AS_OF_MISSING")
+    else:
+        try:
+            source_time = timestamp(forecast["source_as_of"])
+            if lock and source_time > lock:
+                errors.append("SOURCE_AFTER_SAVE")
+            if source_time >= timestamp(forecast["scheduled_off"]):
+                errors.append("SOURCE_NOT_PRE_RACE")
+        except (ValueError, TypeError, KeyError):
+            errors.append("INVALID_SOURCE_AS_OF")
+    if "input_snapshot" in forecast:
+        if not isinstance(forecast["input_snapshot"], (dict, list)):
+            errors.append("INVALID_INPUT_SNAPSHOT")
+        elif forecast.get("input_hash") != digest(forecast["input_snapshot"]):
+            errors.append("INPUT_HASH_MISMATCH")
     if not forecast.get("immutable_ref") or not forecast.get("external_timestamp_proof"):
         errors.append("PRE_PROVENANCE_UNVERIFIED")
     if forecast.get("results_exposed") is not False:
