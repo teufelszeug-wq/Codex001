@@ -1,0 +1,52 @@
+{
+  "run_id": "PRISM-20261107T230115+0900",
+  "run_at": "2026-11-07T23:01:15+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_210320_JST.json",
+  "official_denominator": {
+    "date": "2026-11-08",
+    "jra_scheduled_from_previous_audit": 36,
+    "nar": null,
+    "total": null,
+    "reverified_this_run": false
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "uncompleted_races": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "agent_financials": null,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "persistence_readback": {
+    "previous_audit": true,
+    "forecast_gate_source": true,
+    "prior_tokyo_input": true,
+    "notion_master_search": true,
+    "notion_master_body": false
+  },
+  "code_review_findings": [
+    "validate_forecast only checks external_timestamp_proof and immutable_ref truthiness, not independent authenticity or immutable storage readback",
+    "source_as_of is required but not checked for time ordering",
+    "input_hash presence checked but not matched against canonical entries/evidence input",
+    "no live prediction engine execution or official runner verification this run"
+  ],
+  "classification": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "next_queue": [
+    "2026-11-08 Fukushima 1R",
+    "2026-11-08 Tokyo 1R",
+    "2026-11-08 Kyoto 1R"
+  ],
+  "phase_A_I": "A partial; B-I incomplete",
+  "phase_A_F": "production acceptance unverified",
+  "note": "Audit only. No PRE, settlement, learning or paper produced. Code gate must not be considered external timestamp attestation."
+}

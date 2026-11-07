@@ -1,0 +1,54 @@
+{
+  "run_id": "PRISM-20261107T210320+0900",
+  "run_at": "2026-11-07T21:03:20+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_200844_JST.json",
+  "official_denominator": {
+    "date": "2026-11-08",
+    "JRA_scheduled": 36,
+    "Tokyo": 12,
+    "Kyoto": 12,
+    "Fukushima": 12,
+    "NAR": null,
+    "total": null,
+    "source": "https://www.jra.go.jp/keiba/calendar2026/2026/11/1108.html",
+    "caveat": "JRA program schedule, not final starters or cancellation-adjusted denominator"
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "uncompleted_races": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "agent_financials": null,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "notion_master_id": "3ed76efc-4029-8187-abd8-fd105b2d5a76",
+  "notion_master_body_verified": false,
+  "first_race_queue": [
+    {
+      "race": "Fukushima 1R",
+      "scheduled_off": "2026-11-08T09:45:00+09:00"
+    },
+    {
+      "race": "Tokyo 1R",
+      "scheduled_off": "2026-11-08T09:55:00+09:00"
+    },
+    {
+      "race": "Kyoto 1R",
+      "scheduled_off": "2026-11-08T10:05:00+09:00"
+    }
+  ],
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "phase_A_I": "A partial; B-I incomplete",
+  "phase_A_F": "production acceptance not verified",
+  "note": "JRA November 8 planned 36 races independently verified against official program. Full official runner cards, immutable PRE ledger, model integration and independent AI execution not verified. No prediction or settlement performed."
+}
