@@ -207,6 +207,27 @@ class FullContractWithLocalCrypto(unittest.TestCase):
         self.assertTrue(any("TRUSTED_VERIFIER_CONFIG_INCOMPLETE" in e
                             for e in checked["errors"]))
 
+    def test_revoked_tsa_signer_rejected_with_signed_crl(self):
+        self._run("openssl", "ca", "-config", "ca-crl.cnf",
+                  "-revoke", "tsa.pem")
+        self._run("openssl", "ca", "-config", "ca-crl.cnf",
+                  "-gencrl", "-out", "revoked.crl.pem")
+        self.context["tsa_crl_pem"] = self.root.joinpath(
+            "revoked.crl.pem").read_bytes()
+        checked = validate_forecast(self.forecast, self.receipt, self.proof,
+                                    verifier_context=self.context)
+        self.assertFalse(checked["complete"])
+        self.assertTrue(any("RFC3161_SIGNATURE_OR_IMPRINT_INVALID" in e
+                            for e in checked["errors"]))
+
+    def test_missing_issuer_crl_rejected(self):
+        del self.context["tsa_crl_pem"]
+        checked = validate_forecast(self.forecast, self.receipt, self.proof,
+                                    verifier_context=self.context)
+        self.assertFalse(checked["complete"])
+        self.assertTrue(any("TRUSTED_VERIFIER_CONFIG_INCOMPLETE" in e
+                            for e in checked["errors"]))
+
     def test_unverified_official_roster_rejects(self):
         self.context["official_entries"] = []
         checked = validate_forecast(self.forecast, self.receipt, self.proof,
