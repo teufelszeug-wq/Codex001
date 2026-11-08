@@ -83,7 +83,8 @@ class CaptureWithLocalTSA(unittest.TestCase):
             "s3_writer": self.writer, "s3_reader": self.reader,
             "s3_bucket": "synthetic", "s3_prefix": "pre/",
             "tsa_url": "https://tsa.test.invalid/local-ephemeral",
-            "tsa_ca_pem": self.fixture.ca, "tsa_policy_oid": "1.2.3.4.5",
+            "tsa_ca_pem": self.fixture.ca, "tsa_crl_pem": self.fixture.crl,
+            "tsa_policy_oid": "1.2.3.4.5",
             "clock": lambda: self.fixture.now,
         }
         args.update(kwargs)
@@ -99,6 +100,7 @@ class CaptureWithLocalTSA(unittest.TestCase):
             "manifest_version_id": captured["manifest_version_id"],
             "manifest_sha256": captured["manifest_sha256"],
             "official_context": self.official, "tsa_ca_pem": self.fixture.ca,
+            "tsa_crl_pem": self.fixture.crl,
             "tsa_policy_oid": "1.2.3.4.5",
         }
         args.update(kwargs)
