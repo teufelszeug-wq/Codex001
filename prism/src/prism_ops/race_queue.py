@@ -15,12 +15,24 @@ def next_work(races, now):
     current = _aware(now)
     eligible, blocked = [], []
     seen = set()
+    # A race with competing input revisions is ambiguous: never select the
+    # first revision by incidental list order for a PRE lock.
+    versions = {}
+    for record in races:
+        if isinstance(record, dict):
+            rid, version = record.get("race_id"), record.get("input_sha256")
+            if rid and version:
+                versions.setdefault(rid, set()).add(version)
+    conflicted = {rid for rid, hashes in versions.items() if len(hashes) > 1}
     for race in races:
         if not isinstance(race, dict):
             blocked.append({"race_id":None, "reason":"INVALID_RACE_RECORD"})
             continue
         rid = race.get("race_id")
         version = race.get("input_sha256")
+        if rid in conflicted:
+            blocked.append({"race_id":rid, "reason":"CONFLICTING_INPUT_VERSIONS"})
+            continue
         if not rid or not version or (rid, version) in seen:
             blocked.append({"race_id":rid, "reason":"MISSING_ID_HASH_OR_DUPLICATE"})
             continue
