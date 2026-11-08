@@ -28,21 +28,22 @@ class Integration(unittest.TestCase):
         self.forecast["input_hash"] = digest({})
         self.raw = json.dumps(self.forecast, ensure_ascii=False, sort_keys=True,
                               separators=(",", ":")).encode()
-        self.bundle = {"forecast_bytes":self.raw, "trusted_s3_client":S3(self.raw),
-                       "bucket":"b", "key":"k", "version_id":"v1",
-                       "tsa_response_der":b"tsr", "tsa_request_der":b"tsq", "trusted_tsa_ca_pem":b"CA"}
+        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA"}
+        self.bundle = {"forecast_bytes":self.raw, 
+                       "key":"pre/k", "version_id":"v1",
+                       "tsa_response_der":b"tsr", "tsa_request_der":b"tsq", }
 
     @patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt")
     def test_provider_readback_reaches_verifier(self, verify):
         verify.return_value = {"verified_by":"PRISM_TRUSTED_PERSISTENCE_VERIFIER"}
-        validate_forecast(self.forecast, verify.return_value, self.bundle)
+        validate_forecast(self.forecast, verify.return_value, self.bundle, verifier_context=self.context)
         self.assertEqual(verify.call_args.args[1], self.raw)
-        self.assertEqual(verify.call_args.args[4], "s3-version:b/k?versionId=v1")
+        self.assertEqual(verify.call_args.args[4], "s3-version:b/pre/k?versionId=v1")
 
     @patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt")
     def test_mutated_s3_object_blocks_before_crypto(self, verify):
-        self.bundle["trusted_s3_client"] = S3(self.raw + b"tamper")
-        errors = validate_forecast(self.forecast, None, self.bundle)["errors"]
+        self.context["s3_client"] = S3(self.raw + b"tamper")
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
         self.assertTrue(any("PERSISTENCE_READBACK_FAILED" in e for e in errors))
         verify.assert_not_called()
 
@@ -59,6 +60,20 @@ class Integration(unittest.TestCase):
         self.bundle["immutable_location"] = "s3-version:attacker/fake?versionId=v1"
         errors = validate_forecast(self.forecast, verify.return_value, self.bundle)["errors"]
         self.assertTrue(any("IMMUTABLE_LOCATION_MISMATCH" in e for e in errors))
+
+    def test_producer_supplied_s3_client_rejected(self):
+        self.bundle["trusted_s3_client"] = S3(self.raw)
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("UNTRUSTED_VERIFIER_CONFIG_IN_PROOF" in e for e in errors))
+
+    def test_missing_verifier_context_rejected(self):
+        errors = validate_forecast(self.forecast, None, self.bundle)["errors"]
+        self.assertTrue(any("TRUSTED_VERIFIER_CONTEXT_REQUIRED" in e for e in errors))
+
+    def test_key_outside_pinned_prefix_rejected(self):
+        self.bundle["key"] = "outside/k"
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("UNTRUSTED_OBJECT_KEY" in e for e in errors))
 
 if __name__ == "__main__":
     unittest.main()
