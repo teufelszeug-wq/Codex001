@@ -64,7 +64,7 @@ class M4ReceiptTests(unittest.TestCase):
         import hashlib
         imprint = hashlib.sha256(RAW).digest()
         rows = ["%04x - %s  %s" % (i, " ".join("%02x" % b for b in imprint[i:i+16]), "."*16) for i in (0,16)]
-        query = "Hash Algorithm: sha256\\nMessage data:\\n" + "\\n".join(rows) + "\\n"
+        query = "Hash Algorithm: sha256\nMessage data:\n" + "\n".join(rows) + "\n"
         run.side_effect = [type("R", (), {"returncode": 0, "stdout": query})(),
                            type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
