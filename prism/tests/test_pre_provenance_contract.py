@@ -44,6 +44,34 @@ class PreProvenanceContract(unittest.TestCase):
         self.assertTrue(any(x.startswith("CRYPTOGRAPHIC_PROOF_INVALID")
                             for x in validate_forecast(p, proof_bundle=forged)["errors"]))
 
+    def test_provenance_is_not_required_inside_signed_forecast(self):
+        p = sample()
+        p.pop("immutable_ref", None)
+        p.pop("external_timestamp_proof", None)
+        result = validate_forecast(p)
+        self.assertNotIn("PRE_PROVENANCE_UNVERIFIED", result["errors"])
+        self.assertIn("CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING", result["errors"])
+
+    def test_signed_bytes_must_match_validated_forecast(self):
+        from unittest.mock import patch
+        import json
+        p = sample()
+        other = dict(p, forecast_version="ANOTHER_VERSION")
+        signed = json.dumps(other, ensure_ascii=False, sort_keys=True,
+                            separators=(",", ":")).encode()
+        bundle = {"forecast_bytes": signed, "readback_bytes": signed,
+                  "tsa_response_der": b"token", "trusted_tsa_ca_pem": b"ca",
+                  "immutable_location": "git-commit:dummy"}
+        receipt = {"verified_by": "PRISM_TRUSTED_PERSISTENCE_VERIFIER",
+                   "race_id": p["race_id"], "forecast_sha256": digest(p),
+                   "trusted_saved_at": "2026-11-08T08:02:00+09:00",
+                   "immutable_location": "git-commit:dummy",
+                   "readback_verified": True, "timestamp_verified": True}
+        with patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt",
+                   return_value=receipt):
+            result = validate_forecast(p, receipt, bundle)
+        self.assertIn("SIGNED_FORECAST_PAYLOAD_MISMATCH", result["errors"])
+
     def test_missing_snapshot_fails(self):
         p = sample(); del p["input_snapshot"]
         self.assertIn("INPUT_SNAPSHOT_MISSING", validate_forecast(p)["errors"])
