@@ -36,8 +36,11 @@ def audit_run(races, now, saved_forecasts=None, official_denominator=None,
         official_denominator = None
     if official_denominator is not None and len(verified_by_race) > official_denominator:
         raise ValueError("PRE_COUNT_EXCEEDS_DENOMINATOR")
+    # A caller-supplied integer cannot authenticate an official JRA/NAR
+    # universe. Mark its count as supplied, never as provider-verified.
     return {"official_race_denominator":official_denominator,
-            "official_denominator_verified":official_denominator is not None,
+            "official_denominator_supplied":official_denominator is not None,
+            "official_denominator_verified":False,
             "eligible_races":[r["race_id"] for r in queue["eligible"]],
             "blocked":queue["blocked"],
             "verified_pre_count":len(verified_by_race),
