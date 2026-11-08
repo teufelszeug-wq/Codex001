@@ -33,6 +33,7 @@ def build_parser():
         p.add_argument("--prefix", required=True)
         p.add_argument("--region")
         p.add_argument("--tsa-ca-pem", required=True)
+        p.add_argument("--tsa-crl-pem", required=True)
         p.add_argument("--tsa-policy-oid", required=True)
         if op == "capture":
             p.add_argument("--forecast", required=True)
@@ -58,6 +59,7 @@ def main(argv=None):
     reader = session.client("s3")
     official = _load_json(args.official_context)
     ca = Path(args.tsa_ca_pem).read_bytes()
+    crl = Path(args.tsa_crl_pem).read_bytes()
     if args.operation == "capture":
         forecast = _load_json(args.forecast)
         result = capture_pre_candidate(
@@ -66,6 +68,7 @@ def main(argv=None):
             s3_bucket=args.bucket, s3_prefix=args.prefix,
             tsa_url=args.tsa_url, tsa_ca_pem=ca,
             tsa_policy_oid=args.tsa_policy_oid,
+            tsa_crl_pem=crl,
             retention_days=args.retention_days)
     else:
         pointer = _load_json(args.manifest_pointer)
@@ -77,7 +80,7 @@ def main(argv=None):
             manifest_version_id=pointer["manifest_version_id"],
             manifest_sha256=pointer["manifest_sha256"],
             official_context=official, tsa_ca_pem=ca,
-            tsa_policy_oid=args.tsa_policy_oid)
+            tsa_crl_pem=crl, tsa_policy_oid=args.tsa_policy_oid)
     json.dump(result, sys.stdout, ensure_ascii=False, sort_keys=True)
     sys.stdout.write("\n")
 
