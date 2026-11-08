@@ -25,8 +25,15 @@
     "source_commit": "772162c0eb425bd24c604f33df1ba80efb2da9e0",
     "test_commit": "4dee5052f2a0938383b3282226c610a51fcf235e",
     "tests_executed": false,
-    "receipt_verifier_implemented": false,
-    "description": "Self-attested booleans cannot complete PRE; a trusted receipt is required, but a cryptographically authenticated verifier is not yet implemented."
+    "receipt_verifier_implemented": true,
+    "description": "Self-attested booleans cannot complete PRE; a trusted receipt is required, but a cryptographically authenticated verifier is not yet implemented.",
+    "latest_code_commit": "9b920268887543dd7267035646c8e36437933761",
+    "latest_test_commit": "b0139d95e94e6fa01186a607850d7f589698d31a",
+    "ci_workflow_commit": "ede26e578f1e759aac037db076552762f1f6bab8",
+    "ci_run_observed": false,
+    "receipt_verifier_production_ready": false,
+    "immutable_storage_identity_verified": false,
+    "tsa_request_implemented": false
   },
   "milestones": {
     "M0": {
@@ -51,8 +58,8 @@
     },
     "M4": {
       "phase": "D",
-      "state": "BLOCKED",
-      "blocker": "trusted external receipt verifier and pre-off storage"
+      "state": "PARTIAL_IMPLEMENTATION_BLOCKED",
+      "blocker": "real TSA issuance, trusted anchor/policy, independent immutable storage retrieval, CI evidence and real pre-off end-to-end"
     },
     "M5": {
       "phase": "D",
@@ -82,11 +89,11 @@
   },
   "race_queue_policy": "Select first strictly future scheduled_off; schedule-only rows are not official runner verification; no post-off PRE",
   "next_actions": [
-    "Run regression suite and fix failures",
-    "Build authenticated trusted timestamp/readback verifier",
-    "Ingest official upcoming racecard and scratches before off",
-    "Run real model and complete specialist outputs",
-    "Lock, readback, settle and publish only after gates pass"
+    "Run CI and inspect logs, fix failures",
+    "Pin approved TSA trust anchors and independently verify storage version/retention",
+    "Implement RFC3161 request+nonce and external issuance",
+    "Execute upcoming race complete pre-off lock with verified immutable readback",
+    "Only then settle official payouts and advance M5-M9"
   ],
   "classification": [
     "PREDICTION_INCOMPLETE",
