@@ -100,7 +100,7 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
             prefix = verifier_context["key_prefix"]
             key = proof_bundle["key"]
             if (not isinstance(prefix, str) or not prefix or
-                    not isinstance(key, str) or not key.startswith(prefix) or
+                    not prefix.endswith("/") or not isinstance(key, str) or not key.startswith(prefix) or
                     ".." in key.split("/") or key.startswith("/")):
                 raise ValueError("UNTRUSTED_OBJECT_KEY")
             original = proof_bundle["forecast_bytes"]
