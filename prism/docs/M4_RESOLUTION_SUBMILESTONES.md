@@ -96,3 +96,12 @@ No new race_id, verified PRE or official settlement established in this engineer
 - **Important limitation:** `verifier_context` is an API argument, not an authenticated process boundary. Only a separately deployed verifier with locked-down secrets and provider permissions can establish actual independent trust.
 - **Next:** verify tests in runner, enforce verifier-owned trusted configuration via process/service boundary, pin TSA signer policy and validate real signed request/response, then run live WORM and future-race acceptance.
 - Official race queue, Notion master and real PRE ledger not reconciled this engineering pass; no verified new PRE/settlement.
+
+## 2026-11-08 12:09 JST — PRE saved-at binding hardening
+- Re-read canonical M4 gate, RFC3161 tests and persistent M4 ledger.
+- Found that RFC3161 token genTime was checked against source_as_of and scheduled_off, but not forecast saved_at. A token issued *before* the claimed save time could therefore pass time-window validation.
+- Added fail-closed `RFC3161_TIMESTAMP_BEFORE_FORECAST_SAVE` rejection in provenance verifier (commit `5c9519ada23ed36ad9fb30af756b8fd5703baf21`).
+- Added regression with source 10:00 JST, saved_at 10:30 JST, token 10:15 JST, scheduled_off 12:00 JST; must reject (commit `2693d3064308a9ba449098b903ef0d96a8957c44`).
+- **Verification level:** committed test, CI not yet observed; no claim that actual TSA token or WORM object was verified.
+- **Priority replan:** (1) run suite on current SHA and fix regressions, (2) deploy independent verifier and pin trust policy, (3) validate live TSA and S3 WORM, (4) official future-race full AI PRE and readback, (5) official result settlement and recovery rehearsal.
+- **Operations:** no newly verified PRE race_id or official settlement observed. Official denominator, Notion Master and pending race ledger remain unverified in this run, not zero.
