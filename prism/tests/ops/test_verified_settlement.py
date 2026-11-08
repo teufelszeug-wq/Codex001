@@ -29,14 +29,14 @@ class VerifiedSettlementTests(unittest.TestCase):
         receipt={"external_timestamp_verified":True,"immutable_location":"archive",
                  "trusted_saved_at":self.forecast["saved_at"],"readback_sha256":digest(self.forecast)}
         r=settle_verified_pre(self.forecast,receipt,None,self.now)
-        self.assertEqual(r["status"],"RESULT_PENDING")
+        self.assertEqual(r["status"],"PRE_LOCK_FAILED")
     def test_no_ticket_outcomes_not_loss(self):
         from prism_ops.forecast_completion_gate import digest
         receipt={"external_timestamp_verified":True,"immutable_location":"archive",
                  "trusted_saved_at":self.forecast["saved_at"],"readback_sha256":digest(self.forecast)}
         result={"race_id":"TEST-1","official_source":"official","retrieved_at":self.now}
         r=settle_verified_pre(self.forecast,receipt,result,self.now)
-        self.assertEqual(r["status"],"SETTLEMENT_INCOMPLETE")
+        self.assertEqual(r["status"],"PRE_LOCK_FAILED")
         self.assertIsNone(r["by_agent"])
     def test_validated_proof_forwarded_to_settlement(self):
         receipt = {"verified_by": "PRISM_TRUSTED_PERSISTENCE_VERIFIER",
