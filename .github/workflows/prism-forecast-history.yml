@@ -4,6 +4,8 @@ on:
     paths:
       - 'prism/src/operations/**'
       - 'prism/tests/operations/**'
+      - 'prism/scripts/engine_full_field_bridge.py'
+      - 'prism/src/prism_engine/**'
       - '.github/workflows/prism-forecast-history.yml'
   workflow_dispatch:
 jobs:
@@ -17,5 +19,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate Python engine full-field bridge
+        run: python -m unittest discover -s prism/tests/operations -p 'test_*.py' -v
       - name: Validate forecast history contract
         run: node --test prism/tests/operations/*.test.mjs
