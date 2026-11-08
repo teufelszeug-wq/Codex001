@@ -13,7 +13,7 @@ def digest(data):
     raw = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-def validate_forecast(forecast):
+def validate_forecast(forecast, trusted_receipt=None):
     errors = []
     try:
         lock = timestamp(forecast["saved_at"])
@@ -46,8 +46,20 @@ def validate_forecast(forecast):
     # Verification must be supplied by a separate trusted persistence verifier.
     if not forecast.get("immutable_ref") or not forecast.get("external_timestamp_proof"):
         errors.append("PRE_PROVENANCE_UNVERIFIED")
-    if forecast.get("persistence_readback_verified") is not True or forecast.get("external_timestamp_verified") is not True:
+    # Self-attested flags cannot establish external timestamp or readback.
+    # A separate trusted verifier must provide the receipt; this module cannot mint it.
+    if not isinstance(trusted_receipt, dict) or trusted_receipt.get("verified_by") != "PRISM_TRUSTED_PERSISTENCE_VERIFIER":
         errors.append("PRE_PROVENANCE_NOT_INDEPENDENTLY_VERIFIED")
+    else:
+        if trusted_receipt.get("race_id") != forecast.get("race_id") or trusted_receipt.get("forecast_sha256") != digest(forecast):
+            errors.append("TRUSTED_RECEIPT_FORECAST_MISMATCH")
+        try:
+            if timestamp(trusted_receipt["trusted_saved_at"]) >= timestamp(forecast["scheduled_off"]):
+                errors.append("TRUSTED_TIMESTAMP_AFTER_OFF")
+        except (KeyError, ValueError, TypeError):
+            errors.append("TRUSTED_TIMESTAMP_MISSING")
+        if not trusted_receipt.get("immutable_location") or trusted_receipt.get("readback_verified") is not True or trusted_receipt.get("timestamp_verified") is not True:
+            errors.append("TRUSTED_RECEIPT_INCOMPLETE")
     if forecast.get("results_exposed") is not False:
         errors.append("RESULT_EXPOSURE_NOT_EXCLUDED")
     runners = forecast.get("entries", [])
