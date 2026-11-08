@@ -48,6 +48,21 @@ class TrustedReadbackTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "INVALID_READBACK_SIZE_LIMIT"):
             verified_s3_readback(self.s3, **dict(self.kw, max_bytes=True))
 
+    def test_declared_content_length_too_large_rejected(self):
+        self.s3.get_object.return_value["ContentLength"] = 100
+        with self.assertRaisesRegex(ValueError, "READBACK_CONTENT_LENGTH_INVALID"):
+            verified_s3_readback(self.s3, **dict(self.kw, max_bytes=16))
+
+    def test_truncated_stream_rejected(self):
+        self.s3.get_object.return_value["ContentLength"] = len(self.raw) + 1
+        with self.assertRaisesRegex(ValueError, "READBACK_CONTENT_LENGTH_MISMATCH"):
+            verified_s3_readback(self.s3, **self.kw)
+
+    def test_declared_length_matching_stream_accepted(self):
+        self.s3.get_object.return_value["ContentLength"] = len(self.raw)
+        result = verified_s3_readback(self.s3, **self.kw)
+        self.assertEqual(result["readback_bytes"], self.raw)
+
     def test_short_retention_rejected(self):
         self.s3.get_object_retention.return_value["Retention"]["RetainUntilDate"] = self.until-timedelta(days=2)
         with self.assertRaisesRegex(ValueError, "WORM_RETENTION_UNVERIFIED"):
