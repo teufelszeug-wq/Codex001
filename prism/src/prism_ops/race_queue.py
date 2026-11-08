@@ -38,10 +38,10 @@ def next_work(races, now):
     eligible.sort(key=lambda r: _aware(r["scheduled_off"]))
     return {"eligible":eligible,"blocked":blocked}
 
-def snapshot_gate(forecast, receipt, now, proof_bundle=None):
+def snapshot_gate(forecast, receipt, now, proof_bundle=None, *, verifier_context=None):
     """A saved file and a claimed timestamp alone do not constitute verified PRE."""
     from prism_ops.forecast_completion_gate import validate_forecast
-    v = validate_forecast(forecast, receipt, proof_bundle)
+    v = validate_forecast(forecast, receipt, proof_bundle, verifier_context=verifier_context)
     errors = list(v["errors"])
     if not receipt or receipt.get("forecast_sha256") != v["sha256"]:
         errors.append("PERSISTENCE_READBACK_FAILED")
