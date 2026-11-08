@@ -59,7 +59,7 @@ def _check_official(forecast, official, *, now):
 
 def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
                           s3_bucket, s3_prefix, tsa_url, tsa_ca_pem,
-                          tsa_policy_oid, retention_days=30, clock=None):
+                          tsa_policy_oid, tsa_crl_pem, retention_days=30, clock=None):
     """Capture unsigned forecast bytes, third-party TSR and durable proof manifest.
 
     This method requires independently sourced official_context and trust anchor
@@ -85,6 +85,8 @@ def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
         raise ValueError("UNTRUSTED_OBJECT_KEY")
     if not isinstance(tsa_policy_oid, str) or not tsa_policy_oid:
         raise ValueError("TSA_POLICY_UNCONFIGURED")
+    if not isinstance(tsa_crl_pem, bytes) or b"-----BEGIN X509 CRL-----" not in tsa_crl_pem:
+        raise ValueError("TRUSTED_TSA_CRL_INVALID")
     _check_official(forecast, official_context, now=now)
     shape = validate_forecast(forecast)
     expected = {"CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING",
@@ -108,14 +110,15 @@ def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
     receipt = verify_rfc3161_receipt(
         raw, reloaded["readback_bytes"], resp_der, tsa_ca_pem,
         reloaded["immutable_location"], request_der=req_der,
-        required_policy_oid=tsa_policy_oid)
+        required_policy_oid=tsa_policy_oid, trusted_crl_pem=tsa_crl_pem)
     proof_bundle = {"forecast_bytes": raw, "key": forecast_key,
                     "version_id": forecast_obj["version_id"],
                     "tsa_request_der": req_der, "tsa_response_der": resp_der}
     verifier_ctx = dict(official_context,
                         s3_client=s3_reader, bucket=s3_bucket,
                         key_prefix=s3_prefix, tsa_ca_pem=tsa_ca_pem,
-                        tsa_policy_oid=tsa_policy_oid)
+                        tsa_policy_oid=tsa_policy_oid,
+                        tsa_crl_pem=tsa_crl_pem)
     accepted = validate_forecast(
         forecast, receipt, proof_bundle, verifier_context=verifier_ctx)
     if not accepted["complete"]:
@@ -132,6 +135,7 @@ def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
         "tsa_request_der_b64": base64.b64encode(req_der).decode("ascii"),
         "tsa_response_der_b64": base64.b64encode(resp_der).decode("ascii"),
         "tsa_ca_sha256": _sha256(tsa_ca_pem),
+        "tsa_crl_sha256": _sha256(tsa_crl_pem),
         "tsa_policy_oid": tsa_policy_oid,
         "receipt": receipt,
         "official_observation_at": official_context["official_as_of"],
@@ -162,7 +166,7 @@ def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
 def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
                                    manifest_key, manifest_version_id,
                                    manifest_sha256, official_context,
-                                   tsa_ca_pem, tsa_policy_oid):
+                                   tsa_ca_pem, tsa_crl_pem, tsa_policy_oid):
     """Re-read both immutable objects in a separate trusted process/run.
 
     Returns a cryptographic acceptance result. Production requires the official
@@ -182,7 +186,8 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
     if _canonical_json(manifest) != raw or manifest.get("schema") != "PRISM_M4_CANDIDATE_V1":
         raise ValueError("INVALID_MANIFEST")
     if (manifest.get("tsa_policy_oid") != tsa_policy_oid or
-            manifest.get("tsa_ca_sha256") != _sha256(tsa_ca_pem)):
+            manifest.get("tsa_ca_sha256") != _sha256(tsa_ca_pem) or
+            manifest.get("tsa_crl_sha256") != _sha256(tsa_crl_pem)):
         raise ValueError("TSA_TRUST_POLICY_MISMATCH")
     if (manifest.get("race_id") != official_context.get("official_race_id") or
             manifest.get("official_observation_at") != official_context.get("official_as_of")):
@@ -206,7 +211,7 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
     }
     ctx = dict(official_context, s3_client=s3_reader, bucket=s3_bucket,
                key_prefix=s3_prefix, tsa_ca_pem=tsa_ca_pem,
-               tsa_policy_oid=tsa_policy_oid)
+               tsa_crl_pem=tsa_crl_pem, tsa_policy_oid=tsa_policy_oid)
     result = validate_forecast(
         forecast, manifest["receipt"], proof_bundle, verifier_context=ctx)
     if not result["complete"]:
