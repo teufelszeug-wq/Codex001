@@ -8,10 +8,12 @@ import hashlib
 from datetime import datetime, timezone
 
 def verified_s3_readback(s3, *, bucket, key, version_id, expected_sha256,
-                         min_retention_until):
+                         min_retention_until, max_bytes=16 * 1024 * 1024):
     if not all(isinstance(v, str) and v for v in
                (bucket, key, version_id, expected_sha256)):
         raise ValueError("PINNED_OBJECT_IDENTITY_REQUIRED")
+    if type(max_bytes) is not int or max_bytes < 1:
+        raise ValueError("INVALID_READBACK_SIZE_LIMIT")
     if version_id == "null":
         raise ValueError("VERSION_ID_MISSING")
     if len(expected_sha256) != 64 or any(c not in "0123456789abcdef" for c in expected_sha256):
@@ -28,7 +30,10 @@ def verified_s3_readback(s3, *, bucket, key, version_id, expected_sha256,
     obj = s3.get_object(Bucket=bucket, Key=key, VersionId=version_id)
     if obj.get("VersionId") != version_id:
         raise ValueError("VERSION_READBACK_MISMATCH")
-    raw = obj["Body"].read()
+    # Never download an unbounded object into the trusted verifier process.
+    raw = obj["Body"].read(max_bytes + 1)
+    if not isinstance(raw, bytes) or len(raw) > max_bytes:
+        raise ValueError("READBACK_SIZE_LIMIT_EXCEEDED")
     if hashlib.sha256(raw).hexdigest() != expected_sha256:
         raise ValueError("PERSISTENCE_READBACK_FAILED")
     return {"forecast_bytes": raw, "readback_bytes": raw,
