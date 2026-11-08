@@ -147,6 +147,40 @@ No new race_id, verified PRE or official settlement established in this engineer
 - **No claim of successful rerun:** workflow run for `9bc3fcaf` was not yet returned at inspection time. Monitor new run and repair actual failures before proceeding. CI PASS for current SHA remains UNVERIFIED.
 - Prioritized next: (1) capture new workflow result/logs and fix remaining failures, (2) independent trusted official feed and snapshot runner, (3) live TSA and WORM provider, (4) actual future race PRE and official settlement. No new live race accepted in this continuation.
 
+## 2026-11-08 consolidated cross-system status (Notion/GitHub reconciliation)
+
+### Sources of truth and name mapping
+- Notion [6-PHASE Master](https://app.notion.com/p/3ed76efc40298187abd8fd105b2d5a76) is the project-governance canonical record. Phase A (data and identity), B (model and ticket), C (deliberation and learning), D (temporal audit and performance validation), E (M-PAPER), F (daily operations and production). `M4.0–M4.9` remains a **cross-phase forecast-provenance acceptance track**, not an additional top-level Phase and not equivalent to the historical model M4.
+- GitHub `prism/src`, tests, schema, immutable manifests and actual CI outputs govern implementation claims. Notion `WORKING`/partial Golden report titles alone must not be counted as externally VERIFIED_PRE.
+- GitHub **PR #7** is Draft and unmerged into `main`. Its head at inspection was `1174e96bf46d973a9972b6f7e7d9ade7de3df977`; branch code must not be described as deployed or merged.
+- The current commit has real successful contract CI: Actions **42445561997 (pull_request)** and **42445557670 (push)**, both conclusion `success` on `1174e96b` at 2026-11-08 **13:08 JST**. This supersedes historical CI pending/failure entries **for this SHA only**. Those prior entries remain as historical execution evidence.
+- The CI workflow executes selected mocked/contract Python test suites, **not an exhaustive repo-level test suite**, real TSA, real S3 WORM, or a genuine future-race operation. Therefore M4.0 **selected contract CI PASS**, but M4 overall remains **NOT VERIFIED/NOT PRODUCTION**.
+
+### P0 acceptance blockers (must not declare complete)
+1. Independent, authenticated official JRA/NAR schedule, runner, scratch and result-embargo ingest with time provenance.
+2. RFC3161 real TSQ/TSR issuance, CA/certificate EKU/policy/revocation, nonce and signed genTime proof.
+3. Real provider S3 Object Lock COMPLIANCE, version ID, retention, and independent-process pinned readback.
+4. Automated pre-off final forecast containing all registered AI marks, names, 100-yen tickets or explicit pass, followed by post-result official settlement and traceable audit.
+5. Durable scheduler, clock trust, retry/crash recovery and monitoring.
+
+### Status definitions and evidence policy
+- `DESIGN` = specified; `IMPLEMENTED` = committed; `EXECUTED` = an identified run with artifacts; `VERIFIED` = independently checked acceptance evidence; `PRODUCTION` = sustained live acceptance.
+- A green mocked contract CI must not be promoted to `VERIFIED_PRE`. Historical records with `WORKING`, `PRE-ODDS`, `partial Golden` or `RUN` labels remain separate from RFC3161+WORM backed races until matching proof bytes and chain are demonstrated.
+- Published public GitHub must not receive credentials or rights-restricted raw official data.
+- Report official race denominator, genuine pre-off VERIFIED_PRE, full-AI picks, official settlement, per-agent ROI, completed newspapers, actually measured learning and exact persistent locations separately; missing/unknown is `UNVERIFIED`, not zero.
+
+### Current verified inspection
+- Latest observed GitHub CI: PASS on `1174e96b` (run 42445561997). PR draft and unmerged.
+- No additional genuinely authenticated future-race VERIFIED_PRE, official settlement, newspaper completion or learning event established during this reconciliation.
+- Existing Notion MASTER content dates to at least 2026-11-06; previous Oct Snapshot entries were explicitly mixed `WORKING`/partial Golden, not evidence for present live M4 success.
+
+### Cross-system workflow
+- **Plan**: Notion 6-Phase Master + M4 acceptance subsection.
+- **Build**: GitHub branch and code review PR #7; update versioned tests/contracts/manifest.
+- **Check**: GitHub Actions with exact SHA and run ID; separate external evidence packet for TSA/WORM.
+- **Operate**: future official race inputs → independent pre-off snapshot → verified timestamp/WORM → results embargo → official settlement.
+- **Publish**: Notion status from observed GitHub evidence, with record date and links, without overwriting historical runs.
+
 ## 2026-11-08 — GitHub CI error log verified and patched
 - Read GitHub Actions **run 42445419461**, job **128623198979**, conclusion **failure**. First suite executed **25 tests: 24 passed, 1 failed**. Sole failure `test_reject_mocked_timestamp_after_off` due to a *literal backslash-n* in the mock timestamp output; `RFC3161_TIME_UNPARSEABLE` occurred before the intended after-off rejection. Corrected fixture to actual newline, commit `22e065c3`.
 - Reviewed trusted S3 object key policy; fixed prefix-confusion case by requiring a slash-terminated verifier-owned `key_prefix` (e.g. `pre/` not `pre`); commit `c552a9eb`. Added adversarial regression `test_prefix_without_path_boundary_rejected`, commit `195e522f`.
