@@ -52,7 +52,7 @@ class ParserTests(unittest.TestCase):
             type("R", (), {"returncode":0,"stdout":output_for(self.raw)})(),
             type("R", (), {"returncode":0,"stdout":""})(),
             type("R", (), {"returncode":0,
-                            "stdout":"Time stamp: Nov  8 01:15:00 2026 GMT\\n"})(),
+                            "stdout":"Time stamp: Nov  8 01:15:00 2026 GMT\n"})(),
         ]
         with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_BEFORE_FORECAST_SAVE"):
             verify_rfc3161_receipt(self.raw, self.raw, b"response", b"ca",
