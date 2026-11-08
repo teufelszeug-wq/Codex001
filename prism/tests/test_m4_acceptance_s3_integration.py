@@ -30,7 +30,7 @@ class Integration(unittest.TestCase):
                               separators=(",", ":")).encode()
         self.bundle = {"forecast_bytes":self.raw, "trusted_s3_client":S3(self.raw),
                        "bucket":"b", "key":"k", "version_id":"v1",
-                       "tsa_response_der":b"tsr", "trusted_tsa_ca_pem":b"CA"}
+                       "tsa_response_der":b"tsr", "tsa_request_der":b"tsq", "trusted_tsa_ca_pem":b"CA"}
 
     @patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt")
     def test_provider_readback_reaches_verifier(self, verify):
