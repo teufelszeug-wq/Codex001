@@ -5,14 +5,14 @@ from unittest.mock import patch
 from prism_ops.pre_provenance_verifier import verify_rfc3161_receipt
 
 FORECAST = {"race_id": "TEST-RACE", "scheduled_off": "2026-11-09T10:00:00+09:00",
-            "source_as_of": "2026-11-09T09:00:00+09:00"}
+            "source_as_of": "2026-11-09T09:00:00+09:00", "saved_at": "2026-11-09T09:01:00+09:00"}
 RAW = json.dumps(FORECAST, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 
 class M4ReceiptTests(unittest.TestCase):
     def call(self, **kw):
         args = dict(forecast_bytes=RAW, readback_bytes=RAW,
                     tsa_response_der=b"not-a-real-token", trusted_tsa_ca_pem=b"not-a-real-ca",
-                    immutable_location="git-commit:test")
+                    immutable_location="git-commit:test", request_der=b"tsq")
         args.update(kw)
         return verify_rfc3161_receipt(**args)
 
@@ -35,14 +35,24 @@ class M4ReceiptTests(unittest.TestCase):
 
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
     def test_reject_invalid_signature(self, run):
-        run.return_value.returncode = 1
+        import hashlib
+        imprint = hashlib.sha256(RAW).digest()
+        rows = ["%04x - %s  %s" % (i, " ".join("%02x" % b for b in imprint[i:i+16]), "."*16) for i in (0,16)]
+        query = "Hash Algorithm: sha256\\nMessage data:\\n" + "\\n".join(rows) + "\\n"
+        run.side_effect = [type("R", (), {"returncode":0,"stdout":query})(),
+                           type("R", (), {"returncode":1,"stdout":""})()]
         with self.assertRaisesRegex(ValueError, "RFC3161_SIGNATURE_OR_IMPRINT_INVALID"):
             self.call()
 
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
     def test_accept_only_mocked_valid_rfc3161_before_off(self, run):
         # Unit test only: mocks do not prove real cryptographic verification.
-        run.side_effect = [type("R", (), {"returncode": 0, "stdout": ""})(),
+        import hashlib
+        imprint = hashlib.sha256(RAW).digest()
+        rows = ["%04x - %s  %s" % (i, " ".join("%02x" % b for b in imprint[i:i+16]), "."*16) for i in (0,16)]
+        query = "Hash Algorithm: sha256\\nMessage data:\\n" + "\\n".join(rows) + "\\n"
+        run.side_effect = [type("R", (), {"returncode": 0, "stdout": query})(),
+                           type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
                                "stdout": "Time stamp: Nov 9 00:30:00 2026 GMT\n"})()]
         receipt = self.call()
