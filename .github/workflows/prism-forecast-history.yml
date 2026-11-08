@@ -6,6 +6,7 @@ on:
       - 'prism/tests/operations/**'
       - 'prism/scripts/engine_full_field_bridge.py'
       - 'prism/scripts/fetch_jra_racecard.py'
+      - 'prism/scripts/assemble_official_engine_input.py'
       - 'prism/src/prism_engine/**'
       - '.github/workflows/prism-forecast-history.yml'
   workflow_dispatch:
