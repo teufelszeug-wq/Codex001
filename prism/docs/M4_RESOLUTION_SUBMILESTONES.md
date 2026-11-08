@@ -131,3 +131,11 @@ No new race_id, verified PRE or official settlement established in this engineer
 - **Limitations:** 15-minute freshness is an interim engineering threshold, not a substitute for trusted provider update semantics or cancellation polling at deadline. Verifier context remains in-process injectable. Real provider official feed, external TSA, WORM, current-SHA CI, and actual future-race E2E remain unverified.
 - **Next critical path:** CI full suite with saved logs; independently authenticated official feed and race deadline; TSA signer policy and real signed request; WORM provider readback; scheduler and real race PRE.
 - Local checkout via GitHub HTTPS DNS lookup failed, so full suite was not run in this continuation. Do not mark CI PASS or M4 complete. No newly verified race, settlement, paper or learning.
+
+## 2026-11-08 13:04 JST — actual CI failure diagnosis and repair
+- Re-read canonical M4 gate, RFC3161 verifier, integration tests and ledger; queried Notion Master index. Notion master page located at https://app.notion.com/p/3ed76efc40298187abd8fd105b2d5a76?pvs=204 but its full contents and race queue were not reconciled.
+- Retrieved **actual failed GitHub Actions run 42445223031** (job 128622614716) for prior SHA `8a1a75ad`: 25 tests, 6 failures, 1 error. CI log: https://github.com/teufelszeug-wq/Codex001/actions/runs/42445223031 .
+- Root cause: legacy `test_m4_provenance_verifier.py` omitted mandatory original TSQ and saved_at, and old mocked subprocess sequence lacked the SHA-256 query stage. Repaired tests to provide full SHA256 query output, original TSQ, saved_at, and signature/reply sequence; commit `29746b756c1e3f4794772879d06b9d0a65949a02`.
+- Another legacy signed-byte mismatch regression failed because new verifier-owned S3 context was absent. Repaired test with pinned S3 retention/readback mock and verifier-owned official race context, preserving mismatch assertion; commit `a06760abf0773433dd8d8adb9c2b639d9f9f5311`.
+- **Do not mark M4.0 PASS:** current commit has no workflow run returned yet; follow up with fresh CI logs and further fixes. Mock tests do not prove live TSA or provider WORM.
+- Official race denominator and valid PRE queue not established; no new PRE, settlement, paper or learning record. Next priority: CI PASS, independent official feed, real TSA and S3 WORM, then live pre-off E2E and settlement.
