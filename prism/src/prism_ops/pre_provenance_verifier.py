@@ -52,7 +52,8 @@ def verify_git_commit_readback(forecast_bytes, immutable_location, git_repo_path
 def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                            trusted_tsa_ca_pem, immutable_location,
                            *, request_der=None, required_policy_oid=None,
-                           trusted_crl_pem=None, openssl="openssl", git_repo_path=None):
+                           trusted_crl_pem=None, openssl="openssl", git_repo_path=None,
+                           s3_verifier_context=None):
     if not isinstance(forecast_bytes, bytes) or not isinstance(readback_bytes, bytes):
         raise ValueError("FORECAST_BYTES_REQUIRED")
     if forecast_bytes != readback_bytes:
@@ -70,7 +71,26 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         raise ValueError("NONCANONICAL_FORECAST_BYTES")
     # Caller-supplied readback and location labels are not storage evidence.
     # Until another trusted backend is implemented, only pinned Git objects pass.
-    verify_git_commit_readback(forecast_bytes, immutable_location, git_repo_path)
+    if s3_verifier_context is not None:
+        if git_repo_path is not None or not isinstance(s3_verifier_context, dict):
+            raise ValueError("AMBIGUOUS_STORAGE_VERIFIER")
+        from prism_ops.trusted_s3_readback import verified_s3_readback
+        from prism_ops.forecast_completion_gate import timestamp
+        required = ("s3_client", "bucket", "key", "version_id", "min_retention_until")
+        if any(k not in s3_verifier_context for k in required):
+            raise ValueError("TRUSTED_S3_CONTEXT_INCOMPLETE")
+        checked = verified_s3_readback(
+            s3_verifier_context["s3_client"],
+            bucket=s3_verifier_context["bucket"],
+            key=s3_verifier_context["key"],
+            version_id=s3_verifier_context["version_id"],
+            expected_sha256=hashlib.sha256(forecast_bytes).hexdigest(),
+            min_retention_until=timestamp(s3_verifier_context["min_retention_until"]))
+        if (checked["readback_bytes"] != forecast_bytes or
+                checked["immutable_location"] != immutable_location):
+            raise ValueError("PERSISTENCE_READBACK_FAILED")
+    else:
+        verify_git_commit_readback(forecast_bytes, immutable_location, git_repo_path)
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         (base / "forecast.json").write_bytes(forecast_bytes)
