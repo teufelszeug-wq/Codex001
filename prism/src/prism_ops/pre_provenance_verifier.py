@@ -46,10 +46,10 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
             capture_output=True, text=True, timeout=20)
         if query.returncode:
             raise ValueError("RFC3161_REQUEST_UNREADABLE")
-        if not re.search(r"Hash Algorithm:\\s*sha256\\b", query.stdout, re.I):
+        if not re.search(r"Hash Algorithm:\s*sha256\b", query.stdout, re.I):
             raise ValueError("RFC3161_REQUEST_HASH_NOT_SHA256")
         match_data = re.search(
-            r"Message data:\\s*\\n((?:\\s*[0-9a-fA-F]{4}\\s*-.*\\n)+)",
+            r"Message data:\s*\n((?:\s*[0-9a-fA-F]{4}\s*-.*\n)+)",
             query.stdout)
         if not match_data:
             raise ValueError("RFC3161_REQUEST_IMPRINT_UNREADABLE")
