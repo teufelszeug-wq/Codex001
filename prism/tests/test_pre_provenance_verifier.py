@@ -11,7 +11,8 @@ def canonical(data):
 class ProvenanceTests(unittest.TestCase):
     def setUp(self):
         self.forecast = {"race_id": "TEST-1", "scheduled_off": "2026-11-08T12:00:00+09:00",
-                         "source_as_of": "2026-11-08T10:00:00+09:00"}
+                         "source_as_of": "2026-11-08T10:00:00+09:00",
+                         "saved_at": "2026-11-08T10:30:00+09:00"}
         self.raw = canonical(self.forecast)
         self.args = (self.raw, self.raw, b"token", b"trusted CA", "git-commit:abc123")
 
@@ -21,16 +22,16 @@ class ProvenanceTests(unittest.TestCase):
 
     def test_missing_token_rejected(self):
         with self.assertRaisesRegex(ValueError, "RFC3161_TOKEN_MISSING"):
-            verify_rfc3161_receipt(self.raw, self.raw, b"", b"CA", "git-commit:abc")
+            verify_rfc3161_receipt(self.raw, self.raw, b"", b"CA", "git-commit:abc", request_der=b"tsq")
 
     def test_unpinned_location_rejected(self):
         with self.assertRaisesRegex(ValueError, "IMMUTABLE_LOCATION_UNVERIFIED"):
-            verify_rfc3161_receipt(self.raw, self.raw, b"token", b"CA", "mutable:abc")
+            verify_rfc3161_receipt(self.raw, self.raw, b"token", b"CA", "mutable:abc", request_der=b"tsq")
 
     def test_noncanonical_bytes_rejected(self):
         raw = json.dumps(self.forecast, indent=2).encode()
         with self.assertRaisesRegex(ValueError, "NONCANONICAL_FORECAST_BYTES"):
-            verify_rfc3161_receipt(raw, raw, b"token", b"CA", "git-commit:abc")
+            verify_rfc3161_receipt(raw, raw, b"token", b"CA", "git-commit:abc", request_der=b"tsq")
 
     def test_original_request_is_mandatory(self):
         with self.assertRaisesRegex(ValueError, "RFC3161_ORIGINAL_REQUEST_REQUIRED"):
