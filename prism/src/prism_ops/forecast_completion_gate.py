@@ -52,10 +52,26 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
     else:
         try:
             from prism_ops.pre_provenance_verifier import verify_rfc3161_receipt
+            # Never accept readback bytes or a storage address asserted by the
+            # forecast producer. Re-fetch a pinned WORM version from S3.
+            from prism_ops.trusted_s3_readback import verified_s3_readback
+            from datetime import timedelta
+            original = proof_bundle["forecast_bytes"]
+            if not isinstance(original, bytes):
+                raise ValueError("FORECAST_BYTES_REQUIRED")
+            immutable = verified_s3_readback(
+                proof_bundle["trusted_s3_client"],
+                bucket=proof_bundle["bucket"],
+                key=proof_bundle["key"],
+                version_id=proof_bundle["version_id"],
+                expected_sha256=hashlib.sha256(original).hexdigest(),
+                min_retention_until=timestamp(forecast["scheduled_off"]) + timedelta(days=1))
             verified = verify_rfc3161_receipt(
-                proof_bundle["forecast_bytes"], proof_bundle["readback_bytes"],
+                original, immutable["readback_bytes"],
                 proof_bundle["tsa_response_der"], proof_bundle["trusted_tsa_ca_pem"],
-                proof_bundle["immutable_location"])
+                immutable["immutable_location"])
+            if "immutable_location" in proof_bundle and proof_bundle["immutable_location"] != immutable["immutable_location"]:
+                raise ValueError("IMMUTABLE_LOCATION_MISMATCH")
             if trusted_receipt != verified:
                 errors.append("TRUSTED_RECEIPT_NOT_DERIVED_FROM_PROOF")
             if proof_bundle["forecast_bytes"] != json.dumps(
