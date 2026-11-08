@@ -129,9 +129,12 @@ class CaptureWithLocalTSA(unittest.TestCase):
         captured = self._capture()
         key = (captured["manifest_key"], captured["manifest_version_id"])
         raw = _canonical_json([])
-        self.backend.objects[key]["data"] = raw
+        new_key = "pre/proofs/" + _sha256(raw) + ".json"
+        self.backend.objects[(new_key, captured["manifest_version_id"])] = {
+            "data": raw, "until": self.backend.objects[key]["until"]}
         with self.assertRaisesRegex(ValueError, "INVALID_MANIFEST"):
-            self._independent(captured, manifest_sha256=_sha256(raw))
+            self._independent(captured, manifest_key=new_key,
+                              manifest_sha256=_sha256(raw))
 
     def test_manifest_path_traversal_rejected_before_s3_access(self):
         captured = self._capture()
