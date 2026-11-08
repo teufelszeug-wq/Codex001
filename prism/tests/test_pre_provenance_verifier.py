@@ -92,5 +92,33 @@ class ProvenanceTests(unittest.TestCase):
                                    "git-commit:" + "a" * 40 + ":forecast.json",
                                    request_der=b"tsq")
 
+
+    @patch("prism_ops.trusted_s3_readback.verified_s3_readback")
+    @patch("prism_ops.pre_provenance_verifier.subprocess.run")
+    def test_s3_verified_readback_reaches_rfc3161_request_check(self, run, readback):
+        location = "s3-version:bucket/prefix/forecast?versionId=v1"
+        readback.return_value = {"readback_bytes": self.raw, "immutable_location": location}
+        run.return_value.returncode = 1
+        context = {"s3_client": object(), "bucket": "bucket",
+                   "key": "prefix/forecast", "version_id": "v1",
+                   "min_retention_until": "2026-11-09T12:00:00+09:00"}
+        with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_UNREADABLE"):
+            verify_rfc3161_receipt(self.raw, self.raw, b"token", b"CA", location,
+                                   request_der=b"tsq", s3_verifier_context=context)
+        self.assertEqual(readback.call_count, 1)
+
+    @patch("prism_ops.trusted_s3_readback.verified_s3_readback")
+    def test_s3_readback_location_mismatch_rejected(self, readback):
+        readback.return_value = {"readback_bytes": self.raw,
+                                 "immutable_location": "s3-version:wrong"}
+        with self.assertRaisesRegex(ValueError, "PERSISTENCE_READBACK_FAILED"):
+            verify_rfc3161_receipt(
+                self.raw, self.raw, b"token", b"CA",
+                "s3-version:bucket/prefix/forecast?versionId=v1",
+                request_der=b"tsq", s3_verifier_context={
+                    "s3_client": object(), "bucket": "bucket",
+                    "key": "prefix/forecast", "version_id": "v1",
+                    "min_retention_until": "2026-11-09T12:00:00+09:00"})
+
 if __name__ == "__main__":
     unittest.main()
