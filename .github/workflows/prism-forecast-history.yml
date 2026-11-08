@@ -18,4 +18,4 @@ jobs:
         with:
           node-version: '22'
       - name: Validate forecast history contract
-        run: node --test prism/tests/operations/forecast_history.test.mjs
+        run: node --test prism/tests/operations/*.test.mjs
