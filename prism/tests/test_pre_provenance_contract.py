@@ -18,6 +18,16 @@ def sample():
             "results_exposed": False}
 
 class PreProvenanceContract(unittest.TestCase):
+    def test_forged_receipt_without_proof_fails(self):
+        p = sample()
+        fake = {"verified_by": "PRISM_TRUSTED_PERSISTENCE_VERIFIER",
+                "race_id": p["race_id"], "forecast_sha256": digest(p),
+                "trusted_saved_at": "2026-11-08T08:02:00+09:00",
+                "immutable_location": "git-commit:fake",
+                "readback_verified": True, "timestamp_verified": True}
+        self.assertIn("CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING",
+                      validate_forecast(p, fake)["errors"])
+
     def test_missing_snapshot_fails(self):
         p = sample(); del p["input_snapshot"]
         self.assertIn("INPUT_SNAPSHOT_MISSING", validate_forecast(p)["errors"])
