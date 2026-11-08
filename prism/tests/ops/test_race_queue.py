@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/"src"))
@@ -30,10 +31,15 @@ class QueueTests(unittest.TestCase):
            "agents":[{"agent_id":"rio","picks":[{"horse_no":1,"mark":"◎"}],
                       "tickets":[{"bet_type":"単勝","selection":[1],"stake_yen":100}]}],
            "editorial":{"picks":[{"horse_no":1,"mark":"◎"}],"pass_reason":"見送り"}}
-        receipt={"readback_sha256":digest(f),"external_timestamp_verified":True,
+        receipt={"forecast_sha256":digest(f),"timestamp_verified":True,
                  "immutable_location":"synthetic://receipt",
                  "trusted_saved_at":"2026-11-07T09:00:00+09:00"}
-        self.assertTrue(snapshot_gate(f,receipt,"2026-11-07T11:00:00+09:00")["verified_pre"])
-        late={**receipt,"trusted_saved_at":"2026-11-07T10:01:00+09:00"}
-        self.assertIn("TRUSTED_TIMESTAMP_AFTER_OFF",snapshot_gate(f,late,"2026-11-07T11:00:00+09:00")["errors"])
+        # Isolated trusted-clock test: proof verification itself is covered by
+        # the strict M4 integration tests, not by this synthetic receipt.
+        with patch("prism_ops.forecast_completion_gate.validate_forecast",
+                   return_value={"complete": True, "errors": [], "sha256":digest(f)}):
+            self.assertTrue(snapshot_gate(f,receipt,"2026-11-07T11:00:00+09:00")["verified_pre"])
+            late={**receipt,"trusted_saved_at":"2026-11-07T10:01:00+09:00"}
+            self.assertIn("TRUSTED_TIMESTAMP_AFTER_OFF",
+                          snapshot_gate(f,late,"2026-11-07T11:00:00+09:00")["errors"])
 if __name__=="__main__":unittest.main()
