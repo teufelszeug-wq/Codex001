@@ -11,10 +11,18 @@ class RunReadinessTests(unittest.TestCase):
         self.assertEqual(r["verified_pre_count"],0)
         self.assertEqual(r["status"],"OFFICIAL_DATA_MISSING")
     def test_future_race_not_counted_as_locked(self):
-        race={"race_id":"synthetic-1","input_sha256":"abc","scheduled_off":"2026-11-07T10:00:00+09:00","official_entries_verified":True}
+        race={"race_id":"synthetic-1","input_sha256":"abc","scheduled_off":"2026-11-07T10:00:00+09:00","official_entries_verified":True,"result_exposed":False,"pre_locked":False}
         r=audit_run([race],"2026-11-06T23:59:00+09:00")
         self.assertEqual(r["eligible_races"],["synthetic-1"])
         self.assertEqual(r["verified_pre_count"],0)
+    def test_unknown_result_exposure_is_not_eligible(self):
+        race={"race_id":"synthetic-1","input_sha256":"abc",
+              "scheduled_off":"2026-11-07T10:00:00+09:00",
+              "official_entries_verified":True,"result_exposed":None,"pre_locked":False}
+        out=audit_run([race],"2026-11-06T23:59:00+09:00")
+        self.assertEqual(out["eligible_races"],[])
+        self.assertEqual(out["blocked"][0]["reason"],"RESULT_EXPOSURE_NOT_EXCLUDED")
+
     def test_expired_race(self):
         race={"race_id":"synthetic-1","input_sha256":"abc","scheduled_off":"2026-11-06T10:00:00+09:00","official_entries_verified":True}
         r=audit_run([race],"2026-11-06T23:59:00+09:00")
