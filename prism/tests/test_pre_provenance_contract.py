@@ -33,11 +33,10 @@ class PreProvenanceContract(unittest.TestCase):
     def test_result_exposure_unknown_fails(self):
         p = sample(); p["results_exposed"] = None
         self.assertIn("RESULT_EXPOSURE_NOT_EXCLUDED", validate_forecast(p)["errors"])
-    @unittest.expectedFailure
     def test_untrusted_boolean_flags_must_not_prove_external_timestamp(self):
         # Known security gap: arbitrary strings + caller-supplied booleans currently pass.
         p = sample()
-        self.assertIn("PRE_PROVENANCE_UNVERIFIED", validate_forecast(p)["errors"])
+        self.assertIn("PRE_PROVENANCE_NOT_INDEPENDENTLY_VERIFIED", validate_forecast(p)["errors"])
 
 if __name__ == "__main__":
     unittest.main()
