@@ -124,7 +124,13 @@ class FullContractWithLocalCrypto(unittest.TestCase):
                           "?versionId=v1")
         cls.receipt = verify_rfc3161_receipt(
             cls.raw, cls.raw, cls.tsr, cls.ca, cls.object_url,
-            request_der=cls.tsq, trusted_crl_pem=cls.crl)
+            request_der=cls.tsq, trusted_crl_pem=cls.crl,
+            s3_verifier_context={
+                "s3_client": SimulatedS3(cls.raw, cls.now + timedelta(days=30)),
+                "bucket": "synthetic", "key": "pre/forecast.json",
+                "version_id": "v1",
+                "min_retention_until": (cls.off + timedelta(days=1)).isoformat(),
+            })
 
     @classmethod
     def tearDownClass(cls):
