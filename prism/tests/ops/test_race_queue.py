@@ -8,7 +8,7 @@ from prism_ops.race_queue import next_work,snapshot_gate
 class QueueTests(unittest.TestCase):
     def setUp(self):
         self.r={"race_id":"JRA-20261107-TOKYO-11","input_sha256":"abc",
-            "scheduled_off":"2026-11-07T15:35:00+09:00","official_entries_verified":True}
+            "scheduled_off":"2026-11-07T15:35:00+09:00","official_entries_verified":True,"result_exposed":False,"pre_locked":False}
     def test_eligible(self):
         self.assertEqual(len(next_work([self.r],"2026-11-06T23:00:00+09:00")["eligible"]),1)
     def test_late(self):
@@ -17,6 +17,16 @@ class QueueTests(unittest.TestCase):
         self.assertEqual(next_work([{**self.r,"official_entries_verified":False}],"2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],"OFFICIAL_DATA_MISSING")
     def test_deduplicate(self):
         self.assertEqual(len(next_work([self.r,self.r],"2026-11-06T23:00:00+09:00")["eligible"]),1)
+    def test_unknown_result_exposure_rejected(self):
+        self.assertEqual(next_work([{**self.r, "result_exposed":None}],
+                                   "2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],
+                         "RESULT_EXPOSURE_NOT_EXCLUDED")
+
+    def test_unknown_pre_lock_rejected(self):
+        self.assertEqual(next_work([{**self.r, "pre_locked":None}],
+                                   "2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],
+                         "PRE_LOCK_STATUS_UNVERIFIED")
+
     def test_exposed(self):
         self.assertEqual(next_work([{**self.r,"result_exposed":True}],"2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],"NO_PRE_WINDOW")
     def test_receipt_missing(self):
