@@ -114,3 +114,12 @@ No new race_id, verified PRE or official settlement established in this engineer
 - GitHub commit combined statuses for `7e1feb6` returned empty; current SHA CI PASS **not established**. Local repository clone unavailable due to DNS failure; full project suite **not executed**.
 - Remaining P0: trusted official feed and reschedule/cancellation freshness must be obtained in verifier service, not from a producer-set `verifier_context`; live TSA trust policy and revocation; real provider WORM and independent readback; CI pass.
 - M4 completion remains BLOCKED pending future race with genuine PRE, independent proof and official settlement. No new race IDs or official denominator verified in this engineering run.
+
+## 2026-11-08 continuation — regression reliability and official runner binding
+- Found a literal `\\n` in the mocked OpenSSL `Time stamp:` response; corrected to an actual newline so timestamp parsing is exercised. Commit `b2cb42661ef325b29a0073d3316ce3cd32008e2c`.
+- Added mandatory `official_entries` in verifier-owned context and compare `(horse_no, horse_name)` against the forecast roster, preventing producer from silently changing runner identities while claiming official inputs. Commit `f94a6d2616bce9e73d53476ba5c81c55d108ed03`.
+- Added negative regressions for mismatched official horse name and unavailable official runner list. Commit `ae0a955af179daf7cb9eef49b68f46c684222eec`.
+- Full CI still not established. No claim of verified PRE from mocked tests.
+- **Residual high-risk:** official feed freshness, scratches, reschedules and post-result exposure must be verified from trusted data in a separate process. Caller-provided `verifier_context` is not itself an independent trust boundary. Need end-to-end race deadline and result embargo.
+- **Next priority:** run current suite and fix any failures; implement verifier-side official-feed ingestion and schedule change policy; validate live TSA and S3 COMPLIANCE in independent processes; process genuine future race and settle.
+- Official denominator, Notion master and live race ledger not fully reconciled; no newly established real race PRE, settlement, paper or learning records.
