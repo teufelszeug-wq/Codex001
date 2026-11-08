@@ -7,6 +7,7 @@ The caller must supply a pinned immutable object location and an exact byte
 readback; the caller's timestamps/booleans are never authoritative.
 """
 import hashlib
+import os
 import json
 import re
 import subprocess
@@ -15,10 +16,43 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+
+def verify_git_commit_readback(forecast_bytes, immutable_location, git_repo_path,
+                               *, git="git"):
+    """Read bytes from a pinned commit tree, never from a mutable branch/worktree.
+
+    Format: git-commit:<40-hex-commit>:<relative-repository-path>.
+    This establishes content-addressed readback, NOT remote retention guarantees.
+    """
+    match = re.fullmatch(r"git-commit:([0-9a-fA-F]{40}):(.+)", immutable_location or "")
+    if not match or not git_repo_path:
+        raise ValueError("IMMUTABLE_LOCATION_UNVERIFIED")
+    commit, object_path = match.groups()
+    segments = object_path.split("/")
+    if (object_path.startswith(("/", "-")) or "\\" in object_path or
+            any(segment in ("", ".", "..") for segment in segments)):
+        raise ValueError("IMMUTABLE_LOCATION_UNVERIFIED")
+    try:
+        def invoke(*args):
+            return subprocess.run(
+                [git, "-C", os.fspath(git_repo_path), *args],
+                capture_output=True, timeout=20, check=False)
+        kind = invoke("cat-file", "-t", commit)
+        if kind.returncode or kind.stdout.strip() != b"commit":
+            raise ValueError("GIT_COMMIT_NOT_FOUND")
+        result = invoke("show", f"{commit}:{object_path}")
+        if result.returncode:
+            raise ValueError("GIT_OBJECT_READBACK_FAILED")
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ValueError("GIT_OBJECT_READBACK_FAILED") from exc
+    if result.stdout != forecast_bytes:
+        raise ValueError("PERSISTENCE_READBACK_FAILED")
+    return True
+
 def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                            trusted_tsa_ca_pem, immutable_location,
                            *, request_der=None, required_policy_oid=None,
-                           trusted_crl_pem=None, openssl="openssl"):
+                           trusted_crl_pem=None, openssl="openssl", git_repo_path=None):
     if not isinstance(forecast_bytes, bytes) or not isinstance(readback_bytes, bytes):
         raise ValueError("FORECAST_BYTES_REQUIRED")
     if forecast_bytes != readback_bytes:
@@ -29,13 +63,14 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         raise ValueError("RFC3161_TOKEN_MISSING")
     if not isinstance(trusted_tsa_ca_pem, bytes) or not trusted_tsa_ca_pem:
         raise ValueError("TRUSTED_TSA_CA_MISSING")
-    if not immutable_location or not immutable_location.startswith(("git-commit:", "s3-version:", "object-lock:")):
-        raise ValueError("IMMUTABLE_LOCATION_UNVERIFIED")
     forecast = json.loads(forecast_bytes.decode("utf-8"))
     if not isinstance(forecast, dict):
         raise ValueError("INVALID_FORECAST")
     if forecast_bytes != json.dumps(forecast, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"):
         raise ValueError("NONCANONICAL_FORECAST_BYTES")
+    # Caller-supplied readback and location labels are not storage evidence.
+    # Until another trusted backend is implemented, only pinned Git objects pass.
+    verify_git_commit_readback(forecast_bytes, immutable_location, git_repo_path)
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         (base / "forecast.json").write_bytes(forecast_bytes)
