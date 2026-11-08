@@ -43,6 +43,12 @@ class ReadinessTests(unittest.TestCase):
             audit_run([], NOW, saved)
         self.assertIsNone(gate.call_args.kwargs["verifier_context"])
 
+    def test_supplied_denominator_is_not_provider_verified(self):
+        out = audit_run([], NOW, official_denominator=12)
+        self.assertEqual(out["official_race_denominator"], 12)
+        self.assertTrue(out["official_denominator_supplied"])
+        self.assertFalse(out["official_denominator_verified"])
+
     def test_invalid_denominator(self):
         self.assertIsNone(audit_run([],NOW,official_denominator=True)["official_race_denominator"])
     def test_exceeds_denominator(self):
