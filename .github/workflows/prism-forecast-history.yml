@@ -1,0 +1,21 @@
+name: PRISM forecast history regression
+on:
+  pull_request:
+    paths:
+      - 'prism/src/operations/**'
+      - 'prism/tests/operations/**'
+      - '.github/workflows/prism-forecast-history.yml'
+  workflow_dispatch:
+jobs:
+  pre_off_history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate forecast history contract
+        run: node --test prism/tests/operations/forecast_history.test.mjs
