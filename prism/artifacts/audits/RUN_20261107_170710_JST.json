@@ -1,0 +1,40 @@
+{
+  "run_id": "PRISM-20261107T170710+0900",
+  "run_at": "2026-11-07T17:07:10+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_160728_JST.json",
+  "previous_audit_read": true,
+  "notion_master_found": "https://app.notion.com/p/3ed76efc40298187abd8fd105b2d5a76?pvs=204",
+  "notion_master_body_read": false,
+  "official_denominator": {
+    "JRA_scheduled_from_prior_audit": 36,
+    "NAR": null,
+    "total": null
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "unverified_pre_total": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "financials": "N/A",
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "official_2026_11_08_cards_found": [
+    "https://jra.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020420261108%2F3C",
+    "https://jra.jp/JRADB/accessD.html?CNAME=pw01dde0108202605020420261108%2F10"
+  ],
+  "next_queue": "2026-11-08 official earliest race cards, verify horse numbers/cancellations, complete model integration and independent agents, immutable PRE lock before start; reconcile prior valid PRE before official settlement",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "phases_A_I": "A partial; B-I incomplete",
+  "phases_A_F": "production acceptance not verified",
+  "note": "No new PRE, no settlement, no newspaper. No snapshot = no backtest."
+}

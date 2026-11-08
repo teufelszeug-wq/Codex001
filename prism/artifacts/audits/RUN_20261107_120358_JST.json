@@ -1,0 +1,36 @@
+{
+  "run_id": "PRISM-20261107T120358+0900",
+  "run_at": "2026-11-07T12:03:58+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_110850_JST.json",
+  "official_denominator": {
+    "JRA_scheduled": 36,
+    "NAR": null,
+    "total": null
+  },
+  "verified_pre_new": 0,
+  "verified_pre_total": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "agent_financials": "N/A",
+  "new_race_id_progress": [],
+  "next_candidate": {
+    "race_id": "202605050105",
+    "scheduled_off": "2026-11-07T12:15:00+09:00",
+    "source": "https://app.jra.jp/JRADB/accessD.html?CNAME=sw01ddd0105202605010520261107%2F7E",
+    "status": "OFFICIAL_ENTRIES_PARTIALLY_READ_NO_PRE"
+  },
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "PAPER_PENDING"
+  ],
+  "ledger_full_reconciliation": "NOT_VERIFIED",
+  "next_queue": "Read full official entries and prior immutable PRE ledger; prioritize next unstarted race; do not backdate PRE",
+  "note": "Audit only. No verified PRE, independent agent execution, official settlement, or newspaper."
+}

@@ -1,0 +1,202 @@
+{
+  "schema": "prism_working_preliminary_analysis_v1",
+  "race_id": "JRA-20261108-FUKUSHIMA-01",
+  "created_for_run": "2026-11-08T06:03:34+09:00",
+  "status": "UNVERIFIED_PRE_FORECAST",
+  "golden_forward_eligible": false,
+  "model_execution": "NOT_EXECUTED",
+  "independent_ai_executions": 0,
+  "analysis_type": "single_model_role_based_manual_preliminary",
+  "source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020120261108/1D",
+  "source_snapshot_proof": "NOT_VERIFIED",
+  "scheduled_off": "2026-11-08T09:45:00+09:00",
+  "entries": [
+    {
+      "horse_no": 1,
+      "horse_name": "ブラックブレット",
+      "diagnosis": "芝新馬9着、ダート適性未確認",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 2,
+      "horse_name": "シースファイア",
+      "diagnosis": "ダ1200新馬5着、上積み待ち",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 3,
+      "horse_name": "イリスロッソ",
+      "diagnosis": "ダ1200・1000で2着、短距離実績上位",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 4,
+      "horse_name": "サノノソルジャー",
+      "diagnosis": "ダ1300新馬2着、短距離対応を評価",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 5,
+      "horse_name": "ドナビッグベン",
+      "diagnosis": "福島1150で2着、コース実績を評価",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 6,
+      "horse_name": "ルージュロア",
+      "diagnosis": "初出走、能力資料欠測",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 7,
+      "horse_name": "アースグリッパー",
+      "diagnosis": "ダ1000で4着、近走ダ1200で11着",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 8,
+      "horse_name": "シウンハゴロモ",
+      "diagnosis": "芝1200新馬11着、ダート未知",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 9,
+      "horse_name": "ベアアミーチ",
+      "diagnosis": "ダ1200で4着、連下候補",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 10,
+      "horse_name": "ヒガンバナ",
+      "diagnosis": "初出走、能力資料欠測",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 11,
+      "horse_name": "オラパ",
+      "diagnosis": "芝1600新馬5着、距離短縮とダート未知",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 12,
+      "horse_name": "アスコットペスカ",
+      "diagnosis": "芝短距離2戦大敗、ダート未知",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 13,
+      "horse_name": "ヴォルールドクール",
+      "diagnosis": "芝1400新馬11着、ダート未知",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 14,
+      "horse_name": "タガノカハンカ",
+      "diagnosis": "芝1200・1400で4・9着、ダート未知",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 15,
+      "horse_name": "マルモタワー",
+      "diagnosis": "ダ1200直近3着、連下候補",
+      "evidence_status": "JRA_RACECARD_PAST_RUNS"
+    },
+    {
+      "horse_no": 16,
+      "horse_name": "スマイルハープ",
+      "diagnosis": "過去走詳細未確認",
+      "evidence_status": "MISSING_PAST_RUN_DETAIL"
+    }
+  ],
+  "editorial": {
+    "role": "篠宮律・本紙（単一モデル仮分析）",
+    "marks": {
+      "◎": "5 ドナビッグベン",
+      "○": "3 イリスロッソ",
+      "▲": "4 サノノソルジャー",
+      "△": "15 マルモタワー"
+    },
+    "tickets": [
+      {
+        "type": "単勝",
+        "numbers": [
+          5
+        ],
+        "stake_yen": 100
+      },
+      {
+        "type": "馬連",
+        "numbers": [
+          3,
+          5
+        ],
+        "stake_yen": 100
+      },
+      {
+        "type": "馬連",
+        "numbers": [
+          4,
+          5
+        ],
+        "stake_yen": 100
+      },
+      {
+        "type": "ワイド",
+        "numbers": [
+          5,
+          15
+        ],
+        "stake_yen": 100
+      }
+    ],
+    "investment_yen": 400,
+    "reason": "福島1150m既走2着を優先。能力モデル・調教・取消未検証"
+  },
+  "rio": {
+    "role": "りお（単一モデル仮分析）",
+    "marks": {
+      "◎": "3 イリスロッソ",
+      "○": "5 ドナビッグベン",
+      "▲": "4 サノノソルジャー",
+      "△": "15 マルモタワー"
+    },
+    "tickets": [
+      {
+        "type": "単勝",
+        "numbers": [
+          3
+        ],
+        "stake_yen": 100
+      },
+      {
+        "type": "ワイド",
+        "numbers": [
+          3,
+          5
+        ],
+        "stake_yen": 100
+      }
+    ],
+    "investment_yen": 200,
+    "reason": "ダート短距離の複数2着を評価。正式AI独立実行ではない"
+  },
+  "required_ai_roster_status": "NOT_LOADED",
+  "all_ai_complete": false,
+  "missing": [
+    "取消独立照合",
+    "公式データの発走前スナップショット外部証明",
+    "調教",
+    "映像",
+    "馬体",
+    "正式モデル統合",
+    "他専門AI独立実行",
+    "PRE改変不能保存・読み戻し"
+  ],
+  "blockers": [
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "PAPER_PENDING"
+  ],
+  "warning": "This is a WORKING analysis only, not an immutable pre-race forecast; do not settle or count as PRE."
+}

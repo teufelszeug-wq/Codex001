@@ -1,0 +1,36 @@
+{
+  "run_id": "PRISM-20261107T190410+0900",
+  "run_at": "2026-11-07T19:04:10+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_180836_JST.json",
+  "official_denominator": {
+    "JRA_nov7_prior_scheduled": 36,
+    "NAR": null,
+    "total": null,
+    "JRA_nov8": "UNVERIFIED; third-party listing says 34, do not assume 36"
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "uncompleted_races": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "agent_financials": null,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "next_queue": "2026-11-08 Fukushima 1R, Tokyo 1R, Kyoto 1R: fetch official full runner numbers/names and changes, verify result unpublished, run model, lock PRE",
+  "notion_master_found": "3ed76efc40298187abd8fd105b2d5a76",
+  "notion_snapshot_candidate": "40276efc402981d7913fed712084e6dd; WORKING_NOT_GOLDEN",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "phase_A_I": "A partial; B-I incomplete",
+  "phase_A_F": "production acceptance not verified",
+  "note": "GitHub prior audit read and Notion search completed. Official JRA Nov 8 meeting confirmed; full official card and ledger reconciliation not done. No model run, no PRE, no settlement, no paper."
+}

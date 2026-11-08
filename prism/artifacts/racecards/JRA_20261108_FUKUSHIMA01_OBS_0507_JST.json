@@ -1,0 +1,96 @@
+{
+  "schema": "prism_racecard_observation_v1",
+  "race_id": "JRA-20261108-FUKUSHIMA-01",
+  "observed_at": "2026-11-08T05:07:03+09:00",
+  "official_page_odds_as_of": "2026-11-08T05:06:00+09:00",
+  "source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020120261108/1D",
+  "scheduled_off": "2026-11-08T09:45:00+09:00",
+  "race": "2歳未勝利 ダート1150m",
+  "entries": [
+    {
+      "horse_no": 1,
+      "name": "ブラックブレット"
+    },
+    {
+      "horse_no": 2,
+      "name": "シースファイア"
+    },
+    {
+      "horse_no": 3,
+      "name": "イリスロッソ"
+    },
+    {
+      "horse_no": 4,
+      "name": "サノノソルジャー"
+    },
+    {
+      "horse_no": 5,
+      "name": "ドナビッグベン"
+    },
+    {
+      "horse_no": 6,
+      "name": "ルージュロア"
+    },
+    {
+      "horse_no": 7,
+      "name": "アースグリッパー"
+    },
+    {
+      "horse_no": 8,
+      "name": "シウンハゴロモ"
+    },
+    {
+      "horse_no": 9,
+      "name": "ベアアミーチ"
+    },
+    {
+      "horse_no": 10,
+      "name": "ヒガンバナ"
+    },
+    {
+      "horse_no": 11,
+      "name": "オラパ"
+    },
+    {
+      "horse_no": 12,
+      "name": "アスコットペスカ"
+    },
+    {
+      "horse_no": 13,
+      "name": "ヴォルールドクール"
+    },
+    {
+      "horse_no": 14,
+      "name": "タガノカハンカ"
+    },
+    {
+      "horse_no": 15,
+      "name": "マルモタワー"
+    },
+    {
+      "horse_no": 16,
+      "name": "スマイルハープ"
+    }
+  ],
+  "non_selected": [
+    "サザンレガシー",
+    "セイカタカキヤチク",
+    "ルーストカール"
+  ],
+  "withdrawals_status": "NOT_INDEPENDENTLY_VERIFIED",
+  "pre_market_separation": "odds and track state present; keep market fields separate from ability forecast",
+  "status": "RACECARD_OBSERVED_NOT_PRE_LOCKED",
+  "new_pre_forecasts": 0,
+  "all_ai_complete": 0,
+  "settled": 0,
+  "paper": 0,
+  "learning": 0,
+  "blockers": [
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "note": "JRA page explicitly labels odds 05:06. Does not certify full source snapshot as of that time. No forecast was issued."
+}

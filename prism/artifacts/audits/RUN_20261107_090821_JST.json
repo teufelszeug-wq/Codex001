@@ -1,0 +1,102 @@
+{
+  "run_id": "PRISM-20261107T090821+0900",
+  "run_at": "2026-11-07T09:08:21+09:00",
+  "status": "INCOMPLETE",
+  "official_denominator": {
+    "JRA": 36,
+    "NAR": null,
+    "total": null
+  },
+  "race_id": "202605050101",
+  "scheduled_off": "2026-11-07T09:55:00+09:00",
+  "official_source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0105202605010120261107%2FE3",
+  "source_observation": "JRA page displayed 08:44 odds; 11 runners, Tokyo dirt 1600m, going slightly heavy",
+  "runners": [
+    {
+      "number": 1,
+      "name": "ヴァルガルデーナ"
+    },
+    {
+      "number": 2,
+      "name": "エンドクレジット"
+    },
+    {
+      "number": 3,
+      "name": "ピトンピンク"
+    },
+    {
+      "number": 4,
+      "name": "アリアニコ"
+    },
+    {
+      "number": 5,
+      "name": "ブリスブリンク"
+    },
+    {
+      "number": 6,
+      "name": "ハーモニープルーフ"
+    },
+    {
+      "number": 7,
+      "name": "ルージュロマーナ"
+    },
+    {
+      "number": 8,
+      "name": "アイファーエリース"
+    },
+    {
+      "number": 9,
+      "name": "チャームドール"
+    },
+    {
+      "number": 10,
+      "name": "レヴフィリア"
+    },
+    {
+      "number": 11,
+      "name": "パネヴァ"
+    }
+  ],
+  "previous_unverified_selection": {
+    "marks": {
+      "◎": "5 ブリスブリンク",
+      "○": "10 レヴフィリア",
+      "▲": "9 チャームドール",
+      "△": "8 アイファーエリース"
+    },
+    "tickets": [
+      {
+        "type": "馬連",
+        "numbers": [
+          5,
+          10
+        ],
+        "yen": 100
+      },
+      {
+        "type": "ワイド",
+        "numbers": [
+          5,
+          10
+        ],
+        "yen": 100
+      }
+    ],
+    "source": "Prior run 08:04, NOT verified PRE"
+  },
+  "new_verified_pre_races": 0,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "paper_complete_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "ledger_completeness": "NOT_VERIFIED",
+  "blockers": [
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "PAPER_PENDING",
+    "OFFICIAL_DATA_MISSING"
+  ],
+  "note": "Input evidence only. Not immutable PRE, not an independent AI forecast, no external timestamp attestation."
+}
