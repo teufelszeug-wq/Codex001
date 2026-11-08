@@ -41,6 +41,25 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         (base / "stamp.tsr").write_bytes(tsa_response_der)
         (base / "request.tsq").write_bytes(request_der)
         (base / "tsa-ca.pem").write_bytes(trusted_tsa_ca_pem)
+        query = subprocess.run(
+            [openssl, "ts", "-query", "-in", str(base / "request.tsq"), "-text"],
+            capture_output=True, text=True, timeout=20)
+        if query.returncode:
+            raise ValueError("RFC3161_REQUEST_UNREADABLE")
+        if not re.search(r"Hash Algorithm:\\s*sha256\\b", query.stdout, re.I):
+            raise ValueError("RFC3161_REQUEST_HASH_NOT_SHA256")
+        match_data = re.search(
+            r"Message data:\\s*\\n((?:\\s*[0-9a-fA-F]{4}\\s*-.*\\n)+)",
+            query.stdout)
+        if not match_data:
+            raise ValueError("RFC3161_REQUEST_IMPRINT_UNREADABLE")
+        # OpenSSL prints the request imprint as offset-prefixed hex rows.
+        rows = match_data.group(1).splitlines()
+        imprint = "".join(
+            "".join(re.findall(r"[0-9a-fA-F]{2}", row.split("-", 1)[1].split("  ", 1)[0]))
+            for row in rows)
+        if imprint.lower() != hashlib.sha256(forecast_bytes).hexdigest():
+            raise ValueError("RFC3161_REQUEST_IMPRINT_MISMATCH")
         cmd = [openssl, "ts", "-verify", "-queryfile", str(base / "request.tsq"),
                "-in", str(base / "stamp.tsr"), "-CAfile", str(base / "tsa-ca.pem")]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
