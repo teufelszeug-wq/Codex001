@@ -15,7 +15,7 @@ Synthetic local-CA OpenSSL and mocked S3 E2E tests are NOT third-party timestamp
 - Regression CI: .github/workflows/prism-m4-contract.yml
 
 ## P0 prerequisites that cannot be inferred from a green CI
-1. Vetted third-party TSA URL (HTTPS POST for timestamp-query), independently trusted CA and mandatory signed policy OID. Confirm signer chain, EKU, revocation and genTime before *actual* official off time. **Mandatory live CRL/OCSP revocation verification is not yet implemented: release BLOCKED.**
+1. Vetted third-party TSA URL (HTTPS POST for timestamp-query), independently trusted CA and mandatory signed policy OID. Confirm signer chain, EKU, revocation and genTime before *actual* official off time. **A mandatory issuer-CRL verification path now uses OpenSSL -crl_check and is covered by local signed/revoked tests. A current, authentic issuer CRL from the approved real TSA and actual provider test remain BLOCKED. OCSP is not implemented.**
 2. Private versioned AWS S3 bucket with Object Lock COMPLIANCE; configured retention, billing budget and approved write IAM role. A separate read-only IAM role must fetch the pinned VersionId and provider retention. AWS Object Lock applies to a *specific version*; new versions with the same key are still possible.
 3. Trusted official JRA/NAR provider adapter that records source evidence, race_id, actual off-time mutations, entries, scratches, cancellation and result embargo. A manually supplied JSON file is NOT independent official authenticity.
 4. Durable before-off scheduler, all required named specialist AI choices, horse names and 100-yen tickets or explicit passes, retries and alerts; race must not have begun.
@@ -40,6 +40,7 @@ python prism/scripts/m4_capture_cli.py capture \
   --region ap-northeast-1 \
   --tsa-url https://YOUR-APPROVED-TSA \
   --tsa-ca-pem /secure/approved-tsa-ca.pem \
+  --tsa-crl-pem /secure/approved-issuer.crl.pem \
   --tsa-policy-oid YOUR-SIGNED-POLICY-OID \
   --retention-days 30 > /secure/candidate-pointer.json
 ~~~
