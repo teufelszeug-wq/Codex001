@@ -195,3 +195,23 @@ No new race_id, verified PRE or official settlement established in this engineer
 - Selected strict provenance and settlement tests are in CI; the broader legacy ops suite is **KNOWN FAIL / MIGRATION OPEN**, not green. CI success for the selected suites does not mean whole-repo success.
 - Real TSA signing/nonce/certificate chain/policy/revocation, real S3 Object Lock COMPLIANCE provider, separate-process readback, genuine official pre-off prediction, full AI coverage and official settlement are **UNVERIFIED/BLOCKED**. No cloud credentials or endpoints were available to this inspection; do not manufacture external evidence.
 - P0 next: migrate legacy ops fixtures to signed WORM-backed acceptance tests; P0 next: trusted external service configuration; P0 next: future race E2E and official result provenance. Keep `main` untouched until review and gates pass.
+
+## 2026-11-08 CURRENT verified engineering status — 13:41 JST (supersedes old CI notes)
+
+- Active PR #7 on branch `prism/forecast-completion-gate-20261106` remains **Draft, unmerged**.
+- **Full PRISM pytest suite: 544 tests passed and 132 subtests passed**, GitHub Actions **42447831716**, SHA `c863f6baedd377dd68133495090339b66e0bb59a`; companion M4 contract CI **42447831725** also SUCCESS on this SHA. Latest changes after this SHA require their own CI verification.
+- M4 now has **real locally generated RFC3161 signatures**, original TSQ/TSR, SHA256/nonce, signed timestamp, required policy OID and self-signed issuer CRL enforcement through OpenSSL `ts -verify -crl_check`. Adversarial test confirms an intentionally revoked local TSA signer is rejected. This is **local test PKI, not a third-party TSA**.
+- Added `m4_capture.capture_pre_candidate`: captures forecast into pinned Object Lock storage, requests TSA reply, re-reads WORM bytes, verifies cryptographic receipt, and stores original TSQ/TSR plus pinned CA/CRL evidence in a separate content-addressed manifest object. `verify_candidate_independently` re-reads manifest + forecast versions and re-verifies; the procedure returns candidate/component-level statuses and **never asserts official VERIFIED_PRE**. Test uses separately instantiated clients sharing a *fake* in-memory S3 backend.
+- Added `prism/scripts/m4_capture_cli.py`: external AWS IAM role + TSA transport entrypoint, split capture and read-only verification. Its syntax/help is tested; it has **not** been executed against a real AWS bucket or real external TSA.
+- Added CI workflow `.github/workflows/prism-full-regression-audit.yml` to execute *all* `prism/tests` with pytest; new false-success protection in run-readiness means a caller-supplied race denominator is not marked provider-verified.
+- Fixed forecast malformed payload rejection, queue unknown result exposure and unknown PRE lock rejection, S3 version-pinned bounded reads, forecast verifier context propagation and audited evidence forwarding. All relevant synthetic tests included in CI.
+- A *further* manifest change `cf6c25ec` now freezes issuer CRL source bytes for historical audit replay and rejects mismatched CRLs; its current SHA CI must be confirmed separately.
+
+### P0 live production blockers unchanged
+1. Approved **third-party RFC3161 TSA** with actual signed response and trusted policy/issuer CA + contemporaneous authentic CRL (not generated locally).
+2. A real AWS S3 Object Lock **COMPLIANCE** bucket, permissions, pinned version and retention read by separate independent verifier IAM role (fake S3 is not external evidence).
+3. Independently authenticated official JRA/NAR provider feed with actual race off-time mutation tracking, cancellation/scratches, embargo of results, complete registered AI forecast/tickets, always-on scheduler and reliable pre-off capture.
+4. Real late-result official adjudication, payoff/refund/tie rules and same-race reproducible M5 settlement, newspaper and learning. Official-source authenticity must not be determined only by a source text string.
+5. Real separate-run disaster/recovery and tamper/rollback drills, signed immutable evidence logs and operator separation.
+
+No live verified future-race PRE, official settlement or genuinely third-party WORM evidence was established in this engineering run. **M4 production status BLOCKED**. Do not count locally signed, mock S3 synthetic positive tests as genuine forward race validation.
