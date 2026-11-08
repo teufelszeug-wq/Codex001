@@ -82,6 +82,8 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
     from prism_ops.forecast_completion_gate import timestamp, digest
     if stamp >= timestamp(forecast["scheduled_off"]):
         raise ValueError("RFC3161_TIMESTAMP_AFTER_OFF")
+    if stamp < timestamp(forecast["saved_at"]):
+        raise ValueError("RFC3161_TIMESTAMP_BEFORE_FORECAST_SAVE")
     if stamp < timestamp(forecast["source_as_of"]):
         raise ValueError("RFC3161_TIMESTAMP_BEFORE_SOURCE")
     # This receipt describes the bytes actually signed, not a reconstructed dict.
