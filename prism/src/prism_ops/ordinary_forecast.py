@@ -43,10 +43,13 @@ def assess_ordinary_forecast(forecast, *, observed_at):
     if not isinstance(snapshot, (dict, list)):
         errors.append("INPUT_SNAPSHOT_MISSING")
     else:
-        raw = json.dumps(snapshot, ensure_ascii=False, sort_keys=True,
-                         separators=(",", ":")).encode()
-        if hashlib.sha256(raw).hexdigest() != forecast.get("input_hash"):
-            errors.append("INPUT_HASH_MISMATCH")
+        try:
+            raw = json.dumps(snapshot, ensure_ascii=False, sort_keys=True,
+                             separators=(",", ":"), allow_nan=False).encode()
+            if hashlib.sha256(raw).hexdigest() != forecast.get("input_hash"):
+                errors.append("INPUT_HASH_MISMATCH")
+        except (TypeError, ValueError):
+            errors.append("INVALID_INPUT_SNAPSHOT")
     entries = forecast.get("entries")
     if not isinstance(entries, list) or not entries:
         errors.append("INVALID_ENTRIES")
@@ -70,8 +73,10 @@ def assess_ordinary_forecast(forecast, *, observed_at):
         errors.append("INVALID_ROSTER")
         roster = []
     ids = [a.get("agent_id") for a in agents if isinstance(a, dict)]
-    if (len(ids) != len(agents) or len(ids) != len(set(ids)) or
-            set(ids) != set(roster)):
+    if (len(ids) != len(agents) or
+            any(not isinstance(x, str) or not x.strip() for x in ids) or
+            len(ids) != len(set(x for x in ids if isinstance(x, str))) or
+            set(x for x in ids if isinstance(x, str)) != set(roster)):
         errors.append("AGENT_COVERAGE_INCOMPLETE")
     editorial = forecast.get("editorial")
     if not isinstance(editorial, dict):
@@ -89,8 +94,9 @@ def assess_ordinary_forecast(forecast, *, observed_at):
             marks_seen = set()
             for p in picks:
                 if (not isinstance(p, dict) or
-                        p.get("horse_name") != names.get(p.get("horse_no")) or
-                        not p.get("mark")):
+                        type(p.get("horse_no")) is not int or
+                        p.get("horse_name") != names.get(p["horse_no"]) or
+                        not isinstance(p.get("mark"), str) or not p["mark"].strip()):
                     errors.append(f"{agent_id}:INVALID_PICK")
                 elif p["mark"] in marks_seen:
                     errors.append(f"{agent_id}:DUPLICATE_MARK")
