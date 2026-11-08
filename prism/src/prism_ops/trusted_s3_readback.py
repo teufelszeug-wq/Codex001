@@ -31,9 +31,14 @@ def verified_s3_readback(s3, *, bucket, key, version_id, expected_sha256,
     if obj.get("VersionId") != version_id:
         raise ValueError("VERSION_READBACK_MISMATCH")
     # Never download an unbounded object into the trusted verifier process.
+    declared_length = obj.get("ContentLength")
+    if declared_length is not None and (type(declared_length) is not int or declared_length < 0 or declared_length > max_bytes):
+        raise ValueError("READBACK_CONTENT_LENGTH_INVALID")
     raw = obj["Body"].read(max_bytes + 1)
     if not isinstance(raw, bytes) or len(raw) > max_bytes:
         raise ValueError("READBACK_SIZE_LIMIT_EXCEEDED")
+    if declared_length is not None and len(raw) != declared_length:
+        raise ValueError("READBACK_CONTENT_LENGTH_MISMATCH")
     if hashlib.sha256(raw).hexdigest() != expected_sha256:
         raise ValueError("PERSISTENCE_READBACK_FAILED")
     return {"forecast_bytes": raw, "readback_bytes": raw,
