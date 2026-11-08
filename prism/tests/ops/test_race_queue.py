@@ -17,6 +17,21 @@ class QueueTests(unittest.TestCase):
         self.assertEqual(next_work([{**self.r,"official_entries_verified":False}],"2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],"OFFICIAL_DATA_MISSING")
     def test_deduplicate(self):
         self.assertEqual(len(next_work([self.r,self.r],"2026-11-06T23:00:00+09:00")["eligible"]),1)
+    def test_competing_input_versions_both_blocked(self):
+        revised = {**self.r, "input_sha256":"different"}
+        for order in ([self.r, revised], [revised, self.r]):
+            with self.subTest(order=order):
+                result = next_work(order, "2026-11-06T23:00:00+09:00")
+                self.assertEqual(result["eligible"], [])
+                self.assertEqual([r["reason"] for r in result["blocked"]],
+                                 ["CONFLICTING_INPUT_VERSIONS"] * 2)
+
+    def test_competing_versions_do_not_block_other_races(self):
+        revised = {**self.r, "input_sha256":"different"}
+        other = {**self.r, "race_id":"JRA-20261107-TOKYO-12"}
+        result = next_work([self.r, revised, other], "2026-11-06T23:00:00+09:00")
+        self.assertEqual([r["race_id"] for r in result["eligible"]], [other["race_id"]])
+
     def test_unknown_result_exposure_rejected(self):
         self.assertEqual(next_work([{**self.r, "result_exposed":None}],
                                    "2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],
