@@ -1,0 +1,99 @@
+{
+  "schema": "prism_parallel_milestone_gate_v1",
+  "date": "2026-11-08",
+  "source_of_truth": {
+    "github_branch": "prism/forecast-completion-gate-20261106",
+    "notion_master": "3ed76efc-4029-8187-abd8-fd105b2d5a76",
+    "queue": "prism/artifacts/queues/JRA_20261108_SCHEDULE_ONLY.json"
+  },
+  "official_denominator": {
+    "jra_scheduled": 36,
+    "nar": null,
+    "final": null
+  },
+  "execution": {
+    "new_verified_pre": 0,
+    "all_ai_complete": 0,
+    "official_settled": 0,
+    "papers_complete": 0,
+    "learning_adopted": 0,
+    "learning_verified": 0,
+    "independent_agent_executions": 0,
+    "roi": null
+  },
+  "safety_patch": {
+    "source_commit": "772162c0eb425bd24c604f33df1ba80efb2da9e0",
+    "test_commit": "4dee5052f2a0938383b3282226c610a51fcf235e",
+    "tests_executed": false,
+    "receipt_verifier_implemented": false,
+    "description": "Self-attested booleans cannot complete PRE; a trusted receipt is required, but a cryptographically authenticated verifier is not yet implemented."
+  },
+  "milestones": {
+    "M0": {
+      "phase": "A",
+      "state": "PARTIAL",
+      "blocker": "official final denominator, complete canonical ledger"
+    },
+    "M1": {
+      "phase": "A",
+      "state": "PARTIAL",
+      "blocker": "NAR coverage, withdrawals, identity reconciliation"
+    },
+    "M2": {
+      "phase": "B",
+      "state": "BLOCKED",
+      "blocker": "full real-data model pipeline not verified"
+    },
+    "M3": {
+      "phase": "C",
+      "state": "BLOCKED",
+      "blocker": "complete specialist roster and independent execution"
+    },
+    "M4": {
+      "phase": "D",
+      "state": "BLOCKED",
+      "blocker": "trusted external receipt verifier and pre-off storage"
+    },
+    "M5": {
+      "phase": "D",
+      "state": "BLOCKED",
+      "blocker": "no eligible certified PRE settlement verified"
+    },
+    "M6": {
+      "phase": "C",
+      "state": "BLOCKED",
+      "blocker": "no official paired result learning verified"
+    },
+    "M7": {
+      "phase": "C",
+      "state": "PROTOTYPE",
+      "blocker": "five genuine topics and independent critique missing"
+    },
+    "M8": {
+      "phase": "E",
+      "state": "PROTOTYPE",
+      "blocker": "vertical PDF and print QA not verified"
+    },
+    "M9": {
+      "phase": "F",
+      "state": "BLOCKED",
+      "blocker": "end-to-end production run missing"
+    }
+  },
+  "race_queue_policy": "Select first strictly future scheduled_off; schedule-only rows are not official runner verification; no post-off PRE",
+  "next_actions": [
+    "Run regression suite and fix failures",
+    "Build authenticated trusted timestamp/readback verifier",
+    "Ingest official upcoming racecard and scratches before off",
+    "Run real model and complete specialist outputs",
+    "Lock, readback, settle and publish only after gates pass"
+  ],
+  "classification": [
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "no_snapshot_no_backtest": true
+}
