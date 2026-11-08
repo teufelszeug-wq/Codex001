@@ -31,6 +31,8 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
     forecast = json.loads(forecast_bytes.decode("utf-8"))
     if not isinstance(forecast, dict):
         raise ValueError("INVALID_FORECAST")
+    if forecast_bytes != json.dumps(forecast, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"):
+        raise ValueError("NONCANONICAL_FORECAST_BYTES")
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         (base / "forecast.json").write_bytes(forecast_bytes)
@@ -46,7 +48,7 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                               capture_output=True, text=True, timeout=20)
         if info.returncode != 0:
             raise ValueError("RFC3161_TIME_UNREADABLE")
-        match = re.search(r"^Time stamp:\\s*(.+)$", info.stdout, re.MULTILINE)
+        match = re.search(r"^\s*Time stamp:\s*(.+)$", info.stdout, re.MULTILINE)
         if not match:
             raise ValueError("RFC3161_TIME_MISSING")
         raw = match.group(1).strip()
