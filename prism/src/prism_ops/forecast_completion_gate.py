@@ -63,7 +63,7 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
                 raise ValueError("TRUSTED_VERIFIER_CONTEXT_REQUIRED")
             if any(k in proof_bundle for k in ("trusted_s3_client", "trusted_tsa_ca_pem")):
                 raise ValueError("UNTRUSTED_VERIFIER_CONFIG_IN_PROOF")
-            if not all(k in verifier_context for k in ("s3_client", "bucket", "key_prefix", "tsa_ca_pem", "official_race_id", "official_scheduled_off", "official_entries")):
+            if not all(k in verifier_context for k in ("s3_client", "bucket", "key_prefix", "tsa_ca_pem", "tsa_policy_oid", "official_race_id", "official_scheduled_off", "official_entries")):
                 raise ValueError("TRUSTED_VERIFIER_CONFIG_INCOMPLETE")
             # Official race identity and off time are verifier-owned, not
             # supplied by the prediction producer.
@@ -120,7 +120,8 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
                 original, immutable["readback_bytes"],
                 proof_bundle["tsa_response_der"], verifier_context["tsa_ca_pem"],
                 immutable["immutable_location"],
-                request_der=proof_bundle["tsa_request_der"])
+                request_der=proof_bundle["tsa_request_der"],
+                required_policy_oid=verifier_context["tsa_policy_oid"])
             if "immutable_location" in proof_bundle and proof_bundle["immutable_location"] != immutable["immutable_location"]:
                 raise ValueError("IMMUTABLE_LOCATION_MISMATCH")
             if trusted_receipt != verified:
