@@ -86,3 +86,13 @@ Local PRE is an internal operational milestone, **not** an acceptable substitute
 - Unit tests and mocks are insufficient for external timestamp and cloud retention claims. CI must pass before considering code complete; real E2E must pass before M4 completion.
 ### Reporting
 No new race_id, verified PRE or official settlement established in this engineering continuation. Official race denominator, Notion Master and complete persistent race ledger were not read in this run; classify as unverified, not zero.
+
+## Trust-boundary remediation (current continuation)
+- **Root cause prioritized:** PRE validation previously accepted caller-provided S3 client and TSA CA trust anchor, making self-attested evidence possible.
+- Changed `validate_forecast(..., verifier_context=...)` and `settle_forecast(..., verifier_context=...)` to require verifier-owned S3 client, pinned bucket/prefix and TSA CA. Producer-supplied trusted client/CA fields are explicitly rejected. Missing verifier context fails closed.
+- Updated S3 integration tests to inject the verifier context and added negative tests for forged client, absent context and out-of-prefix object keys.
+- Commits: `a855303b557d8dc3b9ba56ca84425b73fe11343f`, `58a4132781eaa203d6abdd1888dadcfe43746430`, `34c0d06c067d3534b57aa54a5438fb7d1c857861`.
+- GitHub Actions PR-triggered workflow lookup for latest commit returned no runs. **CI status not established.**
+- **Important limitation:** `verifier_context` is an API argument, not an authenticated process boundary. Only a separately deployed verifier with locked-down secrets and provider permissions can establish actual independent trust.
+- **Next:** verify tests in runner, enforce verifier-owned trusted configuration via process/service boundary, pin TSA signer policy and validate real signed request/response, then run live WORM and future-race acceptance.
+- Official race queue, Notion master and real PRE ledger not reconciled this engineering pass; no verified new PRE/settlement.
