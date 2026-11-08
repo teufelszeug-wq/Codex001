@@ -110,7 +110,7 @@ def validate_forecast(forecast, trusted_receipt=None):
     return {"complete": not errors, "errors": errors, "race_id": forecast.get("race_id"),
             "agent_count": len(agents), "sha256": digest(forecast)}
 
-def settle_forecast(forecast, official_result):
+def settle_forecast(forecast, official_result, trusted_receipt=None):
     """Strict per-agent settlement. Never infer an unlisted outcome is a loss.
 
     official_result.ticket_outcomes must explicitly adjudicate each ticket.
@@ -118,7 +118,7 @@ def settle_forecast(forecast, official_result):
     """
     from prism_ops.settlement_fail_closed import settle_ticket_outcomes
 
-    gate = validate_forecast(forecast)
+    gate = validate_forecast(forecast, trusted_receipt)
     if not gate["complete"]:
         raise ValueError("invalid PRE forecast: " + repr(gate["errors"]))
     if official_result.get("race_id") != forecast.get("race_id"):
