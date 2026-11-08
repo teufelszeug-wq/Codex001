@@ -124,6 +124,20 @@ class CaptureWithLocalTSA(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "PERSISTENCE_READBACK_FAILED"):
             self._independent(captured)
 
+    def test_manifest_array_rejected_without_attribute_error(self):
+        from prism_ops.m4_capture import _canonical_json, _sha256
+        captured = self._capture()
+        key = (captured["manifest_key"], captured["manifest_version_id"])
+        raw = _canonical_json([])
+        self.backend.objects[key]["data"] = raw
+        with self.assertRaisesRegex(ValueError, "INVALID_MANIFEST"):
+            self._independent(captured, manifest_sha256=_sha256(raw))
+
+    def test_manifest_path_traversal_rejected_before_s3_access(self):
+        captured = self._capture()
+        with self.assertRaisesRegex(ValueError, "UNTRUSTED_MANIFEST_KEY"):
+            self._independent(captured, manifest_key="pre/proofs/../forged.json")
+
     def test_governance_mode_rejected_by_independent_reader(self):
         captured = self._capture()
         self.backend.retention_mode = "GOVERNANCE"
