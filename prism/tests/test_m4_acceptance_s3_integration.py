@@ -28,7 +28,7 @@ class Integration(unittest.TestCase):
         self.forecast["input_hash"] = digest({})
         self.raw = json.dumps(self.forecast, ensure_ascii=False, sort_keys=True,
                               separators=(",", ":")).encode()
-        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA", "official_race_id": "TEST", "official_scheduled_off": "2026-11-08T12:00:00+09:00", "official_entries": [{"horse_no": 1, "horse_name": "A"}], "official_as_of": "2026-11-08T10:00:00+09:00", "official_result_exposed": False, "official_race_cancelled": False}
+        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA", "tsa_policy_oid": "1.2.3.4.5", "official_race_id": "TEST", "official_scheduled_off": "2026-11-08T12:00:00+09:00", "official_entries": [{"horse_no": 1, "horse_name": "A"}], "official_as_of": "2026-11-08T10:00:00+09:00", "official_result_exposed": False, "official_race_cancelled": False}
         self.bundle = {"forecast_bytes":self.raw, 
                        "key":"pre/k", "version_id":"v1",
                        "tsa_response_der":b"tsr", "tsa_request_der":b"tsq", }
