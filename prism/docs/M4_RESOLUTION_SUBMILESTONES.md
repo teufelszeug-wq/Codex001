@@ -67,3 +67,22 @@ Local PRE is an internal operational milestone, **not** an acceptable substitute
 - **Outstanding:** CI run and complete Python suite not observed; real signed TSA positive/negative verification, pinned TSA policy/cert revocation, real S3 provider Object Lock, official race PRE, and official settlement remain blocked/unverified. Current S3 test mocks only validate the integration contract.
 - **Design risk:** the trusted S3 client is still injected through a caller-controlled proof bundle; production should inject trusted provider configuration from the verifier service, not accept arbitrary client/bucket/key parameters from forecast producer.
 - **Design risk:** timestamp request nonce must be generated before POST and the original request durably stored; the signed response must be validated against it. Current request binding code is not a substitute for operational issuance proof.
+
+## M4 recovery replan — parser and trust-boundary audit
+### Verified code changes (not production acceptance)
+- Fixed remaining escaped-whitespace bug in OpenSSL request hexdump parser (`c961c4f6`).
+- Reject truncated SHA-256 request imprints even if parser returns partial hex (`b71bf78f`).
+- Added two focused parser regressions: complete digest proceeds to signature verification, truncated digest fails before signature verification (`0869f802`). CI result is NOT observed.
+### Prioritized critical path
+1. **M4.0 CI recovery:** run full Python suite and real OpenSSL fixture, repair all regressions, capture workflow SHA/log URL.
+2. **M4.3 trust boundary:** configure S3 client, pinned bucket/prefix and TSA CA/policy in independent verifier service. Never accept untrusted client objects or trust anchors from forecast producer.
+3. **M4.2/M4.3 live TSA:** persist original TSQ and TSR, verify SHA-256, nonce, signer chain, EKU, policy and genTime against actual signed forecast bytes. Add expired/revoked/wrong nonce adversarial cases.
+4. **M4.4/M4.5 live WORM:** provider-confirmed COMPLIANCE retention, pinned version ID, independent-process readback, SHA-256 and immutable receipt envelope.
+5. **M4.6/M4.7 live PRE:** official runner list, result-isolated all-AI roster, deadline scheduler, retries, single-writer concurrency control and durable journal.
+6. **M4.8/M4.9 acceptance:** one genuine future race pre-off VERIFIED_PRE with retained proof, then official settlement and disaster recovery rehearsal.
+### New explicit issues
+- The forecast producer currently supplies `trusted_s3_client` and `trusted_tsa_ca_pem` in `proof_bundle`. This is a **trust-boundary vulnerability**, not resolved by checking hashes. Promote verifier-side dependency injection to mandatory M4.3 acceptance.
+- A valid RFC3161 request/response pair does not alone prove it was issued for the race before off unless source/forecast bytes, scheduled off, and genTime are bound and independently audited.
+- Unit tests and mocks are insufficient for external timestamp and cloud retention claims. CI must pass before considering code complete; real E2E must pass before M4 completion.
+### Reporting
+No new race_id, verified PRE or official settlement established in this engineering continuation. Official race denominator, Notion Master and complete persistent race ledger were not read in this run; classify as unverified, not zero.
