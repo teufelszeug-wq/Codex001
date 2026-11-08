@@ -1,12 +1,16 @@
 """PRISM execution readiness audit: race-unique PRE counting, fail closed."""
 from prism_ops.race_queue import next_work, snapshot_gate
 
-def audit_run(races, now, saved_forecasts=None, official_denominator=None):
+def audit_run(races, now, saved_forecasts=None, official_denominator=None,
+              *, trusted_verifier_contexts=None):
     """Only count unique verified races, never snapshot versions as distinct races.
 
     This is a structural audit, not independent verification of receipt authenticity.
     """
     saved_forecasts = saved_forecasts or []
+    # Only the audit service supplies provider/official context by race_id;
+    # it must never be copied from the producer-controlled forecast record.
+    contexts = trusted_verifier_contexts if isinstance(trusted_verifier_contexts, dict) else {}
     queue = next_work(races, now)
     verified_by_race = {}
     rejected = []
@@ -16,7 +20,10 @@ def audit_run(races, now, saved_forecasts=None, official_denominator=None):
         if not race_id:
             rejected.append({"race_id":None,"verified_pre":False,"errors":["RACE_ID_MISSING"]})
             continue
-        gate = snapshot_gate(forecast, item.get("receipt"), now)
+        gate = snapshot_gate(
+            forecast, item.get("receipt"), now,
+            proof_bundle=item.get("proof_bundle"),
+            verifier_context=contexts.get(race_id))
         if gate["verified_pre"]:
             if race_id in verified_by_race:
                 rejected.append({"race_id":race_id, **gate, "verified_pre":False,
