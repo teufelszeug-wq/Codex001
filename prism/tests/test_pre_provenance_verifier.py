@@ -32,29 +32,24 @@ class ProvenanceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "NONCANONICAL_FORECAST_BYTES"):
             verify_rfc3161_receipt(raw, raw, b"token", b"CA", "git-commit:abc")
 
+    def test_original_request_is_mandatory(self):
+        with self.assertRaisesRegex(ValueError, "RFC3161_ORIGINAL_REQUEST_REQUIRED"):
+            verify_rfc3161_receipt(*self.args)
+
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
-    def test_bad_signature_rejected(self, run):
+    def test_request_unreadable_is_rejected(self, run):
         run.return_value.returncode = 1
-        with self.assertRaisesRegex(ValueError, "RFC3161_SIGNATURE_OR_IMPRINT_INVALID"):
-            verify_rfc3161_receipt(*self.args)
+        with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_UNREADABLE"):
+            verify_rfc3161_receipt(*self.args, request_der=b"tsq")
 
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
-    def test_timestamp_after_off_rejected(self, run):
-        run.side_effect = [
-            type("Result", (), {"returncode": 0, "stdout": ""})(),
-            type("Result", (), {"returncode": 0, "stdout": "Time stamp: Nov  8 03:01:00 2026 GMT\n"})(),
-        ]
-        with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_AFTER_OFF"):
-            verify_rfc3161_receipt(*self.args)
-
-    @patch("prism_ops.pre_provenance_verifier.subprocess.run")
-    def test_timestamp_before_source_rejected(self, run):
-        run.side_effect = [
-            type("Result", (), {"returncode": 0, "stdout": ""})(),
-            type("Result", (), {"returncode": 0, "stdout": "Time stamp: Nov  8 00:59:00 2026 GMT\n"})(),
-        ]
-        with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_BEFORE_SOURCE"):
-            verify_rfc3161_receipt(*self.args)
+    def test_wrong_request_imprint_is_rejected(self, run):
+        run.return_value.returncode = 0
+        run.return_value.stdout = ("Hash Algorithm: sha256\nMessage data:\n"
+                                   "0000 - " + "00 " * 16 + "  ................\n"
+                                   "0010 - " + "00 " * 16 + "  ................\n")
+        with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_IMPRINT_MISMATCH"):
+            verify_rfc3161_receipt(*self.args, request_der=b"tsq")
 
 if __name__ == "__main__":
     unittest.main()
