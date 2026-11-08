@@ -49,6 +49,19 @@ class OrdinaryForecastTests(unittest.TestCase):
         self.data["agents"][0]["tickets"][0]["stake_yen"] = 200
         self.assertIn("RIO:INVALID_TICKET", self.check(False)["errors"])
 
+    def test_stake_total_mismatch_rejected(self):
+        self.data["agents"][0]["total_stake_yen"] = 200
+        self.assertIn("RIO:STAKE_TOTAL_MISMATCH", self.check(False)["errors"])
+
+    def test_duplicate_marks_rejected(self):
+        self.data["agents"][0]["picks"].append({"horse_no": 1, "horse_name": "テスト馬", "mark": "◎"})
+        self.assertIn("RIO:DUPLICATE_MARK", self.check(False)["errors"])
+
+    def test_matching_stake_total_accepted(self):
+        self.data["agents"][0]["total_stake_yen"] = 100
+        self.data["editorial"]["total_stake_yen"] = 100
+        self.check(True)
+
     def test_input_hash_rejected(self):
         self.data["input_snapshot"]["official_source"] = "TAMPERED"
         self.assertIn("INPUT_HASH_MISMATCH", self.check(False)["errors"])
