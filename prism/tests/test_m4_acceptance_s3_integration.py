@@ -28,7 +28,7 @@ class Integration(unittest.TestCase):
         self.forecast["input_hash"] = digest({})
         self.raw = json.dumps(self.forecast, ensure_ascii=False, sort_keys=True,
                               separators=(",", ":")).encode()
-        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA"}
+        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA", "official_race_id": "TEST", "official_scheduled_off": "2026-11-08T12:00:00+09:00"}
         self.bundle = {"forecast_bytes":self.raw, 
                        "key":"pre/k", "version_id":"v1",
                        "tsa_response_der":b"tsr", "tsa_request_der":b"tsq", }
@@ -69,6 +69,16 @@ class Integration(unittest.TestCase):
     def test_missing_verifier_context_rejected(self):
         errors = validate_forecast(self.forecast, None, self.bundle)["errors"]
         self.assertTrue(any("TRUSTED_VERIFIER_CONTEXT_REQUIRED" in e for e in errors))
+
+    def test_forged_official_off_rejected(self):
+        self.context["official_scheduled_off"] = "2026-11-08T11:00:00+09:00"
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("OFFICIAL_SCHEDULED_OFF_MISMATCH" in e for e in errors))
+
+    def test_forged_race_identity_rejected(self):
+        self.context["official_race_id"] = "OTHER"
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("OFFICIAL_RACE_ID_MISMATCH" in e for e in errors))
 
     def test_key_outside_pinned_prefix_rejected(self):
         self.bundle["key"] = "outside/k"
