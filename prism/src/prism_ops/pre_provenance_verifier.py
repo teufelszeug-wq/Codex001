@@ -17,11 +17,13 @@ from pathlib import Path
 
 def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                            trusted_tsa_ca_pem, immutable_location,
-                           *, openssl="openssl"):
+                           *, request_der=None, openssl="openssl"):
     if not isinstance(forecast_bytes, bytes) or not isinstance(readback_bytes, bytes):
         raise ValueError("FORECAST_BYTES_REQUIRED")
     if forecast_bytes != readback_bytes:
         raise ValueError("PERSISTENCE_READBACK_FAILED")
+    if not isinstance(request_der, bytes) or not request_der:
+        raise ValueError("RFC3161_ORIGINAL_REQUEST_REQUIRED")
     if not isinstance(tsa_response_der, bytes) or not tsa_response_der:
         raise ValueError("RFC3161_TOKEN_MISSING")
     if not isinstance(trusted_tsa_ca_pem, bytes) or not trusted_tsa_ca_pem:
@@ -37,8 +39,9 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         base = Path(tmp)
         (base / "forecast.json").write_bytes(forecast_bytes)
         (base / "stamp.tsr").write_bytes(tsa_response_der)
+        (base / "request.tsq").write_bytes(request_der)
         (base / "tsa-ca.pem").write_bytes(trusted_tsa_ca_pem)
-        cmd = [openssl, "ts", "-verify", "-data", str(base / "forecast.json"),
+        cmd = [openssl, "ts", "-verify", "-queryfile", str(base / "request.tsq"),
                "-in", str(base / "stamp.tsr"), "-CAfile", str(base / "tsa-ca.pem")]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
         if result.returncode != 0:
