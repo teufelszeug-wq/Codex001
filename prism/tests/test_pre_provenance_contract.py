@@ -68,7 +68,7 @@ class PreProvenanceContract(unittest.TestCase):
             def get_object(self, **kwargs):
                 return {"VersionId": "v1", "Body": BytesIO(signed)}
         context = {"s3_client": PinnedS3(), "bucket": "test", "key_prefix": "pre/",
-                   "tsa_ca_pem": b"ca", "tsa_policy_oid": "1.2.3.4.5", "official_race_id": p["race_id"],
+                   "tsa_ca_pem": b"ca", "tsa_policy_oid": "1.2.3.4.5", "tsa_crl_pem": b"MOCK-CRL", "official_race_id": p["race_id"],
                    "official_scheduled_off": p["scheduled_off"],
                    "official_entries": p["entries"], "official_as_of": p["source_as_of"],
                    "official_result_exposed": False, "official_race_cancelled": False}
@@ -77,7 +77,7 @@ class PreProvenanceContract(unittest.TestCase):
                   "tsa_request_der": b"request"}
         context = {"s3_client": object(), "bucket": "trusted",
                    "key_prefix": "pre/", "tsa_ca_pem": b"ca",
-                   "tsa_policy_oid": "1.2.3.4.5",
+                   "tsa_policy_oid": "1.2.3.4.5", "tsa_crl_pem": b"MOCK-CRL",
                    "official_race_id": p["race_id"],
                    "official_scheduled_off": p["scheduled_off"],
                    "official_entries": p["entries"],
