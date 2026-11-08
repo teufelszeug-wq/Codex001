@@ -49,8 +49,8 @@ class Integration(unittest.TestCase):
 
     @patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt")
     def test_governance_mode_blocks_before_crypto(self, verify):
-        self.bundle["trusted_s3_client"] = S3(self.raw, mode="GOVERNANCE")
-        errors = validate_forecast(self.forecast, None, self.bundle)["errors"]
+        self.context["s3_client"] = S3(self.raw, mode="GOVERNANCE")
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
         self.assertTrue(any("WORM_RETENTION_UNVERIFIED" in e for e in errors))
         verify.assert_not_called()
 
@@ -58,7 +58,7 @@ class Integration(unittest.TestCase):
     def test_forged_caller_location_rejected(self, verify):
         verify.return_value = {"verified_by":"PRISM_TRUSTED_PERSISTENCE_VERIFIER"}
         self.bundle["immutable_location"] = "s3-version:attacker/fake?versionId=v1"
-        errors = validate_forecast(self.forecast, verify.return_value, self.bundle)["errors"]
+        errors = validate_forecast(self.forecast, verify.return_value, self.bundle, verifier_context=self.context)["errors"]
         self.assertTrue(any("IMMUTABLE_LOCATION_MISMATCH" in e for e in errors))
 
     def test_producer_supplied_s3_client_rejected(self):
