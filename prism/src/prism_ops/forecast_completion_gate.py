@@ -122,7 +122,15 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
                 immutable["immutable_location"],
                 request_der=proof_bundle["tsa_request_der"],
                 required_policy_oid=verifier_context["tsa_policy_oid"],
-                trusted_crl_pem=verifier_context["tsa_crl_pem"])
+                trusted_crl_pem=verifier_context["tsa_crl_pem"],
+                s3_verifier_context={
+                    "s3_client": verifier_context["s3_client"],
+                    "bucket": bucket, "key": key,
+                    "version_id": proof_bundle["version_id"],
+                    "min_retention_until": (
+                        timestamp(forecast["scheduled_off"]) + timedelta(days=1)
+                    ).isoformat(),
+                })
             if "immutable_location" in proof_bundle and proof_bundle["immutable_location"] != immutable["immutable_location"]:
                 raise ValueError("IMMUTABLE_LOCATION_MISMATCH")
             if trusted_receipt != verified:
