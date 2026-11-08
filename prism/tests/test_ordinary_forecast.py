@@ -62,6 +62,22 @@ class OrdinaryForecastTests(unittest.TestCase):
         self.data["editorial"]["total_stake_yen"] = 100
         self.check(True)
 
+    def test_unhashable_pick_number_rejected_without_crash(self):
+        self.data["agents"][0]["picks"][0]["horse_no"] = [1]
+        self.assertIn("RIO:INVALID_PICK", self.check(False)["errors"])
+
+    def test_unhashable_agent_id_rejected_without_crash(self):
+        self.data["agents"][0]["agent_id"] = ["RIO"]
+        self.assertIn("AGENT_COVERAGE_INCOMPLETE", self.check(False)["errors"])
+
+    def test_unhashable_roster_rejected_without_crash(self):
+        self.data["required_agent_ids"] = [["RIO"]]
+        self.assertIn("INVALID_ROSTER", self.check(False)["errors"])
+
+    def test_nan_snapshot_rejected_without_crash(self):
+        self.data["input_snapshot"]["bad"] = float("nan")
+        self.assertIn("INVALID_INPUT_SNAPSHOT", self.check(False)["errors"])
+
     def test_input_hash_rejected(self):
         self.data["input_snapshot"]["official_source"] = "TAMPERED"
         self.assertIn("INPUT_HASH_MISMATCH", self.check(False)["errors"])
