@@ -18,12 +18,12 @@ class OfficialResultTrustTests(unittest.TestCase):
                     "official_observed_at": "2026-11-08T12:16:00+09:00",
                     "official_result_sha256": digest(self.result)}
 
-    def call(self, ctx=None, result=None):
+    def call(self, ctx="__DEFAULT__", result=None):
         with patch("prism_ops.forecast_completion_gate.settle_forecast",
                    return_value={"settled": True}) as mock:
             out = settle_with_trusted_official_result(
                 self.forecast, self.result if result is None else result,
-                trusted_result_context=self.ctx if ctx is None else ctx)
+                trusted_result_context=self.ctx if ctx == "__DEFAULT__" else ctx)
             mock.assert_called_once()
             return out
 
