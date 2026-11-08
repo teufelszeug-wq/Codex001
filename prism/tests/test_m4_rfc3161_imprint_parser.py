@@ -22,6 +22,9 @@ class ParserTests(unittest.TestCase):
                      "scheduled_off":"2026-11-08T12:00:00+09:00"}
         self.raw = json.dumps(self.data, sort_keys=True, ensure_ascii=False,
                               separators=(",", ":")).encode()
+        storage = patch("prism_ops.pre_provenance_verifier.verify_git_commit_readback", return_value=True)
+        storage.start()
+        self.addCleanup(storage.stop)
 
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
     def test_full_sha256_reaches_signature_verification(self, run):
