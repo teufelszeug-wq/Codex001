@@ -56,7 +56,7 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         # OpenSSL prints the request imprint as offset-prefixed hex rows.
         rows = match_data.group(1).splitlines()
         imprint = "".join(
-            "".join(re.findall(r"[0-9a-fA-F]{2}", re.split(r"\\s{2,}", row.split("-", 1)[1].replace("-", " "))[0]))
+            "".join(re.findall(r"[0-9a-fA-F]{2}", re.split(r"\s{2,}", row.split("-", 1)[1].replace("-", " "))[0]))
             for row in rows)
         if imprint.lower() != hashlib.sha256(forecast_bytes).hexdigest():
             raise ValueError("RFC3161_REQUEST_IMPRINT_MISMATCH")
