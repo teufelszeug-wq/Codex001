@@ -176,7 +176,8 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
     off = timestamp(official_context["official_scheduled_off"])
     if (not isinstance(s3_prefix, str) or not s3_prefix.endswith("/") or
             not isinstance(manifest_key, str) or
-            not manifest_key.startswith(s3_prefix + "proofs/")):
+            not manifest_key.startswith(s3_prefix + "proofs/") or
+            ".." in manifest_key.split("/") or manifest_key.startswith("/")):
         raise ValueError("UNTRUSTED_MANIFEST_KEY")
     stored = verified_s3_readback(
         s3_reader, bucket=s3_bucket, key=manifest_key,
@@ -184,7 +185,8 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
         min_retention_until=off + timedelta(days=1))
     raw = stored["readback_bytes"]
     manifest = json.loads(raw)
-    if _canonical_json(manifest) != raw or manifest.get("schema") != "PRISM_M4_CANDIDATE_V1":
+    if (not isinstance(manifest, dict) or _canonical_json(manifest) != raw or
+            manifest.get("schema") != "PRISM_M4_CANDIDATE_V1"):
         raise ValueError("INVALID_MANIFEST")
     if (manifest.get("tsa_policy_oid") != tsa_policy_oid or
             manifest.get("tsa_ca_sha256") != _sha256(tsa_ca_pem) or
@@ -204,7 +206,9 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
     if preserved_crl != tsa_crl_pem:
         raise ValueError("TRUSTED_ISSUER_CRL_MISMATCH")
     forecast_key = manifest["forecast_key"]
-    if not forecast_key.startswith(s3_prefix + "forecasts/"):
+    if (not isinstance(forecast_key, str) or
+            not forecast_key.startswith(s3_prefix + "forecasts/") or
+            ".." in forecast_key.split("/") or forecast_key.startswith("/")):
         raise ValueError("UNTRUSTED_FORECAST_KEY")
     forecast_record = verified_s3_readback(
         s3_reader, bucket=s3_bucket, key=forecast_key,
