@@ -58,7 +58,7 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         imprint = "".join(
             "".join(re.findall(r"[0-9a-fA-F]{2}", re.split(r"\s{2,}", row.split("-", 1)[1].replace("-", " "))[0]))
             for row in rows)
-        if imprint.lower() != hashlib.sha256(forecast_bytes).hexdigest():
+        if len(imprint) != 64 or imprint.lower() != hashlib.sha256(forecast_bytes).hexdigest():
             raise ValueError("RFC3161_REQUEST_IMPRINT_MISMATCH")
         cmd = [openssl, "ts", "-verify", "-queryfile", str(base / "request.tsq"),
                "-in", str(base / "stamp.tsr"), "-CAfile", str(base / "tsa-ca.pem")]
