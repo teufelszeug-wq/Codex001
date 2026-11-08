@@ -62,6 +62,22 @@ class FullContractWithLocalCrypto(unittest.TestCase):
         cls._run("openssl", "x509", "-req", "-in", "tsa.csr", "-CA", "ca.pem",
                  "-CAkey", "ca.key", "-CAcreateserial", "-out", "tsa.pem",
                  "-days", "2", "-sha256", "-extfile", "tsa.ext")
+        # Ephemeral issuer CRL: OpenSSL validates its signature and currency.
+        cls.root.joinpath("index.txt").write_text("", encoding="ascii")
+        cls.root.joinpath("crlnumber").write_text("01\n", encoding="ascii")
+        cls.root.joinpath("newcerts").mkdir()
+        cls.root.joinpath("ca-crl.cnf").write_text(
+            "[ca]\ndefault_ca=ca_default\n[ca_default]\n"
+            "database=index.txt\nnew_certs_dir=newcerts\n"
+            "certificate=ca.pem\nprivate_key=ca.key\n"
+            "serial=serial-ca\ncrlnumber=crlnumber\n"
+            "default_md=sha256\ndefault_days=2\ndefault_crl_days=2\n"
+            "policy=policy_any\n[policy_any]\ncommonName=supplied\n",
+            encoding="ascii")
+        cls.root.joinpath("serial-ca").write_text("01\n", encoding="ascii")
+        cls._run("openssl", "ca", "-config", "ca-crl.cnf", "-gencrl",
+                 "-out", "issuer.crl.pem")
+        cls.crl = cls.root.joinpath("issuer.crl.pem").read_bytes()
         cls.root.joinpath("serial.txt").write_text("01\n", encoding="ascii")
         cls.root.joinpath("tsa.cnf").write_text(
             "[tsa]\ndefault_tsa=cfg\n[cfg]\nserial=serial.txt\n"
@@ -108,7 +124,7 @@ class FullContractWithLocalCrypto(unittest.TestCase):
                           "?versionId=v1")
         cls.receipt = verify_rfc3161_receipt(
             cls.raw, cls.raw, cls.tsr, cls.ca, cls.object_url,
-            request_der=cls.tsq)
+            request_der=cls.tsq, trusted_crl_pem=cls.crl)
 
     @classmethod
     def tearDownClass(cls):
@@ -119,6 +135,7 @@ class FullContractWithLocalCrypto(unittest.TestCase):
         self.context = {
             "s3_client": self.s3, "bucket": "synthetic",
             "key_prefix": "pre/", "tsa_ca_pem": self.ca,
+            "tsa_crl_pem": self.crl,
             "tsa_policy_oid": "1.2.3.4.5",
             "official_race_id": self.forecast["race_id"],
             "official_scheduled_off": self.forecast["scheduled_off"],
