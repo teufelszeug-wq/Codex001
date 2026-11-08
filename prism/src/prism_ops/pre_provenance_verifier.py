@@ -17,7 +17,8 @@ from pathlib import Path
 
 def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                            trusted_tsa_ca_pem, immutable_location,
-                           *, request_der=None, required_policy_oid=None, openssl="openssl"):
+                           *, request_der=None, required_policy_oid=None,
+                           trusted_crl_pem=None, openssl="openssl"):
     if not isinstance(forecast_bytes, bytes) or not isinstance(readback_bytes, bytes):
         raise ValueError("FORECAST_BYTES_REQUIRED")
     if forecast_bytes != readback_bytes:
@@ -40,7 +41,16 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         (base / "forecast.json").write_bytes(forecast_bytes)
         (base / "stamp.tsr").write_bytes(tsa_response_der)
         (base / "request.tsq").write_bytes(request_der)
-        (base / "tsa-ca.pem").write_bytes(trusted_tsa_ca_pem)
+        if trusted_crl_pem is not None:
+            if (not isinstance(trusted_crl_pem, bytes) or
+                    b"-----BEGIN X509 CRL-----" not in trusted_crl_pem):
+                raise ValueError("TRUSTED_TSA_CRL_INVALID")
+            # OpenSSL's trusted CAfile can carry issuer CRLs. -crl_check
+            # independently checks the signer's revocation and CRL validity.
+            (base / "tsa-ca.pem").write_bytes(
+                trusted_tsa_ca_pem + b"\\n" + trusted_crl_pem)
+        else:
+            (base / "tsa-ca.pem").write_bytes(trusted_tsa_ca_pem)
         query = subprocess.run(
             [openssl, "ts", "-query", "-in", str(base / "request.tsq"), "-text"],
             capture_output=True, text=True, timeout=20)
@@ -62,6 +72,8 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
             raise ValueError("RFC3161_REQUEST_IMPRINT_MISMATCH")
         cmd = [openssl, "ts", "-verify", "-queryfile", str(base / "request.tsq"),
                "-in", str(base / "stamp.tsr"), "-CAfile", str(base / "tsa-ca.pem")]
+        if trusted_crl_pem is not None:
+            cmd.append("-crl_check")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
         if result.returncode != 0:
             raise ValueError("RFC3161_SIGNATURE_OR_IMPRINT_INVALID")
@@ -107,5 +119,6 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
         "immutable_location": immutable_location,
         "readback_verified": True,
         "timestamp_verified": True,
+        "signer_revocation_checked": trusted_crl_pem is not None,
         "proof_kind": "RFC3161_OPENSSL_VERIFIED",
     }
