@@ -38,7 +38,7 @@ class M4ReceiptTests(unittest.TestCase):
         import hashlib
         imprint = hashlib.sha256(RAW).digest()
         rows = ["%04x - %s  %s" % (i, " ".join("%02x" % b for b in imprint[i:i+16]), "."*16) for i in (0,16)]
-        query = "Hash Algorithm: sha256\\nMessage data:\\n" + "\\n".join(rows) + "\\n"
+        query = "Hash Algorithm: sha256\nMessage data:\n" + "\n".join(rows) + "\n"
         run.side_effect = [type("R", (), {"returncode":0,"stdout":query})(),
                            type("R", (), {"returncode":1,"stdout":""})()]
         with self.assertRaisesRegex(ValueError, "RFC3161_SIGNATURE_OR_IMPRINT_INVALID"):
@@ -50,7 +50,7 @@ class M4ReceiptTests(unittest.TestCase):
         import hashlib
         imprint = hashlib.sha256(RAW).digest()
         rows = ["%04x - %s  %s" % (i, " ".join("%02x" % b for b in imprint[i:i+16]), "."*16) for i in (0,16)]
-        query = "Hash Algorithm: sha256\\nMessage data:\\n" + "\\n".join(rows) + "\\n"
+        query = "Hash Algorithm: sha256\nMessage data:\n" + "\n".join(rows) + "\n"
         run.side_effect = [type("R", (), {"returncode": 0, "stdout": query})(),
                            type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
@@ -61,9 +61,14 @@ class M4ReceiptTests(unittest.TestCase):
 
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
     def test_reject_mocked_timestamp_after_off(self, run):
-        run.side_effect = [type("R", (), {"returncode": 0, "stdout": ""})(),
+        import hashlib
+        imprint = hashlib.sha256(RAW).digest()
+        rows = ["%04x - %s  %s" % (i, " ".join("%02x" % b for b in imprint[i:i+16]), "."*16) for i in (0,16)]
+        query = "Hash Algorithm: sha256\\nMessage data:\\n" + "\\n".join(rows) + "\\n"
+        run.side_effect = [type("R", (), {"returncode": 0, "stdout": query})(),
+                           type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
-                               "stdout": "Time stamp: Nov 9 01:00:00 2026 GMT\n"})()]
+                               "stdout": "Time stamp: Nov 9 01:00:00 2026 GMT\\n"})()]
         with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_AFTER_OFF"):
             self.call()
 
