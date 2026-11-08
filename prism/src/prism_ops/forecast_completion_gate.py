@@ -13,7 +13,7 @@ def digest(data):
     raw = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
+def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, verifier_context=None):
     errors = []
     try:
         lock = timestamp(forecast["saved_at"])
@@ -56,19 +56,32 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
             # forecast producer. Re-fetch a pinned WORM version from S3.
             from prism_ops.trusted_s3_readback import verified_s3_readback
             from datetime import timedelta
+            if not isinstance(verifier_context, dict):
+                raise ValueError("TRUSTED_VERIFIER_CONTEXT_REQUIRED")
+            if any(k in proof_bundle for k in ("trusted_s3_client", "trusted_tsa_ca_pem")):
+                raise ValueError("UNTRUSTED_VERIFIER_CONFIG_IN_PROOF")
+            if not all(k in verifier_context for k in ("s3_client", "bucket", "key_prefix", "tsa_ca_pem")):
+                raise ValueError("TRUSTED_VERIFIER_CONFIG_INCOMPLETE")
+            bucket = verifier_context["bucket"]
+            prefix = verifier_context["key_prefix"]
+            key = proof_bundle["key"]
+            if (not isinstance(prefix, str) or not prefix or
+                    not isinstance(key, str) or not key.startswith(prefix) or
+                    ".." in key.split("/") or key.startswith("/")):
+                raise ValueError("UNTRUSTED_OBJECT_KEY")
             original = proof_bundle["forecast_bytes"]
             if not isinstance(original, bytes):
                 raise ValueError("FORECAST_BYTES_REQUIRED")
             immutable = verified_s3_readback(
-                proof_bundle["trusted_s3_client"],
-                bucket=proof_bundle["bucket"],
-                key=proof_bundle["key"],
+                verifier_context["s3_client"],
+                bucket=bucket,
+                key=key,
                 version_id=proof_bundle["version_id"],
                 expected_sha256=hashlib.sha256(original).hexdigest(),
                 min_retention_until=timestamp(forecast["scheduled_off"]) + timedelta(days=1))
             verified = verify_rfc3161_receipt(
                 original, immutable["readback_bytes"],
-                proof_bundle["tsa_response_der"], proof_bundle["trusted_tsa_ca_pem"],
+                proof_bundle["tsa_response_der"], verifier_context["tsa_ca_pem"],
                 immutable["immutable_location"],
                 request_der=proof_bundle["tsa_request_der"])
             if "immutable_location" in proof_bundle and proof_bundle["immutable_location"] != immutable["immutable_location"]:
@@ -145,7 +158,7 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
     return {"complete": not errors, "errors": errors, "race_id": forecast.get("race_id"),
             "agent_count": len(agents), "sha256": digest(forecast)}
 
-def settle_forecast(forecast, official_result, trusted_receipt=None, proof_bundle=None):
+def settle_forecast(forecast, official_result, trusted_receipt=None, proof_bundle=None, *, verifier_context=None):
     """Strict per-agent settlement. Never infer an unlisted outcome is a loss.
 
     official_result.ticket_outcomes must explicitly adjudicate each ticket.
@@ -153,7 +166,7 @@ def settle_forecast(forecast, official_result, trusted_receipt=None, proof_bundl
     """
     from prism_ops.settlement_fail_closed import settle_ticket_outcomes
 
-    gate = validate_forecast(forecast, trusted_receipt, proof_bundle)
+    gate = validate_forecast(forecast, trusted_receipt, proof_bundle, verifier_context=verifier_context)
     if not gate["complete"]:
         raise ValueError("invalid PRE forecast: " + repr(gate["errors"]))
     if official_result.get("race_id") != forecast.get("race_id"):
