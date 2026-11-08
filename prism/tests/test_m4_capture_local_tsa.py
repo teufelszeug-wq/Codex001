@@ -138,6 +138,26 @@ class CaptureWithLocalTSA(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "UNTRUSTED_MANIFEST_KEY"):
             self._independent(captured, manifest_key="pre/proofs/../forged.json")
 
+    def test_manifest_key_must_match_pinned_digest(self):
+        captured = self._capture()
+        with self.assertRaisesRegex(ValueError, "MANIFEST_CONTENT_ADDRESS_MISMATCH"):
+            self._independent(captured, manifest_key="pre/proofs/forged.json")
+
+    def test_forecast_key_must_match_manifest_digest(self):
+        from prism_ops.m4_capture import _canonical_json, _sha256
+        import json
+        captured = self._capture()
+        key = (captured["manifest_key"], captured["manifest_version_id"])
+        manifest = json.loads(self.backend.objects[key]["data"])
+        manifest["forecast_key"] = "pre/forecasts/misleading.json"
+        raw = _canonical_json(manifest)
+        new_key = "pre/proofs/" + _sha256(raw) + ".json"
+        self.backend.objects[(new_key, captured["manifest_version_id"])] = {
+            "data": raw, "until": self.backend.objects[key]["until"]}
+        with self.assertRaisesRegex(ValueError, "FORECAST_CONTENT_ADDRESS_MISMATCH"):
+            self._independent(captured, manifest_key=new_key,
+                              manifest_sha256=_sha256(raw))
+
     def test_governance_mode_rejected_by_independent_reader(self):
         captured = self._capture()
         self.backend.retention_mode = "GOVERNANCE"
