@@ -45,10 +45,10 @@ class VerifiedSettlementTests(unittest.TestCase):
         context = {"official_race_id": "TEST-1"}
         result = {"race_id": "TEST-1", "official_source": "official",
                   "retrieved_at": self.now}
-        with patch("prism_ops.verified_settlement.validate_forecast",
-                   return_value={"complete": True, "errors": []}) as verify, \\
-             patch("prism_ops.verified_settlement.settle_forecast",
-                   return_value={"race_id": "TEST-1", "by_agent": {}}) as settle:
+        with (patch("prism_ops.verified_settlement.validate_forecast",
+                    return_value={"complete": True, "errors": []}) as verify,
+              patch("prism_ops.verified_settlement.settle_forecast",
+                    return_value={"race_id": "TEST-1", "by_agent": {}}) as settle):
             out = settle_verified_pre(self.forecast, receipt, result, self.now,
                                       proof_bundle=proof, verifier_context=context)
         self.assertEqual(out["status"], "SETTLED")
