@@ -68,8 +68,8 @@ def assess_ordinary_forecast(forecast, *, observed_at):
         errors.append("INVALID_AGENTS")
         agents = []
     if (not isinstance(roster, list) or not roster or
-            any(not isinstance(x, str) or not x for x in roster) or
-            len(set(roster)) != len(roster)):
+            any(not isinstance(x, str) or not x.strip() for x in roster) or
+            len(set(x for x in roster if isinstance(x, str))) != len(roster)):
         errors.append("INVALID_ROSTER")
         roster = []
     ids = [a.get("agent_id") for a in agents if isinstance(a, dict)]
