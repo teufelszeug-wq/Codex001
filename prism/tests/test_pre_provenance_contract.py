@@ -72,14 +72,27 @@ class PreProvenanceContract(unittest.TestCase):
                    "official_scheduled_off": p["scheduled_off"],
                    "official_entries": p["entries"], "official_as_of": p["source_as_of"],
                    "official_result_exposed": False, "official_race_cancelled": False}
-        bundle = {"forecast_bytes": signed, "key": "pre/race", "version_id": "v1",
-                  "tsa_response_der": b"token", "tsa_request_der": b"tsq"}
+        bundle = {"forecast_bytes": signed, "key": "pre/test",
+                  "version_id": "v1", "tsa_response_der": b"token",
+                  "tsa_request_der": b"request"}
+        context = {"s3_client": object(), "bucket": "trusted",
+                   "key_prefix": "pre/", "tsa_ca_pem": b"ca",
+                   "official_race_id": p["race_id"],
+                   "official_scheduled_off": p["scheduled_off"],
+                   "official_entries": p["entries"],
+                   "official_as_of": p["source_as_of"],
+                   "official_result_exposed": False,
+                   "official_race_cancelled": False}
         receipt = {"verified_by": "PRISM_TRUSTED_PERSISTENCE_VERIFIER",
                    "race_id": p["race_id"], "forecast_sha256": digest(p),
                    "trusted_saved_at": "2026-11-08T08:02:00+09:00",
-                   "immutable_location": "s3-version:test/pre/race?versionId=v1",
+                   "immutable_location": "s3-version:trusted/pre/test?versionId=v1",
                    "readback_verified": True, "timestamp_verified": True}
-        with patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt",
+        immutable = {"readback_bytes": signed,
+                     "immutable_location": receipt["immutable_location"]}
+        with patch("prism_ops.trusted_s3_readback.verified_s3_readback",
+                   return_value=immutable), patch(
+                   "prism_ops.pre_provenance_verifier.verify_rfc3161_receipt",
                    return_value=receipt):
             result = validate_forecast(p, receipt, bundle, verifier_context=context)
         self.assertIn("SIGNED_FORECAST_PAYLOAD_MISMATCH", result["errors"])
