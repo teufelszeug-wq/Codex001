@@ -14,6 +14,10 @@ class M4ReceiptTests(unittest.TestCase):
                     tsa_response_der=b"not-a-real-token", trusted_tsa_ca_pem=b"not-a-real-ca",
                     immutable_location="git-commit:test", request_der=b"tsq")
         args.update(kw)
+        # Cryptographic unit tests isolate storage; production never bypasses it.
+        if args["immutable_location"] == "git-commit:test":
+            with patch("prism_ops.pre_provenance_verifier.verify_git_commit_readback", return_value=True):
+                return verify_rfc3161_receipt(**args)
         return verify_rfc3161_receipt(**args)
 
     def test_reject_readback_mutation(self):
