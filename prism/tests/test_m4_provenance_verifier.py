@@ -44,7 +44,7 @@ class M4ReceiptTests(unittest.TestCase):
         # Unit test only: mocks do not prove real cryptographic verification.
         run.side_effect = [type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
-                               "stdout": "Time stamp: Nov 9 00:30:00 2026 GMT\\n"})()]
+                               "stdout": "Time stamp: Nov 9 00:30:00 2026 GMT\n"})()]
         receipt = self.call()
         self.assertEqual(receipt["race_id"], "TEST-RACE")
         self.assertEqual(receipt["proof_kind"], "RFC3161_OPENSSL_VERIFIED")
@@ -53,7 +53,7 @@ class M4ReceiptTests(unittest.TestCase):
     def test_reject_mocked_timestamp_after_off(self, run):
         run.side_effect = [type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
-                               "stdout": "Time stamp: Nov 9 01:00:00 2026 GMT\\n"})()]
+                               "stdout": "Time stamp: Nov 9 01:00:00 2026 GMT\n"})()]
         with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_AFTER_OFF"):
             self.call()
 
