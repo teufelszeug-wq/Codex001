@@ -86,17 +86,25 @@ def assess_ordinary_forecast(forecast, *, observed_at):
         if not isinstance(picks, list) or not picks:
             errors.append(f"{agent_id}:PICKS_MISSING")
         else:
+            marks_seen = set()
             for p in picks:
                 if (not isinstance(p, dict) or
                         p.get("horse_name") != names.get(p.get("horse_no")) or
                         not p.get("mark")):
                     errors.append(f"{agent_id}:INVALID_PICK")
+                elif p["mark"] in marks_seen:
+                    errors.append(f"{agent_id}:DUPLICATE_MARK")
+                else:
+                    marks_seen.add(p["mark"])
         tickets = agent.get("tickets")
         if not isinstance(tickets, list):
             errors.append(f"{agent_id}:INVALID_TICKETS")
             continue
         if not tickets and not agent.get("pass_reason"):
             errors.append(f"{agent_id}:NO_TICKETS_OR_PASS")
+        declared_total = agent.get("total_stake_yen")
+        if declared_total is not None and (type(declared_total) is not int or declared_total != 100 * len(tickets)):
+            errors.append(f"{agent_id}:STAKE_TOTAL_MISMATCH")
         for t in tickets:
             if (not isinstance(t, dict) or type(t.get("stake_yen")) is not int or
                     t["stake_yen"] != 100 or not t.get("bet_type") or
