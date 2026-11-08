@@ -42,10 +42,9 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
             errors.append("INVALID_INPUT_SNAPSHOT")
         elif forecast.get("input_hash") != digest(forecast["input_snapshot"]):
             errors.append("INPUT_HASH_MISMATCH")
-    # References alone do not establish external timestamp or immutability.
-    # Verification must be supplied by a separate trusted persistence verifier.
-    if not forecast.get("immutable_ref") or not forecast.get("external_timestamp_proof"):
-        errors.append("PRE_PROVENANCE_UNVERIFIED")
+    # Provenance is an external envelope. Requiring a TSA token or storage
+    # address *inside* the signed forecast would create a circular dependency.
+    # Legacy fields, if present, are not trusted as evidence.
     # Reverify cryptographic proof at the acceptance boundary. A forged receipt
     # dictionary, including a forged verified_by field, is not sufficient.
     if not isinstance(proof_bundle, dict):
@@ -59,6 +58,10 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
                 proof_bundle["immutable_location"])
             if trusted_receipt != verified:
                 errors.append("TRUSTED_RECEIPT_NOT_DERIVED_FROM_PROOF")
+            if proof_bundle["forecast_bytes"] != json.dumps(
+                    forecast, ensure_ascii=False, sort_keys=True,
+                    separators=(",", ":")).encode("utf-8"):
+                errors.append("SIGNED_FORECAST_PAYLOAD_MISMATCH")
         except (KeyError, ValueError, TypeError, OSError) as exc:
             errors.append("CRYPTOGRAPHIC_PROOF_INVALID:" + str(exc))
     # Self-attested flags cannot establish external timestamp or readback.
