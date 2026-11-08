@@ -28,6 +28,22 @@ class PreProvenanceContract(unittest.TestCase):
         self.assertIn("CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING",
                       validate_forecast(p, fake)["errors"])
 
+    def test_settlement_rejects_missing_m4_proof(self):
+        from prism_ops.forecast_completion_gate import settle_forecast
+        p = sample()
+        with self.assertRaisesRegex(ValueError, "CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING"):
+            settle_forecast(p, {"race_id": p["race_id"],
+                                "official_source": "OFFICIAL_TEST_ONLY",
+                                "ticket_outcomes": {}})
+
+    def test_forged_proof_bundle_rejected(self):
+        p = sample()
+        forged = {"forecast_bytes": b"{}", "readback_bytes": b"{}",
+                  "tsa_response_der": b"fake", "trusted_tsa_ca_pem": b"fake",
+                  "immutable_location": "git-commit:fake"}
+        self.assertTrue(any(x.startswith("CRYPTOGRAPHIC_PROOF_INVALID")
+                            for x in validate_forecast(p, proof_bundle=forged)["errors"]))
+
     def test_missing_snapshot_fails(self):
         p = sample(); del p["input_snapshot"]
         self.assertIn("INPUT_SNAPSHOT_MISSING", validate_forecast(p)["errors"])
