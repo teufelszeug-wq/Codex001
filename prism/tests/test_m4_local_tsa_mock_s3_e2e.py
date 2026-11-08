@@ -174,6 +174,22 @@ class FullContractWithLocalCrypto(unittest.TestCase):
                                   verifier_context=self.context)
         self.assertEqual(out["status"], "SETTLEMENT_INCOMPLETE")
 
+    def test_real_signed_token_with_wrong_policy_rejected(self):
+        self.context["tsa_policy_oid"] = "1.2.3.4.6"
+        checked = validate_forecast(self.forecast, self.receipt, self.proof,
+                                    verifier_context=self.context)
+        self.assertFalse(checked["complete"])
+        self.assertTrue(any("RFC3161_POLICY_MISMATCH" in e
+                            for e in checked["errors"]))
+
+    def test_missing_trusted_tsa_policy_rejected(self):
+        del self.context["tsa_policy_oid"]
+        checked = validate_forecast(self.forecast, self.receipt, self.proof,
+                                    verifier_context=self.context)
+        self.assertFalse(checked["complete"])
+        self.assertTrue(any("TRUSTED_VERIFIER_CONFIG_INCOMPLETE" in e
+                            for e in checked["errors"]))
+
     def test_unverified_official_roster_rejects(self):
         self.context["official_entries"] = []
         checked = validate_forecast(self.forecast, self.receipt, self.proof,
