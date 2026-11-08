@@ -28,7 +28,7 @@ class Integration(unittest.TestCase):
         self.forecast["input_hash"] = digest({})
         self.raw = json.dumps(self.forecast, ensure_ascii=False, sort_keys=True,
                               separators=(",", ":")).encode()
-        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA", "official_race_id": "TEST", "official_scheduled_off": "2026-11-08T12:00:00+09:00", "official_entries": [{"horse_no": 1, "horse_name": "A"}]}
+        self.context = {"s3_client": S3(self.raw), "bucket": "b", "key_prefix": "pre/", "tsa_ca_pem": b"CA", "official_race_id": "TEST", "official_scheduled_off": "2026-11-08T12:00:00+09:00", "official_entries": [{"horse_no": 1, "horse_name": "A"}], "official_as_of": "2026-11-08T10:00:00+09:00", "official_result_exposed": False, "official_race_cancelled": False}
         self.bundle = {"forecast_bytes":self.raw, 
                        "key":"pre/k", "version_id":"v1",
                        "tsa_response_der":b"tsr", "tsa_request_der":b"tsq", }
@@ -89,6 +89,26 @@ class Integration(unittest.TestCase):
         self.context["official_entries"] = []
         errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
         self.assertTrue(any("OFFICIAL_ENTRIES_UNAVAILABLE" in e for e in errors))
+
+    def test_stale_official_feed_rejected(self):
+        self.context["official_as_of"] = "2026-11-08T09:00:00+09:00"
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("OFFICIAL_FEED_STALE" in e for e in errors))
+
+    def test_results_exposed_rejected(self):
+        self.context["official_result_exposed"] = True
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("OFFICIAL_RESULT_EXPOSURE_UNVERIFIED" in e for e in errors))
+
+    def test_cancelled_race_rejected(self):
+        self.context["official_race_cancelled"] = True
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("OFFICIAL_RACE_STATUS_UNVERIFIED" in e for e in errors))
+
+    def test_missing_official_feed_time_rejected(self):
+        del self.context["official_as_of"]
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("OFFICIAL_FEED_TIME_UNVERIFIED" in e for e in errors))
 
     def test_key_outside_pinned_prefix_rejected(self):
         self.bundle["key"] = "outside/k"
