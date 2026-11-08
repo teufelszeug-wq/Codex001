@@ -14,6 +14,9 @@ def digest(data):
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, verifier_context=None):
+    if not isinstance(forecast, dict):
+        return {"complete": False, "errors": ["INVALID_FORECAST"],
+                "race_id": None, "agent_count": 0, "sha256": None}
     errors = []
     try:
         lock = timestamp(forecast["saved_at"])
@@ -145,42 +148,80 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
     if forecast.get("results_exposed") is not False:
         errors.append("RESULT_EXPOSURE_NOT_EXCLUDED")
     runners = forecast.get("entries", [])
-    numbers = [r.get("horse_no") for r in runners]
-    if not runners or len(numbers) != len(set(numbers)) or any(not r.get("horse_name") for r in runners):
+    if not isinstance(runners, list) or any(not isinstance(r, dict) for r in runners):
         errors.append("INVALID_ENTRIES")
-    known = set(numbers)
-    if any(type(n) is not int or n <= 0 for n in numbers):
+        runners = []
+    numbers = [r.get("horse_no") for r in runners]
+    valid_numbers = [n for n in numbers if type(n) is int and n > 0]
+    if len(valid_numbers) != len(numbers):
         errors.append("INVALID_HORSE_NUMBER")
+    if (not runners or len(set(valid_numbers)) != len(valid_numbers) or
+            len(valid_numbers) != len(numbers) or
+            any(not isinstance(r.get("horse_name"), str) or
+                not r["horse_name"].strip() for r in runners)):
+        errors.append("INVALID_ENTRIES")
+    known = set(valid_numbers)
     agents = forecast.get("agents", [])
+    if not isinstance(agents, list) or any(not isinstance(a, dict) for a in agents):
+        errors.append("INVALID_AGENTS")
+        agents = []
     ids = [a.get("agent_id") for a in agents]
-    if not agents or any(not i for i in ids) or len(ids) != len(set(ids)):
+    valid_ids = [i for i in ids if isinstance(i, str) and i.strip()]
+    if not agents or len(valid_ids) != len(ids) or len(valid_ids) != len(set(valid_ids)):
         errors.append("INVALID_AGENTS")
     roster = forecast.get("required_agent_ids")
     if roster is None:
         errors.append("REQUIRED_AGENT_ROSTER_MISSING")
-    elif not isinstance(roster, list) or not roster or len(roster) != len(set(roster)) or any(not x for x in roster):
+    elif (not isinstance(roster, list) or not roster or
+          any(not isinstance(x, str) or not x.strip() for x in roster) or
+          len(roster) != len(set(x for x in roster if isinstance(x, str)))):
         errors.append("INVALID_REQUIRED_AGENT_ROSTER")
-    elif set(ids) != set(roster):
+    elif set(valid_ids) != set(roster):
         errors.append("AGENT_COVERAGE_INCOMPLETE")
-    for agent in [*agents, dict(forecast.get("editorial") or {}, agent_id="EDITORIAL")]:
-        name = agent["agent_id"]
+    editorial = forecast.get("editorial")
+    if not isinstance(editorial, dict):
+        errors.append("INVALID_EDITORIAL")
+        editorial = {}
+    for agent in [*agents, dict(editorial, agent_id="EDITORIAL")]:
+        name = agent["agent_id"] if isinstance(agent.get("agent_id"), str) else "INVALID_AGENT"
         picks = agent.get("picks", [])
+        if not isinstance(picks, list) or any(not isinstance(p, dict) for p in picks):
+            errors.append(name + ":INVALID_PICKS")
+            picks = []
         tickets = agent.get("tickets", [])
-        if not picks or any(not p.get("mark") or p.get("horse_no") not in known or not p.get("horse_name") or p.get("horse_name") != next((r.get("horse_name") for r in runners if r.get("horse_no") == p.get("horse_no")), None) for p in picks):
+        if not isinstance(tickets, list) or any(not isinstance(t, dict) for t in tickets):
+            errors.append(name + ":INVALID_TICKET")
+            tickets = []
+        if not picks or any(
+                not isinstance(p.get("mark"), str) or not p["mark"] or
+                p.get("horse_no") not in known or
+                not isinstance(p.get("horse_name"), str) or
+                p.get("horse_name") != next(
+                    (r["horse_name"] for r in runners if r.get("horse_no") == p.get("horse_no")), None)
+                for p in picks):
             errors.append(name + ":INVALID_PICKS")
         if not tickets and not agent.get("pass_reason"):
             errors.append(name + ":NO_TICKETS_OR_PASS")
         seen_tickets = set()
         for ticket in tickets:
-            key = (ticket.get("bet_type"), tuple(ticket.get("selection") or []))
+            selection = ticket.get("selection")
+            bet_type = ticket.get("bet_type")
+            if (not isinstance(selection, list) or not selection or
+                    any(type(n) is not int or n not in known for n in selection) or
+                    not isinstance(bet_type, str) or not bet_type.strip()):
+                errors.append(name + ":INVALID_TICKET")
+                continue
+            key = (bet_type, tuple(selection))
             if key in seen_tickets:
                 errors.append(name + ":DUPLICATE_TICKET")
             seen_tickets.add(key)
-            if ticket.get("stake_yen") != 100:
+            if type(ticket.get("stake_yen")) is not int or ticket["stake_yen"] != 100:
                 errors.append(name + ":STAKE_NOT_100")
-            if not ticket.get("bet_type") or not ticket.get("selection") or any(n not in known for n in ticket.get("selection", [])):
-                errors.append(name + ":INVALID_TICKET")
-    for item in forecast.get("evidence", []):
+    evidence = forecast.get("evidence", [])
+    if not isinstance(evidence, list) or any(not isinstance(item, dict) for item in evidence):
+        errors.append("INVALID_EVIDENCE")
+        evidence = []
+    for item in evidence:
         if not item.get("source") or not item.get("kind") or not item.get("available_at"):
             errors.append("EVIDENCE_MISSING_PROVENANCE")
             continue
