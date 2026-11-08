@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from prism_ops.pre_provenance_verifier import verify_rfc3161_receipt
 
@@ -82,7 +83,9 @@ class LocalRFC3161CryptoTests(unittest.TestCase):
     def _verify(self, *, original=None, readback=None, reply=None,
                 request=None, ca=None):
         raw = self.raw if original is None else original
-        return verify_rfc3161_receipt(
+        # Isolate genuine local RFC3161 signature tests from storage backend.
+        with patch("prism_ops.pre_provenance_verifier.verify_git_commit_readback", return_value=True):
+            return verify_rfc3161_receipt(
             raw, raw if readback is None else readback,
             self.reply if reply is None else reply,
             self.ca if ca is None else ca,
