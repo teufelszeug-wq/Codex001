@@ -21,6 +21,10 @@ jobs:
           python-version: '3.12'
       - name: OpenSSL version
         run: openssl version
+      - name: Validate M4 provider transport entrypoint
+        env:
+          PYTHONPATH: prism/src
+        run: python -m py_compile prism/src/prism_ops/m4_capture.py prism/scripts/m4_capture_cli.py && python prism/scripts/m4_capture_cli.py --help
       - name: Run PRE fail-closed regression suite
         env:
           PYTHONPATH: prism/src
