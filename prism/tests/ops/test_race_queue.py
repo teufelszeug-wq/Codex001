@@ -27,6 +27,21 @@ class QueueTests(unittest.TestCase):
                                    "2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],
                          "PRE_LOCK_STATUS_UNVERIFIED")
 
+    def test_malformed_race_record_fails_closed(self):
+        result = next_work([None, "broken", self.r],
+                           "2026-11-06T23:00:00+09:00")
+        self.assertEqual([r["reason"] for r in result["blocked"]],
+                         ["INVALID_RACE_RECORD", "INVALID_RACE_RECORD"])
+        self.assertEqual(len(result["eligible"]), 1)
+
+    def test_malformed_receipt_never_crashes(self):
+        f = self.forecast if hasattr(self, "forecast") else {}
+        for receipt in ("forged", ["fake"], 123, None):
+            with self.subTest(receipt=receipt):
+                result = snapshot_gate(f, receipt, "2026-11-07T11:00:00+09:00")
+                self.assertFalse(result["verified_pre"])
+                self.assertIn("PERSISTENCE_READBACK_FAILED", result["errors"])
+
     def test_exposed(self):
         self.assertEqual(next_work([{**self.r,"result_exposed":True}],"2026-11-06T23:00:00+09:00")["blocked"][0]["reason"],"NO_PRE_WINDOW")
     def test_receipt_missing(self):
