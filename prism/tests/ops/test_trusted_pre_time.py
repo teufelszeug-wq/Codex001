@@ -1,5 +1,6 @@
 """Regression checks for timestamp-trust PRE lock gate (synthetic only)."""
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
@@ -14,11 +15,21 @@ def sample(saved="2026-11-07T10:00:00+09:00"):
             "editorial":{"picks":[{"horse_no":1,"mark":"◎"}],"pass_reason":"見送り"}}
 
 def receipt(f, trusted=None):
-    return {"readback_sha256":digest(f),"external_timestamp_verified":True,
+    return {"forecast_sha256":digest(f),"timestamp_verified":True,
             "immutable_location":"test://fixture",
             "trusted_saved_at":trusted}
 
 class TrustedTimeTests(unittest.TestCase):
+    def setUp(self):
+        # The timestamp inequalities are unit tested here. Only strict M4
+        # acceptance tests may claim proof verification; this is a stub.
+        patcher = patch(
+            "prism_ops.forecast_completion_gate.validate_forecast",
+            side_effect=lambda f, *args, **kwargs: {
+                "complete": True, "errors": [], "sha256": digest(f)})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_valid_synthetic_receipt(self):
         f=sample()
         self.assertTrue(snapshot_gate(f,receipt(f,f["saved_at"]),"2026-11-07T11:00:00+09:00")["verified_pre"])
