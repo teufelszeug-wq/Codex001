@@ -105,3 +105,12 @@ No new race_id, verified PRE or official settlement established in this engineer
 - **Verification level:** committed test, CI not yet observed; no claim that actual TSA token or WORM object was verified.
 - **Priority replan:** (1) run suite on current SHA and fix regressions, (2) deploy independent verifier and pin trust policy, (3) validate live TSA and S3 WORM, (4) official future-race full AI PRE and readback, (5) official result settlement and recovery rehearsal.
 - **Operations:** no newly verified PRE race_id or official settlement observed. Official denominator, Notion Master and pending race ledger remain unverified in this run, not zero.
+
+## 2026-11-08 12:59 JST — official race identity and off-time binding
+- Re-read canonical gate, RFC3161 verifier, regression tests and persistent M4 ledger.
+- Root-cause vulnerability: producer-controlled `race_id` and `scheduled_off` could shift the PRE acceptance deadline. Added verifier-owned `official_race_id` and `official_scheduled_off` checks to PRE and inherited settlement gate; mismatches fail closed. Commits `2c4ad7f627d69b10231f91f197a069a9886b95cb`, `7e1feb6963941be36d7172bb9fa23c4bd26868cd`.
+- Repaired stale RFC3161 regression fixtures for required original TSQ and `saved_at`; commit `1aa550cebc624653c9d6f7a84eef5bee2851a9c4`.
+- Local OpenSSL request generated from bytes; extracted 32-byte imprint matched SHA256, using current parser expression. **Only request-parser component tested, not signed token or live cloud.**
+- GitHub commit combined statuses for `7e1feb6` returned empty; current SHA CI PASS **not established**. Local repository clone unavailable due to DNS failure; full project suite **not executed**.
+- Remaining P0: trusted official feed and reschedule/cancellation freshness must be obtained in verifier service, not from a producer-set `verifier_context`; live TSA trust policy and revocation; real provider WORM and independent readback; CI pass.
+- M4 completion remains BLOCKED pending future race with genuine PRE, independent proof and official settlement. No new race IDs or official denominator verified in this engineering run.
