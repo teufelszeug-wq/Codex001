@@ -48,7 +48,7 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
             # OpenSSL's trusted CAfile can carry issuer CRLs. -crl_check
             # independently checks the signer's revocation and CRL validity.
             (base / "tsa-ca.pem").write_bytes(
-                trusted_tsa_ca_pem + b"\\n" + trusted_crl_pem)
+                trusted_tsa_ca_pem + b"\n" + trusted_crl_pem)
         else:
             (base / "tsa-ca.pem").write_bytes(trusted_tsa_ca_pem)
         query = subprocess.run(
