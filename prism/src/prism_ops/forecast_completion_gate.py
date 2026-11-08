@@ -69,7 +69,8 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
             verified = verify_rfc3161_receipt(
                 original, immutable["readback_bytes"],
                 proof_bundle["tsa_response_der"], proof_bundle["trusted_tsa_ca_pem"],
-                immutable["immutable_location"])
+                immutable["immutable_location"],
+                request_der=proof_bundle["tsa_request_der"])
             if "immutable_location" in proof_bundle and proof_bundle["immutable_location"] != immutable["immutable_location"]:
                 raise ValueError("IMMUTABLE_LOCATION_MISMATCH")
             if trusted_receipt != verified:
