@@ -1,11 +1,12 @@
 """Regression tests for fail-closed PRE provenance validation."""
 import unittest
-from prism_ops.forecast_completion_gate import validate_forecast
+from prism_ops.forecast_completion_gate import validate_forecast, digest
 
 
 def sample():
+    snapshot = {"race_id": "test-race", "case": "synthetic"}
     return {
-        "race_id": "test-race", "input_hash": "input-v1", "forecast_version": "v1",
+        "race_id": "test-race", "input_snapshot": snapshot, "input_hash": digest(snapshot), "forecast_version": "v1",
         "source_as_of": "2026-11-07T12:00:00+09:00",
         "saved_at": "2026-11-07T12:30:00+09:00",
         "scheduled_off": "2026-11-07T14:00:00+09:00",
@@ -21,13 +22,17 @@ def sample():
 
 
 class TestPreProvenanceGate(unittest.TestCase):
-    def test_complete_shape(self):
-        self.assertTrue(validate_forecast(sample())["complete"])
+    def test_complete_shape_cannot_bypass_external_proof(self):
+        result = validate_forecast(sample())
+        self.assertFalse(result["complete"])
+        self.assertIn("CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING", result["errors"])
+        self.assertNotIn("INVALID_INPUT_SNAPSHOT", result["errors"])
+        self.assertNotIn("RIO:INVALID_PICKS", result["errors"])
 
     def test_missing_external_proof_fails_closed(self):
         f = sample()
         del f["external_timestamp_proof"]
-        self.assertIn("PRE_PROVENANCE_UNVERIFIED", validate_forecast(f)["errors"])
+        self.assertIn("CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING", validate_forecast(f)["errors"])
 
     def test_post_result_exposure_fails_closed(self):
         f = sample()
