@@ -54,22 +54,34 @@ class PreProvenanceContract(unittest.TestCase):
 
     def test_signed_bytes_must_match_validated_forecast(self):
         from unittest.mock import patch
+        from datetime import datetime, timezone
+        from io import BytesIO
         import json
         p = sample()
         other = dict(p, forecast_version="ANOTHER_VERSION")
         signed = json.dumps(other, ensure_ascii=False, sort_keys=True,
                             separators=(",", ":")).encode()
-        bundle = {"forecast_bytes": signed, "readback_bytes": signed,
-                  "tsa_response_der": b"token", "trusted_tsa_ca_pem": b"ca",
-                  "immutable_location": "git-commit:dummy"}
+        class PinnedS3:
+            def get_object_retention(self, **kwargs):
+                return {"Retention": {"Mode": "COMPLIANCE",
+                        "RetainUntilDate": datetime(2026, 12, 1, tzinfo=timezone.utc)}}
+            def get_object(self, **kwargs):
+                return {"VersionId": "v1", "Body": BytesIO(signed)}
+        context = {"s3_client": PinnedS3(), "bucket": "test", "key_prefix": "pre/",
+                   "tsa_ca_pem": b"ca", "official_race_id": p["race_id"],
+                   "official_scheduled_off": p["scheduled_off"],
+                   "official_entries": p["entries"], "official_as_of": p["source_as_of"],
+                   "official_result_exposed": False, "official_race_cancelled": False}
+        bundle = {"forecast_bytes": signed, "key": "pre/race", "version_id": "v1",
+                  "tsa_response_der": b"token", "tsa_request_der": b"tsq"}
         receipt = {"verified_by": "PRISM_TRUSTED_PERSISTENCE_VERIFIER",
                    "race_id": p["race_id"], "forecast_sha256": digest(p),
                    "trusted_saved_at": "2026-11-08T08:02:00+09:00",
-                   "immutable_location": "git-commit:dummy",
+                   "immutable_location": "s3-version:test/pre/race?versionId=v1",
                    "readback_verified": True, "timestamp_verified": True}
         with patch("prism_ops.pre_provenance_verifier.verify_rfc3161_receipt",
                    return_value=receipt):
-            result = validate_forecast(p, receipt, bundle)
+            result = validate_forecast(p, receipt, bundle, verifier_context=context)
         self.assertIn("SIGNED_FORECAST_PAYLOAD_MISMATCH", result["errors"])
 
     def test_missing_snapshot_fails(self):
