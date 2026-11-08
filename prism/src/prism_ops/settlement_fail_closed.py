@@ -30,3 +30,44 @@ def settle_ticket_outcomes(tickets, outcomes):
             "refund_yen": refunds, "effective_stake_yen": effective,
             "net_yen": payout - stake,
             "roi_pct_ex_refund": round(100 * (payout - refunds) / effective, 4) if effective else None}
+
+
+def settle_with_trusted_official_result(forecast, official_result, *,
+                                        trusted_result_context,
+                                        trusted_receipt=None, proof_bundle=None,
+                                        verifier_context=None):
+    """Require a verifier-owned official result before paper settlement.
+
+    The result adapter must independently authenticate the final official feed.
+    No result-supplied flag or source URL alone can grant authenticity.
+    """
+    from prism_ops.forecast_completion_gate import settle_forecast, timestamp
+
+    if not isinstance(official_result, dict) or not isinstance(trusted_result_context, dict):
+        raise ValueError("TRUSTED_OFFICIAL_RESULT_REQUIRED")
+    if trusted_result_context.get("verified_by") != "PRISM_TRUSTED_OFFICIAL_RESULT_VERIFIER":
+        raise ValueError("TRUSTED_OFFICIAL_RESULT_REQUIRED")
+    if trusted_result_context.get("official_final") is not True:
+        raise ValueError("OFFICIAL_RESULT_NOT_FINAL")
+    if (not isinstance(forecast, dict) or
+            trusted_result_context.get("race_id") != forecast.get("race_id") or
+            official_result.get("race_id") != forecast.get("race_id")):
+        raise ValueError("OFFICIAL_RESULT_RACE_MISMATCH")
+    source = trusted_result_context.get("official_source")
+    if not isinstance(source, str) or not source or source != official_result.get("official_source"):
+        raise ValueError("OFFICIAL_RESULT_SOURCE_MISMATCH")
+    try:
+        off = timestamp(forecast["scheduled_off"])
+        published = timestamp(trusted_result_context["official_published_at"])
+        observed = timestamp(trusted_result_context["official_observed_at"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("OFFICIAL_RESULT_TIME_UNVERIFIED") from exc
+    if not off < published <= observed:
+        raise ValueError("OFFICIAL_RESULT_TIME_UNVERIFIED")
+    # Compare a canonical hash of the independently fetched final result.
+    # Caller-supplied URLs, flags or ticket_outcomes cannot substitute for it.
+    from prism_ops.forecast_completion_gate import digest
+    if trusted_result_context.get("official_result_sha256") != digest(official_result):
+        raise ValueError("OFFICIAL_RESULT_HASH_MISMATCH")
+    return settle_forecast(forecast, official_result, trusted_receipt,
+                           proof_bundle, verifier_context=verifier_context)
