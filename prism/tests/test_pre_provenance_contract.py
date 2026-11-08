@@ -77,6 +77,7 @@ class PreProvenanceContract(unittest.TestCase):
                   "tsa_request_der": b"request"}
         context = {"s3_client": object(), "bucket": "trusted",
                    "key_prefix": "pre/", "tsa_ca_pem": b"ca",
+                   "tsa_policy_oid": "1.2.3.4.5",
                    "official_race_id": p["race_id"],
                    "official_scheduled_off": p["scheduled_off"],
                    "official_entries": p["entries"],
