@@ -194,7 +194,7 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
             tickets = []
         if not picks or any(
                 not isinstance(p.get("mark"), str) or not p["mark"] or
-                p.get("horse_no") not in known or
+                type(p.get("horse_no")) is not int or p.get("horse_no") not in known or
                 not isinstance(p.get("horse_name"), str) or
                 p.get("horse_name") != next(
                     (r["horse_name"] for r in runners if r.get("horse_no") == p.get("horse_no")), None)
