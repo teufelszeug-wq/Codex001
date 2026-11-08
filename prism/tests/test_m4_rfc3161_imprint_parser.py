@@ -18,7 +18,7 @@ def output_for(raw, truncate=False):
 
 class ParserTests(unittest.TestCase):
     def setUp(self):
-        self.data = {"race_id":"TEST", "source_as_of":"2026-11-08T10:00:00+09:00",
+        self.data = {"race_id":"TEST", "saved_at":"2026-11-08T10:30:00+09:00", "source_as_of":"2026-11-08T10:00:00+09:00",
                      "scheduled_off":"2026-11-08T12:00:00+09:00"}
         self.raw = json.dumps(self.data, sort_keys=True, ensure_ascii=False,
                               separators=(",", ":")).encode()
@@ -45,6 +45,19 @@ class ParserTests(unittest.TestCase):
                                    "s3-version:bucket/key?versionId=v1",
                                    request_der=b"request")
         self.assertEqual(run.call_count, 1)
+
+    @patch("prism_ops.pre_provenance_verifier.subprocess.run")
+    def test_timestamp_before_forecast_save_rejected(self, run):
+        run.side_effect = [
+            type("R", (), {"returncode":0,"stdout":output_for(self.raw)})(),
+            type("R", (), {"returncode":0,"stdout":""})(),
+            type("R", (), {"returncode":0,
+                            "stdout":"Time stamp: Nov  8 01:15:00 2026 GMT\\n"})(),
+        ]
+        with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_BEFORE_FORECAST_SAVE"):
+            verify_rfc3161_receipt(self.raw, self.raw, b"response", b"ca",
+                                   "s3-version:bucket/key?versionId=v1",
+                                   request_der=b"request")
 
 if __name__ == "__main__":
     unittest.main()
