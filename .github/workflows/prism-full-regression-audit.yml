@@ -1,0 +1,26 @@
+name: PRISM full Python regression audit
+on:
+  push:
+    branches:
+      - prism/forecast-completion-gate-20261106
+  pull_request:
+    paths:
+      - 'prism/**'
+      - '.github/workflows/prism-full-regression-audit.yml'
+  workflow_dispatch:
+jobs:
+  full-test-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PRISM research extras and pytest
+        run: python -m pip install -e './prism[research]' pytest
+      - name: All PRISM tests, not only M4 contract
+        env:
+          PYTHONPATH: prism/src
+        run: python -m pytest prism/tests -q --disable-warnings --maxfail=10
