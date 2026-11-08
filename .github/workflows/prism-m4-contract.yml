@@ -1,0 +1,27 @@
+name: PRISM M4 contract tests
+on:
+  push:
+    branches:
+      - prism/forecast-completion-gate-20261106
+  pull_request:
+    paths:
+      - 'prism/src/prism_ops/**'
+      - 'prism/tests/**'
+      - '.github/workflows/prism-m4-contract.yml'
+  workflow_dispatch:
+jobs:
+  m4-contract:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: OpenSSL version
+        run: openssl version
+      - name: Run PRE fail-closed regression suite
+        env:
+          PYTHONPATH: prism/src
+        run: python -m unittest discover -s prism/tests -p 'test_*provenance*.py' -v
