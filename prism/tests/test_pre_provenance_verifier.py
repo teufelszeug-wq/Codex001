@@ -43,8 +43,9 @@ class ProvenanceTests(unittest.TestCase):
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
     def test_request_unreadable_is_rejected(self, run):
         run.return_value.returncode = 1
-        with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_UNREADABLE"):
-            verify_rfc3161_receipt(*self.args, request_der=b"tsq")
+        with patch("prism_ops.pre_provenance_verifier.verify_git_commit_readback", return_value=True):
+            with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_UNREADABLE"):
+                verify_rfc3161_receipt(*self.args, request_der=b"tsq")
 
     @patch("prism_ops.pre_provenance_verifier.subprocess.run")
     def test_wrong_request_imprint_is_rejected(self, run):
@@ -52,8 +53,9 @@ class ProvenanceTests(unittest.TestCase):
         run.return_value.stdout = ("Hash Algorithm: sha256\nMessage data:\n"
                                    "0000 - " + "00 " * 16 + "  ................\n"
                                    "0010 - " + "00 " * 16 + "  ................\n")
-        with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_IMPRINT_MISMATCH"):
-            verify_rfc3161_receipt(*self.args, request_der=b"tsq")
+        with patch("prism_ops.pre_provenance_verifier.verify_git_commit_readback", return_value=True):
+            with self.assertRaisesRegex(ValueError, "RFC3161_REQUEST_IMPRINT_MISMATCH"):
+                verify_rfc3161_receipt(*self.args, request_der=b"tsq")
 
 
     def test_git_commit_readback_accepts_exact_bytes(self):
