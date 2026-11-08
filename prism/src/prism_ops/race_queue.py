@@ -43,9 +43,9 @@ def snapshot_gate(forecast, receipt, now, proof_bundle=None):
     from prism_ops.forecast_completion_gate import validate_forecast
     v = validate_forecast(forecast, receipt, proof_bundle)
     errors = list(v["errors"])
-    if not receipt or receipt.get("readback_sha256") != v["sha256"]:
+    if not receipt or receipt.get("forecast_sha256") != v["sha256"]:
         errors.append("PERSISTENCE_READBACK_FAILED")
-    if not receipt or receipt.get("external_timestamp_verified") is not True:
+    if not receipt or receipt.get("timestamp_verified") is not True:
         errors.append("EXTERNAL_TIMESTAMP_UNVERIFIED")
     if not receipt or not receipt.get("immutable_location"):
         errors.append("IMMUTABLE_LOCATION_MISSING")
