@@ -110,6 +110,12 @@ class Integration(unittest.TestCase):
         errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
         self.assertTrue(any("OFFICIAL_FEED_TIME_UNVERIFIED" in e for e in errors))
 
+    def test_prefix_without_path_boundary_rejected(self):
+        self.context["key_prefix"] = "pre"
+        self.bundle["key"] = "prefix-confusion/k"
+        errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
+        self.assertTrue(any("UNTRUSTED_OBJECT_KEY" in e for e in errors))
+
     def test_key_outside_pinned_prefix_rejected(self):
         self.bundle["key"] = "outside/k"
         errors = validate_forecast(self.forecast, None, self.bundle, verifier_context=self.context)["errors"]
