@@ -110,7 +110,12 @@ def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
     receipt = verify_rfc3161_receipt(
         raw, reloaded["readback_bytes"], resp_der, tsa_ca_pem,
         reloaded["immutable_location"], request_der=req_der,
-        required_policy_oid=tsa_policy_oid, trusted_crl_pem=tsa_crl_pem)
+        required_policy_oid=tsa_policy_oid, trusted_crl_pem=tsa_crl_pem,
+        s3_verifier_context={
+            "s3_client": s3_reader, "bucket": s3_bucket,
+            "key": forecast_key, "version_id": forecast_obj["version_id"],
+            "min_retention_until": (off + timedelta(days=1)).isoformat(),
+        })
     proof_bundle = {"forecast_bytes": raw, "key": forecast_key,
                     "version_id": forecast_obj["version_id"],
                     "tsa_request_der": req_der, "tsa_response_der": resp_der}
