@@ -13,7 +13,7 @@ def digest(data):
     raw = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-def validate_forecast(forecast, trusted_receipt=None):
+def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None):
     errors = []
     try:
         lock = timestamp(forecast["saved_at"])
@@ -46,6 +46,21 @@ def validate_forecast(forecast, trusted_receipt=None):
     # Verification must be supplied by a separate trusted persistence verifier.
     if not forecast.get("immutable_ref") or not forecast.get("external_timestamp_proof"):
         errors.append("PRE_PROVENANCE_UNVERIFIED")
+    # Reverify cryptographic proof at the acceptance boundary. A forged receipt
+    # dictionary, including a forged verified_by field, is not sufficient.
+    if not isinstance(proof_bundle, dict):
+        errors.append("CRYPTOGRAPHIC_PROOF_BUNDLE_MISSING")
+    else:
+        try:
+            from prism_ops.pre_provenance_verifier import verify_rfc3161_receipt
+            verified = verify_rfc3161_receipt(
+                proof_bundle["forecast_bytes"], proof_bundle["readback_bytes"],
+                proof_bundle["tsa_response_der"], proof_bundle["trusted_tsa_ca_pem"],
+                proof_bundle["immutable_location"])
+            if trusted_receipt != verified:
+                errors.append("TRUSTED_RECEIPT_NOT_DERIVED_FROM_PROOF")
+        except (KeyError, ValueError, TypeError, OSError) as exc:
+            errors.append("CRYPTOGRAPHIC_PROOF_INVALID:" + str(exc))
     # Self-attested flags cannot establish external timestamp or readback.
     # A separate trusted verifier must provide the receipt; this module cannot mint it.
     if not isinstance(trusted_receipt, dict) or trusted_receipt.get("verified_by") != "PRISM_TRUSTED_PERSISTENCE_VERIFIER":
@@ -110,7 +125,7 @@ def validate_forecast(forecast, trusted_receipt=None):
     return {"complete": not errors, "errors": errors, "race_id": forecast.get("race_id"),
             "agent_count": len(agents), "sha256": digest(forecast)}
 
-def settle_forecast(forecast, official_result, trusted_receipt=None):
+def settle_forecast(forecast, official_result, trusted_receipt=None, proof_bundle=None):
     """Strict per-agent settlement. Never infer an unlisted outcome is a loss.
 
     official_result.ticket_outcomes must explicitly adjudicate each ticket.
@@ -118,7 +133,7 @@ def settle_forecast(forecast, official_result, trusted_receipt=None):
     """
     from prism_ops.settlement_fail_closed import settle_ticket_outcomes
 
-    gate = validate_forecast(forecast, trusted_receipt)
+    gate = validate_forecast(forecast, trusted_receipt, proof_bundle)
     if not gate["complete"]:
         raise ValueError("invalid PRE forecast: " + repr(gate["errors"]))
     if official_result.get("race_id") != forecast.get("race_id"):
