@@ -119,6 +119,7 @@ class FullContractWithLocalCrypto(unittest.TestCase):
         self.context = {
             "s3_client": self.s3, "bucket": "synthetic",
             "key_prefix": "pre/", "tsa_ca_pem": self.ca,
+            "tsa_policy_oid": "1.2.3.4.5",
             "official_race_id": self.forecast["race_id"],
             "official_scheduled_off": self.forecast["scheduled_off"],
             "official_entries": self.entries,
