@@ -70,7 +70,7 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
     if forecast_bytes != json.dumps(forecast, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"):
         raise ValueError("NONCANONICAL_FORECAST_BYTES")
     # Caller-supplied readback and location labels are not storage evidence.
-    # Until another trusted backend is implemented, only pinned Git objects pass.
+    # Accept only a pinned Git commit or an independently re-fetched S3 WORM version.
     if s3_verifier_context is not None:
         if git_repo_path is not None or not isinstance(s3_verifier_context, dict):
             raise ValueError("AMBIGUOUS_STORAGE_VERIFIER")
