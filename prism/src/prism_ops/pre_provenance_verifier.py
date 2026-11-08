@@ -17,7 +17,7 @@ from pathlib import Path
 
 def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                            trusted_tsa_ca_pem, immutable_location,
-                           *, request_der=None, openssl="openssl"):
+                           *, request_der=None, required_policy_oid=None, openssl="openssl"):
     if not isinstance(forecast_bytes, bytes) or not isinstance(readback_bytes, bytes):
         raise ValueError("FORECAST_BYTES_REQUIRED")
     if forecast_bytes != readback_bytes:
@@ -70,6 +70,17 @@ def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
                               capture_output=True, text=True, timeout=20)
         if info.returncode != 0:
             raise ValueError("RFC3161_TIME_UNREADABLE")
+        # The selected TSA policy must be authenticated inside signed TSTInfo,
+        # not merely asserted by the requester or the transport endpoint.
+        if required_policy_oid is not None:
+            if (not isinstance(required_policy_oid, str) or
+                    not re.fullmatch(r"[0-9]+(?:\.[0-9]+)+", required_policy_oid)):
+                raise ValueError("RFC3161_POLICY_UNCONFIGURED")
+            policy = re.search(
+                r"^\s*Policy OID:\s*([0-9]+(?:\.[0-9]+)+)\s*$",
+                info.stdout, re.MULTILINE)
+            if not policy or policy.group(1) != required_policy_oid:
+                raise ValueError("RFC3161_POLICY_MISMATCH")
         match = re.search(r"^\s*Time stamp:\s*(.+)$", info.stdout, re.MULTILINE)
         if not match:
             raise ValueError("RFC3161_TIME_MISSING")
