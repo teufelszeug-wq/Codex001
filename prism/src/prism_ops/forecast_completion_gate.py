@@ -60,7 +60,7 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
                 raise ValueError("TRUSTED_VERIFIER_CONTEXT_REQUIRED")
             if any(k in proof_bundle for k in ("trusted_s3_client", "trusted_tsa_ca_pem")):
                 raise ValueError("UNTRUSTED_VERIFIER_CONFIG_IN_PROOF")
-            if not all(k in verifier_context for k in ("s3_client", "bucket", "key_prefix", "tsa_ca_pem", "official_race_id", "official_scheduled_off")):
+            if not all(k in verifier_context for k in ("s3_client", "bucket", "key_prefix", "tsa_ca_pem", "official_race_id", "official_scheduled_off", "official_entries")):
                 raise ValueError("TRUSTED_VERIFIER_CONFIG_INCOMPLETE")
             # Official race identity and off time are verifier-owned, not
             # supplied by the prediction producer.
@@ -68,6 +68,17 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
                 raise ValueError("OFFICIAL_RACE_ID_MISMATCH")
             if timestamp(forecast["scheduled_off"]) != timestamp(verifier_context["official_scheduled_off"]):
                 raise ValueError("OFFICIAL_SCHEDULED_OFF_MISMATCH")
+            official_entries = verifier_context["official_entries"]
+            if (not isinstance(official_entries, list) or not official_entries or
+                    not all(isinstance(e, dict) for e in official_entries)):
+                raise ValueError("OFFICIAL_ENTRIES_UNAVAILABLE")
+            def runner_identity(entries):
+                return sorted((e["horse_no"], e["horse_name"]) for e in entries)
+            try:
+                if runner_identity(forecast["entries"]) != runner_identity(official_entries):
+                    raise ValueError("OFFICIAL_ENTRIES_MISMATCH")
+            except (KeyError, TypeError):
+                raise ValueError("OFFICIAL_ENTRIES_MISMATCH")
             bucket = verifier_context["bucket"]
             prefix = verifier_context["key_prefix"]
             key = proof_bundle["key"]
