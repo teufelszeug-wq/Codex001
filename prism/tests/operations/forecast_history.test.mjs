@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createPreRaceLedger, appendRevision, assessCoverage } from '../../src/operations/forecast_history.mjs';
+const runner = [{horse_no:1,horse_name:'架空馬A'},{horse_no:2,horse_name:'架空馬B'}];
+const rec = { forecaster_id:'editor', independent_execution:true, diagnoses:[{horse_no:1,reason:'架空の能力評価'},{horse_no:2,reason:'架空の展開評価'}], tickets:[{type:'WIN',horse_nos:[1],stake_yen:100}] };
+const base = {race_id:'SYNTHETIC-1',race_name:'架空テスト競走',off_at:'2026-11-09T15:00:00+09:00',saved_at:'2026-11-09T14:59:00+09:00',runners:runner,records:[rec],source_refs:['synthetic-fixture']};
+test('pre-race snapshot and coverage',()=>{ const x=createPreRaceLedger(base); assert.equal(x.status,'PRE_UNATTESTED'); assert.equal(x.content_sha256.length,64); assert.deepEqual(assessCoverage(x,['editor','rio']).missing_forecasters,['rio']); });
+test('off time is strict',()=>assert.throws(()=>createPreRaceLedger({...base,saved_at:base.off_at}),/before off/));
+test('full-field and independent AI evidence required',()=>{assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,diagnoses:rec.diagnoses.slice(0,1)}]}),/all-runner/);assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,independent_execution:false}]}),/independent/);});
+test('100 yen and real runner ticket constraints',()=>{assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'WIN',horse_nos:[1],stake_yen:150}]}]}),/100-yen/);assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'WIN',horse_nos:[3],stake_yen:100}]}]}),/non-runner/);});
+test('append revision preserves linked hash and forbids backdated changes',()=>{const a=createPreRaceLedger(base);const b=appendRevision(a,{records:[rec],saved_at:'2026-11-09T14:59:30+09:00'});assert.equal(b.version,2);assert.equal(b.previous_sha256,a.content_sha256);assert.throws(()=>appendRevision(a,{records:[rec],saved_at:base.saved_at}),/later/);});
+test('post-race edits rejected',()=>{const a=createPreRaceLedger(base);assert.throws(()=>appendRevision(a,{records:[rec],saved_at:'2026-11-09T15:00:01+09:00'}),/before off/);});
