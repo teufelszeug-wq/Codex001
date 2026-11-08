@@ -1,5 +1,5 @@
 """PRISM strict PRE forecast gate and paper ROI accounting (stdlib)."""
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import json
 
@@ -68,6 +68,23 @@ def validate_forecast(forecast, trusted_receipt=None, proof_bundle=None, *, veri
                 raise ValueError("OFFICIAL_RACE_ID_MISMATCH")
             if timestamp(forecast["scheduled_off"]) != timestamp(verifier_context["official_scheduled_off"]):
                 raise ValueError("OFFICIAL_SCHEDULED_OFF_MISMATCH")
+            # The official feed is part of the verifier's trusted input.
+            # Never accept a PRE if the latest official observation already
+            # exposes results or reports the race cancelled.
+            if verifier_context.get("official_result_exposed") is not False:
+                raise ValueError("OFFICIAL_RESULT_EXPOSURE_UNVERIFIED")
+            if verifier_context.get("official_race_cancelled") is not False:
+                raise ValueError("OFFICIAL_RACE_STATUS_UNVERIFIED")
+            try:
+                observed = timestamp(verifier_context["official_as_of"])
+                saved = timestamp(forecast["saved_at"])
+                off = timestamp(verifier_context["official_scheduled_off"])
+            except (KeyError, ValueError, TypeError) as exc:
+                raise ValueError("OFFICIAL_FEED_TIME_UNVERIFIED") from exc
+            if observed > saved or observed >= off:
+                raise ValueError("OFFICIAL_FEED_AFTER_PRE")
+            if saved - observed > timedelta(minutes=15):
+                raise ValueError("OFFICIAL_FEED_STALE")
             official_entries = verifier_context["official_entries"]
             if (not isinstance(official_entries, list) or not official_entries or
                     not all(isinstance(e, dict) for e in official_entries)):
