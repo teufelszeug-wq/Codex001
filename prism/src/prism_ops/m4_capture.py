@@ -179,6 +179,11 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
             not manifest_key.startswith(s3_prefix + "proofs/") or
             ".." in manifest_key.split("/") or manifest_key.startswith("/")):
         raise ValueError("UNTRUSTED_MANIFEST_KEY")
+    # Bind the caller's pinned digest to the content-addressed key itself.
+    # Otherwise a valid WORM object at a misleading proofs/ path could pass.
+    if (not isinstance(manifest_sha256, str) or
+            manifest_key != s3_prefix + "proofs/" + manifest_sha256 + ".json"):
+        raise ValueError("MANIFEST_CONTENT_ADDRESS_MISMATCH")
     stored = verified_s3_readback(
         s3_reader, bucket=s3_bucket, key=manifest_key,
         version_id=manifest_version_id, expected_sha256=manifest_sha256,
@@ -210,6 +215,10 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
             not forecast_key.startswith(s3_prefix + "forecasts/") or
             ".." in forecast_key.split("/") or forecast_key.startswith("/")):
         raise ValueError("UNTRUSTED_FORECAST_KEY")
+    if (not isinstance(manifest.get("forecast_sha256"), str) or
+            forecast_key != s3_prefix + "forecasts/" +
+            manifest["forecast_sha256"] + ".json"):
+        raise ValueError("FORECAST_CONTENT_ADDRESS_MISMATCH")
     forecast_record = verified_s3_readback(
         s3_reader, bucket=s3_bucket, key=forecast_key,
         version_id=manifest["forecast_version_id"],
