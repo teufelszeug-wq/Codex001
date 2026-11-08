@@ -1,0 +1,74 @@
+"""RFC3161 PRE evidence verification. No network or timestamp issuance.
+
+A receipt is accepted only after the original forecast bytes are fetched again,
+the RFC3161 response is checked by OpenSSL against a configured trusted TSA
+certificate bundle, and the token's genTime is independently extracted.
+The caller must supply a pinned immutable object location and an exact byte
+readback; the caller's timestamps/booleans are never authoritative.
+"""
+import hashlib
+import json
+import re
+import subprocess
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def verify_rfc3161_receipt(forecast_bytes, readback_bytes, tsa_response_der,
+                           trusted_tsa_ca_pem, immutable_location,
+                           *, openssl="openssl"):
+    if not isinstance(forecast_bytes, bytes) or not isinstance(readback_bytes, bytes):
+        raise ValueError("FORECAST_BYTES_REQUIRED")
+    if forecast_bytes != readback_bytes:
+        raise ValueError("PERSISTENCE_READBACK_FAILED")
+    if not isinstance(tsa_response_der, bytes) or not tsa_response_der:
+        raise ValueError("RFC3161_TOKEN_MISSING")
+    if not isinstance(trusted_tsa_ca_pem, bytes) or not trusted_tsa_ca_pem:
+        raise ValueError("TRUSTED_TSA_CA_MISSING")
+    if not immutable_location or not immutable_location.startswith(("git-commit:", "s3-version:", "object-lock:")):
+        raise ValueError("IMMUTABLE_LOCATION_UNVERIFIED")
+    forecast = json.loads(forecast_bytes.decode("utf-8"))
+    if not isinstance(forecast, dict):
+        raise ValueError("INVALID_FORECAST")
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "forecast.json").write_bytes(forecast_bytes)
+        (base / "stamp.tsr").write_bytes(tsa_response_der)
+        (base / "tsa-ca.pem").write_bytes(trusted_tsa_ca_pem)
+        cmd = [openssl, "ts", "-verify", "-data", str(base / "forecast.json"),
+               "-in", str(base / "stamp.tsr"), "-CAfile", str(base / "tsa-ca.pem")]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+        if result.returncode != 0:
+            raise ValueError("RFC3161_SIGNATURE_OR_IMPRINT_INVALID")
+        info = subprocess.run([openssl, "ts", "-reply", "-in",
+                               str(base / "stamp.tsr"), "-text"],
+                              capture_output=True, text=True, timeout=20)
+        if info.returncode != 0:
+            raise ValueError("RFC3161_TIME_UNREADABLE")
+        match = re.search(r"^Time stamp:\\s*(.+)$", info.stdout, re.MULTILINE)
+        if not match:
+            raise ValueError("RFC3161_TIME_MISSING")
+        raw = match.group(1).strip()
+        # OpenSSL prints e.g. "Nov  8 00:30:00 2026 GMT".
+        try:
+            stamp = datetime.strptime(" ".join(raw.split()), "%b %d %H:%M:%S %Y GMT").replace(tzinfo=timezone.utc)
+        except ValueError as exc:
+            raise ValueError("RFC3161_TIME_UNPARSEABLE") from exc
+    from prism_ops.forecast_completion_gate import timestamp, digest
+    if stamp >= timestamp(forecast["scheduled_off"]):
+        raise ValueError("RFC3161_TIMESTAMP_AFTER_OFF")
+    if stamp < timestamp(forecast["source_as_of"]):
+        raise ValueError("RFC3161_TIMESTAMP_BEFORE_SOURCE")
+    # This receipt describes the bytes actually signed, not a reconstructed dict.
+    return {
+        "verified_by": "PRISM_TRUSTED_PERSISTENCE_VERIFIER",
+        "race_id": forecast["race_id"],
+        "forecast_sha256": digest(forecast),
+        "raw_forecast_sha256": hashlib.sha256(forecast_bytes).hexdigest(),
+        "trusted_saved_at": stamp.isoformat(),
+        "immutable_location": immutable_location,
+        "readback_verified": True,
+        "timestamp_verified": True,
+        "proof_kind": "RFC3161_OPENSSL_VERIFIED",
+    }
