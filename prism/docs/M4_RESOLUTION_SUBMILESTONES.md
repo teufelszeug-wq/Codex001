@@ -146,3 +146,10 @@ No new race_id, verified PRE or official settlement established in this engineer
 - CI workflow previously omitted newly added S3 acceptance and RFC3161 imprint regression suites; added both to `.github/workflows/prism-m4-contract.yml`, commit `9bc3fcaf`.
 - **No claim of successful rerun:** workflow run for `9bc3fcaf` was not yet returned at inspection time. Monitor new run and repair actual failures before proceeding. CI PASS for current SHA remains UNVERIFIED.
 - Prioritized next: (1) capture new workflow result/logs and fix remaining failures, (2) independent trusted official feed and snapshot runner, (3) live TSA and WORM provider, (4) actual future race PRE and official settlement. No new live race accepted in this continuation.
+
+## 2026-11-08 — GitHub CI error log verified and patched
+- Read GitHub Actions **run 42445419461**, job **128623198979**, conclusion **failure**. First suite executed **25 tests: 24 passed, 1 failed**. Sole failure `test_reject_mocked_timestamp_after_off` due to a *literal backslash-n* in the mock timestamp output; `RFC3161_TIME_UNPARSEABLE` occurred before the intended after-off rejection. Corrected fixture to actual newline, commit `22e065c3`.
+- Reviewed trusted S3 object key policy; fixed prefix-confusion case by requiring a slash-terminated verifier-owned `key_prefix` (e.g. `pre/` not `pre`); commit `c552a9eb`. Added adversarial regression `test_prefix_without_path_boundary_rejected`, commit `195e522f`.
+- Verified local container cannot resolve `github.com` via git HTTPS, so direct local checkout/full suite remains blocked. Current SHA workflow success not observed; **do not claim CI PASS**.
+- External prerequisites still pending: trusted official feed and deadline scheduling, independent verifier service boundary, actual TSA issuance and certificate validation, real COMPLIANCE Object Lock retention/readback, genuine pre-off all-agent forecast and official settlement.
+- Official race denominator and Notion master not reconciled in this code-only run. New genuine PRE 0R; settlement/paper/learning not verified.
