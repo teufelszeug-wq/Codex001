@@ -16,6 +16,9 @@ def next_work(races, now):
     eligible, blocked = [], []
     seen = set()
     for race in races:
+        if not isinstance(race, dict):
+            blocked.append({"race_id":None, "reason":"INVALID_RACE_RECORD"})
+            continue
         rid = race.get("race_id")
         version = race.get("input_sha256")
         if not rid or not version or (rid, version) in seen:
@@ -47,6 +50,8 @@ def snapshot_gate(forecast, receipt, now, proof_bundle=None, *, verifier_context
     from prism_ops.forecast_completion_gate import validate_forecast
     v = validate_forecast(forecast, receipt, proof_bundle, verifier_context=verifier_context)
     errors = list(v["errors"])
+    if not isinstance(receipt, dict):
+        receipt = None
     if not receipt or receipt.get("forecast_sha256") != v["sha256"]:
         errors.append("PERSISTENCE_READBACK_FAILED")
     if not receipt or receipt.get("timestamp_verified") is not True:
@@ -54,6 +59,8 @@ def snapshot_gate(forecast, receipt, now, proof_bundle=None, *, verifier_context
     if not receipt or not receipt.get("immutable_location"):
         errors.append("IMMUTABLE_LOCATION_MISSING")
     try:
+        if not isinstance(forecast, dict):
+            raise ValueError("INVALID_FORECAST")
         if _aware(forecast["saved_at"]) > _aware(now):
             errors.append("FUTURE_SAVED_AT")
         if receipt and receipt.get("trusted_saved_at"):
