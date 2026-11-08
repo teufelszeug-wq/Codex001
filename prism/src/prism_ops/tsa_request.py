@@ -16,7 +16,7 @@ def build_request(forecast_bytes, *, openssl="openssl"):
         path = Path(tmp) / "forecast.bin"
         path.write_bytes(forecast_bytes)
         result = subprocess.run([openssl, "ts", "-query", "-data", str(path),
-                                 "-sha256", "-cert", "-nonce"],
+                                 "-sha256", "-cert"],
                                 capture_output=True, timeout=20)
         if result.returncode or not result.stdout:
             raise ValueError("RFC3161_REQUEST_GENERATION_FAILED")
