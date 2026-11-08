@@ -27,10 +27,14 @@ def next_work(races, now):
         except (KeyError, ValueError, TypeError):
             blocked.append({"race_id":rid,"reason":"INVALID_OFF_TIME"})
             continue
-        if off <= current or race.get("result_exposed"):
+        if off <= current or race.get("result_exposed") is True:
             blocked.append({"race_id":rid,"reason":"NO_PRE_WINDOW"})
-        elif race.get("pre_locked"):
+        elif race.get("result_exposed") is not False:
+            blocked.append({"race_id":rid,"reason":"RESULT_EXPOSURE_NOT_EXCLUDED"})
+        elif race.get("pre_locked") is True:
             blocked.append({"race_id":rid,"reason":"ALREADY_LOCKED"})
+        elif race.get("pre_locked") is not False:
+            blocked.append({"race_id":rid,"reason":"PRE_LOCK_STATUS_UNVERIFIED"})
         elif race.get("official_entries_verified") is not True:
             blocked.append({"race_id":rid,"reason":"OFFICIAL_DATA_MISSING"})
         else:
