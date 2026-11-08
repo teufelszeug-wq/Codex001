@@ -68,7 +68,7 @@ class M4ReceiptTests(unittest.TestCase):
         run.side_effect = [type("R", (), {"returncode": 0, "stdout": query})(),
                            type("R", (), {"returncode": 0, "stdout": ""})(),
                            type("R", (), {"returncode": 0,
-                               "stdout": "Time stamp: Nov 9 01:00:00 2026 GMT\\n"})()]
+                               "stdout": "Time stamp: Nov 9 01:00:00 2026 GMT\n"})()]
         with self.assertRaisesRegex(ValueError, "RFC3161_TIMESTAMP_AFTER_OFF"):
             self.call()
 
