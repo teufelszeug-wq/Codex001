@@ -136,6 +136,7 @@ def capture_pre_candidate(forecast, official_context, *, s3_writer, s3_reader,
         "tsa_response_der_b64": base64.b64encode(resp_der).decode("ascii"),
         "tsa_ca_sha256": _sha256(tsa_ca_pem),
         "tsa_crl_sha256": _sha256(tsa_crl_pem),
+        "tsa_issuer_crl_pem_b64": base64.b64encode(tsa_crl_pem).decode("ascii"),
         "tsa_policy_oid": tsa_policy_oid,
         "receipt": receipt,
         "official_observation_at": official_context["official_as_of"],
@@ -192,6 +193,16 @@ def verify_candidate_independently(*, s3_reader, s3_bucket, s3_prefix,
     if (manifest.get("race_id") != official_context.get("official_race_id") or
             manifest.get("official_observation_at") != official_context.get("official_as_of")):
         raise ValueError("OFFICIAL_OBSERVATION_MISMATCH")
+    # Freeze the exact issuer CRL used at issuance so its historical validation
+    # remains replayable if the online issuer publishes a newer CRL.
+    preserved_crl = base64.b64decode(
+        manifest["tsa_issuer_crl_pem_b64"], validate=True)
+    if _sha256(preserved_crl) != manifest["tsa_crl_sha256"]:
+        raise ValueError("IMMUTABLE_CRL_MISMATCH")
+    # Also require the currently approved CRL to be supplied independently;
+    # a producer-stored CRL alone must never become a trusted root.
+    if preserved_crl != tsa_crl_pem:
+        raise ValueError("TRUSTED_ISSUER_CRL_MISMATCH")
     forecast_key = manifest["forecast_key"]
     if not forecast_key.startswith(s3_prefix + "forecasts/"):
         raise ValueError("UNTRUSTED_FORECAST_KEY")
