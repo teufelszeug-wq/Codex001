@@ -215,3 +215,11 @@ No new race_id, verified PRE or official settlement established in this engineer
 5. Real separate-run disaster/recovery and tamper/rollback drills, signed immutable evidence logs and operator separation.
 
 No live verified future-race PRE, official settlement or genuinely third-party WORM evidence was established in this engineering run. **M4 production status BLOCKED**. Do not count locally signed, mock S3 synthetic positive tests as genuine forward race validation.
+
+
+## 2026-11-08 14:38 JST continuation — bounded independent S3 readback
+- Audited GitHub M4 contract and full Python workflows on branch `prism/forecast-completion-gate-20261106`. Previous SHA `06c3eb022baf01d9cdb3e1d30592195c39367c78` had both workflow successes (runs 42449187679, 42449187694).
+- Found `verified_s3_readback` performed unbounded `Body.read()`; a large or malformed provider object could exhaust verifier memory. Added a strict default 16 MiB read limit with explicit fail-closed `READBACK_SIZE_LIMIT_EXCEEDED` and `INVALID_READBACK_SIZE_LIMIT` (commit `84876a7e60cd8c33d012ba63ffd8288d62a7a361`).
+- Initial CI failed because the old mock `read=lambda: ...` did not support bounded reads (run 42451613271). Replaced mocked stream with real `BytesIO`, added oversized and invalid-size regression cases (commit `d821ca033e52057992d9c15598fb6ca442fc660d`). M4 contract run 42451620998 **PASS**, full Python regression run 42451617231 **PASS** for the same SHA.
+- **M4 not complete**: no independently verified real provider S3 COMPLIANCE version, external production TSA response and issuer trust/revocation evidence, real official race feed and all-AI pre-off snapshot, or subsequent official settlement observed in this pass. No real VERIFIED_PRE or settlement count inferred from CI.
+- Highest priority operational dependencies: separately credentialed S3 writer/reader, approved TSA endpoint/CA/policy/CRL, official feed, always-on deadline runner and durable independent verification/settlement ledger. Do not treat local TSA/fake S3 tests as production acceptance.
