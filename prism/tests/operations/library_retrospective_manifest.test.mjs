@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const base=new URL('../../data/recovery/',import.meta.url);
+const retrospective=JSON.parse(readFileSync(new URL('library_retrospective_manifest_20261110.json',base),'utf8'));
+const preoff=JSON.parse(readFileSync(new URL('notion_preoff_candidate_manifest_20261109.json',base),'utf8'));
+test('never promote retrospective reconstruction into certified live forecast',()=>{for(const r of retrospective.records){assert.equal(r.evidence_class,'POST_RACE_RETROSPECTIVE_RECONSTRUCTION');assert.equal(r.saved_at,null);assert.equal(r.not_live_certified,true);assert.ok(r.source);assert.ok(r.version);assert.ok(r.forecaster_id);assert.ok(r.race_id);assert.ok(Array.isArray(r.horse_names));}});
+test('no duplicate race IDs across two manifests',()=>{const ids=[...retrospective.records,...preoff.records].map(x=>x.race_id);assert.equal(new Set(ids).size,ids.length);});
+test('retrospective ticket reconciliation is exactly 100 yen per point',()=>{const rows=retrospective.records;assert.equal(rows.reduce((a,r)=>a+r.tickets.reduce((b,t)=>b+t.stake_yen,0),0),400);assert.equal(rows.reduce((a,r)=>a+r.payout_yen,0),400);for(const r of rows)for(const t of r.tickets)assert.equal(t.stake_yen%100,0);});
+test('historical declared counts remain unverified rather than imported',()=>{const x=retrospective.asset_inventory.find(x=>x.class==='HISTORICAL_MIGRATION_STATUS');assert.equal(x.content_migrated,false);assert.equal(x.declared_prior_migration.independently_reaudited,false);});
