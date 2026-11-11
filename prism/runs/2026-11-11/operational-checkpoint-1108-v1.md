@@ -3,8 +3,7 @@ status: CRITICAL / CHARACTER_DB_VERIFIED / PRE_NOT_COMPLETE
 character_source: https://app.notion.com/p/e4615cdcad494bf7a177c7708b5fe627
 character_count: 20 (editor 1, reporter 1, specialist 18)
 confirmed: 篠宮 律 editor/moderator; りお reporter/questions/last independent opinion
-specialist_names: 鷹取 美冬,早瀬 展,高梨 慧,御影 透,橘 潮,三崎 レイ,藤代 環,児玉 栞,黒川 統司,戸倉 迅,牧野 俊介,桐生 駿,佐伯 豪泰,穴見 爆,宮坂 直矩,白峰 遥,堂前 岳
-NOTE: specialist names above must be checked against DB; source query includes 18 specialists, do not use this summary as a roster without verifying each row.
+specialist_roster: Refer to canonical Notion database query; roster not duplicated in this checkpoint to prevent transcription errors.
 Official source: https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/DebaTable?k_babaCode=24&k_raceDate=2026%2F11%2F11&k_raceNo=11
 Nagoya 11R オールワン特別 A3 18:00 JST 1700m 11 runners:
 1 セイウンアーテル
