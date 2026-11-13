@@ -28,7 +28,7 @@ export function normalizeOfficialRacecard(raw) {
   }).sort((a,b)=>a.horse_no-b.horse_no);
   const active_runners = runners.filter(r=>r.status==='DECLARED');
   if (!active_runners.length) throw new Error('no active runners');
-  return { schema:'prism.official_racecard/v1', authority, race_id, race_name, off_at, captured_at, official_url, runners, active_runners, source_verified:false };
+  return { schema:'prism.official_racecard/v1', authority, race_id, race_name, off_at, captured_at, official_url, runners, active_runners, source_verified:raw.source_verified===true, verification_ref:raw.source_verified===true ? required(raw.verification_ref,'verification_ref') : null };
 }
 export function preOffEligibility(card, saved_at) {
   date(saved_at,'saved_at');
