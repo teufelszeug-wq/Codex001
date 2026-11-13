@@ -4,6 +4,12 @@ on:
     paths:
       - 'prism/src/operations/**'
       - 'prism/tests/operations/**'
+      - 'prism/data/operations/**'
+      - 'prism/scripts/run_forecast_panel.mjs'
+      - 'prism/scripts/fetch_nar_racecard.py'
+      - 'prism/scripts/jra_forecast_card.py'
+      - 'prism/src/prism_pre_day_gate.py'
+      - 'prism/tests/test_pre_day_gate.py'
       - 'prism/scripts/engine_full_field_bridge.py'
       - 'prism/scripts/fetch_jra_racecard.py'
       - 'prism/scripts/assemble_official_engine_input.py'
@@ -24,7 +30,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate Python engine full-field bridge
-        run: python -m unittest discover -s prism/tests/operations -p 'test_*.py' -v
+      - name: Install PRISM test dependencies
+        run: python -m pip install './prism[research]' pytest
+      - name: Run PRISM Python regressions
+        run: python -m pytest -q prism/tests
       - name: Validate forecast history contract
-        run: node --test prism/tests/operations/*.test.mjs
+        run: node --test prism/tests/operations/*.test.mjs prism/tests/foundation/*.test.mjs

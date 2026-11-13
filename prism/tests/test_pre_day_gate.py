@@ -12,7 +12,9 @@ class PublicationGateTests(unittest.TestCase):
     def test_valid_pre_day(self):
         self.assertTrue(check_publication(self.race,{"editorial":{}},[1,2,3,4,5],self.final,"2026-11-14T20:00:00+09:00")["ready"])
     def test_late_paper_fails(self):
-        self.assertIn("LATE_PUBLICATION",check_publication(self.race,{"editorial":{}},[1,2,3,4,5],self.final,"2026-11-15T08:00:00+09:00")["errors"])
+        errors = check_publication(self.race, {"editorial": {}}, [1, 2, 3, 4, 5], self.final,
+                                   "2026-11-15T08:00:00+09:00")["errors"]
+        self.assertIn("LATE_PUBLICATION", [error.split(":", 1)[0] for error in errors])
     def test_unverified_independent_fails(self):
         self.final["editorial"]["mode"]="independent_execution"
         self.assertFalse(check_publication(self.race,{"editorial":{}},[1,2,3,4,5],self.final,"2026-11-14T20:00:00+09:00")["ready"])
