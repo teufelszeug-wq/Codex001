@@ -1,4 +1,7 @@
 import unittest
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from datetime import datetime, timedelta, timezone
 from prism_pre_day_gate import check_publication, append_revision
 
