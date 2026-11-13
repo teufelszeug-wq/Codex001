@@ -1,0 +1,37 @@
+{
+  "schema": "prism.roundtable.retro_case_audit/v1",
+  "race_id": "JRA-2026-10-18-TOKYO-02",
+  "date": "2026-10-18",
+  "venue": "東京",
+  "race_number": 2,
+  "surface": "TURF",
+  "distance_m": 1600,
+  "official_entries": 10,
+  "full_field_coverage": 10,
+  "dialogue_topics": [
+    "full_field",
+    "course_and_pace",
+    "visual_stable_workout",
+    "presentations_and_counterarguments",
+    "bet_value_and_no_bet"
+  ],
+  "sessions": 5,
+  "turns": 111,
+  "roles": 19,
+  "dialogue_japanese_characters": 6189,
+  "source_lookups": [
+    "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0105202604070220261018%2FB5",
+    "https://race.netkeiba.com/race/shutuba_past.html?race_id=202605040702"
+  ],
+  "post_result_source": "https://www.jra.go.jp/JRADB/accessS.html?CNAME=pw01sde0105202604070220261018%2F71",
+  "retrospective_result_known_to_editor": true,
+  "blind_pre_race_prediction": false,
+  "independent_ai_calls": 0,
+  "human_naturalness_approved": false,
+  "real_bets": 0,
+  "genuine_forward_roi_numerical_samples": 0,
+  "local_fixture_tests_passed": 15,
+  "outcome_features_in_discussion": false,
+  "release": "RESEARCH_SIMULATION_NOT_FORWARD_SCORE",
+  "artifacts": "local packaged ZIP (full transcript and JSON), not source data duplicated in public repo"
+}

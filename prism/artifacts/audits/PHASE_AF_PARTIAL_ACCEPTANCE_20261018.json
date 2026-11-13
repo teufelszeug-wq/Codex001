@@ -1,0 +1,36 @@
+{
+  "schema": "prism.phase_af.acceptance/v1",
+  "run_date": "2026-10-18",
+  "scope": "retrospective Tokyo 1R development fixture",
+  "existing_roundtable_tests_executed_pass": 97,
+  "new_integration_tests_executed_pass": 63,
+  "total_reexecuted_pass": 160,
+  "github_phase_b_tests_reported_prior": 83,
+  "github_phase_b_tests_reexecuted_this_batch": false,
+  "official_roster_horses": 12,
+  "fully_covered_horses": 12,
+  "simulation_agendas": 5,
+  "simulation_turns": 141,
+  "simulation_independent_ai_calls": 0,
+  "published_newspaper_pages_pdf": 4,
+  "pdf_glyphs_outside_page": 0,
+  "real_forward_predictions": 0,
+  "live_scheduler_runs": 0,
+  "full_phase_release": "BLOCKED",
+  "missing": [
+    "calibrated_real_model",
+    "independent_expert_runs",
+    "human_naturalness_review",
+    "same_coverage_real_ablation",
+    "strict_pit_evidence",
+    "genuine_forward_validation",
+    "print_visual_qa",
+    "official_live_publishing",
+    "live_scheduler_and_monitoring"
+  ],
+  "source": [
+    "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0105202604070120261018/00",
+    "https://github.com/teufelszeug-wq/Codex001/pull/3",
+    "https://github.com/teufelszeug-wq/Codex001/pull/4"
+  ]
+}
