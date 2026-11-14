@@ -104,6 +104,14 @@ def run(directory, urls, *, model='local'):
                 errors.append({'race_id': race, 'error': result.stderr.strip() or 'forecast command failed'})
                 continue
             value = json.loads(result.stdout)
+            # A successful subprocess is not evidence of a completed forecast.
+            forecasts = value.get('forecasts')
+            if not isinstance(forecasts, list) or not forecasts:
+                raise ValueError('forecast output has no forecaster records')
+            if value.get('phase') not in {'FINAL', 'DECLARATIONS'}:
+                raise ValueError('forecast output has invalid phase')
+            if not value.get('saved_at'):
+                raise ValueError('forecast output has no saved_at')
             rows.append({
                 'race_id': race, 'race_name': card['race_name'], 'off_at': card['off_at'],
                 'phase': value['phase'], 'publication_window': value['publication_window'],
