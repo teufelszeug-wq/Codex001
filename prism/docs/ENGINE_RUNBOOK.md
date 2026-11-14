@@ -32,3 +32,86 @@ WINだけの逆オッズ正規化値は市場proxyであって真の確率では
 結果JSONは完全な券種一覧と予想hashを含む必要があり、不足を外れとして黙って処理しない。
 
 固定100円以外の実投票は行わない。SYNTHETIC bundleからの収益性評価も行わない。
+
+## 各AIの発走前予想
+
+Python 3.10以降、Node.js 22以降。リポジトリのルートで実行する。
+公式出馬表のURLを渡し、JRAとNARのどちらかの取得コマンドを使う。
+
+```bash
+python3 -m pip install './prism[research]'
+
+python3 prism/scripts/fetch_jra_racecard.py --for-forecast --allow-unframed \
+  --url "$PRISM_OFFICIAL_URL" --out ./racecard.json
+# NARの場合
+python3 prism/scripts/fetch_nar_racecard.py \
+  --url "$PRISM_OFFICIAL_URL" --out ./racecard.json
+
+node prism/scripts/run_forecast_panel.mjs --card ./racecard.json --out ./forecasts
+```
+
+- 発走前に取得した公式ページで、URLと開催日・場・競走番号を照合する。
+  枠番・馬番・馬名は別々に記録する。取消・除外馬は買い目から外す。
+- 本紙・りお・専門AI17名がそれぞれの担当分野で実行する。全出走馬の根拠と印を残し、
+  買い目は仮想100円単位の単勝。資料が不足する場合は担当者ごとに見送り理由を残す。
+  採点は公式出馬表からの簡易モデルで、既存のPhase B実験Core Engineの勝率や校正済み勝率とは別系統。
+- JRAの馬番公表前は、公式馬IDで全頭を評価し、`declarations-v1.json` と
+  `declarations-roundtable-v1.json` を保存する。この段階の枠番・馬番は空欄で、買い目は保留。
+  公表後の出馬表を同じ出力先で処理すると、馬番付き一次版に公表前履歴のハッシュが入る。
+- 馬番付きの `v1.json` を保存してから、篠宮律が司会、りおが質問を担当する五議題を
+  `roundtable-v1.json` に保存する。全頭診断、本命への反論・回答、各担当の一次買い目を収録する。
+  その後の `v2.json` に最終予想、座談会ハッシュ、各担当の一次→最終の差分と理由を保存する。
+  座談会の発言は担当別計算の根拠を会話形式に編集したもの。
+- `PRE_DAY` はレース日前の予想保存を示す。M-PAPERの発行状況は新聞側で確認する。
+  公式払戻は発走後に下記のコマンドで取得・精算する。予測精度は別途評価する。
+
+座談会のMarkdownを出力する。馬番公表前の原稿では `--declarations` を追加する。
+
+```bash
+node prism/scripts/render_roundtable.mjs --history ./forecasts \
+  --race "$PRISM_RACE_ID" --out ./roundtable.md
+```
+
+当日差分は当日に再取得した公式出馬表を用いる。たとえば最終版が `v2.json` なら次の通り。
+
+```bash
+node prism/scripts/run_forecast_panel.mjs --card ./racecard-day.json \
+  --out ./forecasts --update-from 2
+```
+
+`v3.json` に取消・騎手・取得できた単勝オッズ・本命の差分と再計算した買い目を保存する。
+`v2.json` と当初の座談会は読み出して参照する。馬場等は採点済み資料を `--evidence` で渡す。
+同一の入力で再開する場合は、最初の出馬表JSONを使う。
+
+複数競走の定期処理では、公式出馬表のURLを `--url` で繰り返し渡す。
+取得した入力と各版を同じ出力先に保存し、発走時刻順に実行する。次回も同じ出力先を使う。
+馬番公表前の保存が完了した競走は、次回に公式出馬表を取り直し、馬番付きになった時点で続きを実行する。
+一部の競走が失敗しても他の競走を実行し、最後に成功・保留・エラーをJSONで返す。
+
+```bash
+python3 prism/scripts/run_forecast_batch.py --out ./forecasts \\
+  --url "$PRISM_FIRST_OFFICIAL_URL" --url "$PRISM_SECOND_OFFICIAL_URL"
+```
+
+公式結果と払戻の掲載後に、対象の最終版または当日差分版を指定して精算する。
+券種ごとに公式の払戻表を確認し、馬番の並びを区別する券種と区別しない券種を扱う。
+結果の取消・除外馬を含む買い目は返還。結果ページに明示された馬番の券種を対象にする。
+
+```bash
+python3 prism/scripts/fetch_official_result.py --url "$PRISM_OFFICIAL_RESULT_URL" --out ./result.json
+node prism/scripts/settle_forecast.mjs --forecast "./forecasts/$PRISM_RACE_ID/v2.json" \\
+  --result ./result.json --out ./settlement.json
+```
+
+精算には予想版と保存時刻、取得したページのSHA-256、担当別の100円損益が入る。
+結果の時刻は取得時に掲載を観測した時刻。資料側に掲載開始時刻がある場合の代用証明にはしない。
+
+追加の評価資料は `--evidence` で渡せる。JSON配列の各行に `method`、`horse_no`、
+`score`（0〜100）、`reason`、`source_url`（HTTPS）、`available_at`（タイムゾーン付き）を記録する。
+`method` は `video`、`stable`、`pedigree`、`track_bias`、`weather`、`workout`、`learning`。
+提供時点と対象馬を確認し、評価スコアの採点基準を理由に残す。
+
+OpenAI Responses APIを使う場合は、実行環境のシークレットに `OPENAI_API_KEY` を、
+環境変数に構造化出力対応モデルの `PRISM_OPENAI_MODEL` を設定し、コマンドに
+`--model openai` を追加する。一次版は担当ごとの独立したリクエストで実行する。
+最終版には各担当の一次予想と五議題の比較を渡す。各版にレスポンスIDを保存する。
