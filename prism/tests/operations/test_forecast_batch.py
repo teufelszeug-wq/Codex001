@@ -23,12 +23,25 @@ class BatchForecastTests(unittest.TestCase):
             self.assertEqual(prepare(directory, 'url'), ('TEST', numbered))
             self.assertEqual(prepare(directory, 'url'), ('TEST', numbered))
 
+    def test_rejects_successful_command_without_forecasts(self):
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00'}
+        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
+        with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
+                patch('run_forecast_batch.subprocess.run') as command:
+            command.return_value.returncode = 0
+            command.return_value.stdout = response
+            report = run(Path(tmp), ['official-url'])
+        self.assertEqual(report['finalized'], 0)
+        self.assertEqual(report['races'], [])
+        self.assertEqual(report['errors'][0]['race_id'], 'TEST')
+        self.assertIn('no forecaster records', report['errors'][0]['error'])
+
     def test_batches_in_off_time_order_and_keeps_successes_on_input_failure(self):
         def prepared(_, url):
             if url == 'broken':
                 raise ValueError('missing official identity')
             return url, {'race_name': url, 'off_at': '2030-11-14T' + ('06:30:00Z' if url == 'late' else '15:15:00+09:00')}
-        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
+        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[{"tickets":[]}],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
         with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', side_effect=prepared), \
                 patch('run_forecast_batch.subprocess.run') as command:
             command.return_value.returncode = 0
