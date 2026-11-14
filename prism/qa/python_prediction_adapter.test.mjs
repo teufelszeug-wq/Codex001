@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { adaptPythonPredictions } from './python_prediction_adapter.mjs';
+const sample = () => ({race_id:'20261115_TOKYO_11',scheduled_start_at:'2026-11-15T15:30:00+09:00',saved_at:'2026-11-14T20:00:00+09:00',version:'eve-v1',source:'official-entry',predictions:[{horse_name:'テスト馬',predictor_id:'editor',selection:'win'}]});
+test('adapts valid Python engine output',()=>{const [r]=adaptPythonPredictions(sample());assert.equal(r.record_type,'pre_race');assert.equal(r.horse_name,'テスト馬');});
+test('requires predictions',()=>assert.throws(()=>adaptPythonPredictions({...sample(),predictions:[]}),/missing_predictions/));
+test('requires explicit provenance',()=>assert.throws(()=>adaptPythonPredictions({...sample(),source:''}),/missing:source/));
+test('requires predictor id',()=>assert.throws(()=>adaptPythonPredictions({...sample(),predictions:[{horse_name:'A'}]}),/missing:predictor_id/));
+test('rejects result leak',()=>assert.throws(()=>adaptPythonPredictions({...sample(),predictions:[{horse_name:'A',predictor_id:'x',result_known:true}]}),/result_leak/));
+test('rejects duplicates',()=>assert.throws(()=>adaptPythonPredictions({...sample(),predictions:[{horse_name:'A',predictor_id:'x'},{horse_name:'A',predictor_id:'x'}]}),/duplicate_prediction/));
+test('preserves observed timestamp',()=>{const p=sample();p.predictions[0].source_observed_at='2026-11-14T19:00:00+09:00';assert.equal(adaptPythonPredictions(p)[0].source_observed_at,p.predictions[0].source_observed_at);});
