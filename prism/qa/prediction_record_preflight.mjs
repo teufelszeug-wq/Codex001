@@ -15,5 +15,13 @@ export function validatePredictionRecord(record) {
   if (record?.record_type === 'pre_race' && Number.isFinite(saved) && Number.isFinite(start) && saved >= start) errors.push('not_pre_race');
   if (!['pre_race', 'retrospective', 'simulation'].includes(record?.record_type)) errors.push('invalid_record_type');
   if (record?.record_type === 'pre_race' && record?.result_known === true) errors.push('result_leak');
+  // When provenance has an observation timestamp, reject future information.
+  if (record?.source_observed_at !== undefined) {
+    const observed = parse(record.source_observed_at, 'source_observed_at');
+    if (record?.record_type === 'pre_race' && Number.isFinite(observed)) {
+      if (Number.isFinite(saved) && observed > saved) errors.push('source_after_save');
+      if (Number.isFinite(start) && observed >= start) errors.push('source_after_start');
+    }
+  }
   return { valid: errors.length === 0, errors };
 }
