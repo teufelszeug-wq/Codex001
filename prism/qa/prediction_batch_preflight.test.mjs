@@ -8,3 +8,6 @@ test('reject duplicate prediction',()=>assert.ok(validatePredictionBatch([base,{
 test('reject mixed race',()=>assert.ok(validatePredictionBatch([base,{...base,race_id:'OTHER'}]).errors.includes('mixed_race_ids')));
 test('reject mixed editions',()=>assert.ok(validatePredictionBatch([base,{...base,version:'day-v2'}]).errors.includes('mixed_versions')));
 test('reject post-start member atomically',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',saved_at:base.scheduled_start_at}]).errors.some(x=>x.includes('not_pre_race'))));
+
+test('reject pre-race and retrospective records in one edition',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',record_type:'retrospective'}]).errors.includes('mixed_record_types')));
+test('reject simulation and pre-race records in one edition',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',record_type:'simulation'}]).errors.includes('mixed_record_types')));
