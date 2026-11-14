@@ -12,7 +12,7 @@ export function validatePredictionRecord(record) {
   };
   const saved = parse(record?.saved_at, 'saved_at');
   const start = parse(record?.scheduled_start_at, 'scheduled_start_at');
-  if (Number.isFinite(saved) && Number.isFinite(start) && saved >= start) errors.push('not_pre_race');
+  if (record?.record_type === 'pre_race' && Number.isFinite(saved) && Number.isFinite(start) && saved >= start) errors.push('not_pre_race');
   if (!['pre_race', 'retrospective', 'simulation'].includes(record?.record_type)) errors.push('invalid_record_type');
   if (record?.record_type === 'pre_race' && record?.result_known === true) errors.push('result_leak');
   return { valid: errors.length === 0, errors };
