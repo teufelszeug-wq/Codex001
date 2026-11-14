@@ -30,13 +30,18 @@ export function makeOpenAiForecaster({ apiKey, model, request = fetch }) {
         '資料不足で候補リストが空なら horse_nos は空配列にし、見送り理由を返してください。',
         '最終判断時は一次予想と五議題の比較材料を参照し、維持・変更の根拠を記述してください。',
       ].join('\n');
-      const { agent, card, diagnoses, eligible, review, initial } = input;
+      const { agent, card, diagnoses, eligible, review, roundtable, initial } = input;
       const data = {
         name: agent.name, specialty: agent.specialty, race: card.race_name,
         venue: card.venue, course: card.course, eligible,
         horses: diagnoses.map(row => ({ number: row.horse_no, name: row.horse_name, score: row.score, reason: row.reason })),
         initial: initial?.picks ?? null,
         review: review?.map(topic => ({ title: topic.title, findings: topic.findings.slice(0, 20) })) ?? null,
+        discussion: roundtable?.topics.map(topic => ({
+          title: topic.title,
+          turns: topic.turns.filter(turn => turn.kind || turn.speaker_id === agent.id)
+            .map(turn => ({ name: turn.name, horse_no: turn.horse_no, text: turn.text })),
+        })) ?? null,
       };
       const response = await request(ENDPOINT, {
         method: 'POST',

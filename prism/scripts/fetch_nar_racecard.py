@@ -90,6 +90,9 @@ def parse_runners(page, date, surface):
         status_text = ' '.join(text(cell) for line in parts for cell in line if 'odds_weight' in cell.get('class', '') or 'info' in cell.get('class', '').split())
         status = 'SCRATCHED' if '取消' in status_text else 'EXCLUDED' if '除外' in status_text else 'DECLARED'
         odds = re.match(r'(\d+(?:\.\d+)?)\b', text(row, 'odds_weight'))
+        win_odds = float(odds[1]) if odds else None
+        weigh_in = [text(cell) for cell in parts[2] if 'odds_weight' in cell.get('class', '').split()]
+        body_weight = number(weigh_in[0], r'(\d{3})\s*(?:[（(][+-]?\d+[)）])?') if weigh_in else None
         history = []
         if all(len(line) >= 5 for line in parts[:4]):
             for cells in zip(*(line[-5:] for line in parts[:4])):
@@ -98,7 +101,8 @@ def parse_runners(page, date, surface):
         runners.append({
             'horse_no': horse_no, 'horse_name': name, 'horse_id': horse_id[1] if horse_id else None,
             'frame_no': frame, 'status': status, 'jockey_name': jockey,
-            'carried_weight': None, 'official_rating': None, 'win_odds': float(odds[1]) if odds else None,
+            'carried_weight': None, 'official_rating': None, 'win_odds': win_odds if win_odds and win_odds >= 1 else None,
+            'body_weight': body_weight,
             'pedigree': {
                 'sire': text(parts[2][0]) or None,
                 'damsire': text(parts[4][0]).strip('（）()') or None,
@@ -134,6 +138,7 @@ def parse_card(body, identity, captured_at):
     if not race_name or not distance:
         raise ValueError('official NAR race name or distance missing')
     surface = 'BANEI' if venue_code == 3 else 'TURF' if '芝' in course_text else 'DIRT'
+    going = re.search(r'馬場[：:]\s*([\d.]+|良|稍重|重|不良)', course_text)
     return {
         'schema': 'prism.official_racecard/v1', 'authority': 'NAR',
         'race_id': f'{date.replace("-", "")}-NAR-{venue_id}-{race_no:02d}', 'race_name': race_name,
@@ -144,6 +149,7 @@ def parse_card(body, identity, captured_at):
             'surface': surface, 'distance_m': int(distance[1]),
             'direction': 'RIGHT' if '右' in course_text else 'LEFT' if '左' in course_text else 'STRAIGHT',
         },
+        'track_condition': going[1] if going else None,
         'runners': parse_runners(page, date, surface),
     }
 

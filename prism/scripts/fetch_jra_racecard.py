@@ -103,22 +103,25 @@ def fetch_jra(url, timeout=15):
             'note':'Retrieved from JRA domain; official HTML layout and race identity require independent validation before PRE_AVAILABLE prediction.'}
 
 
-def fetch_for_forecast(url, timeout=15):
+def fetch_for_forecast(url, timeout=15, allow_unframed=False):
     from jra_forecast_card import parse_forecast_card
 
     identity = racecard_identity(url)
     final_url, body, html = read_jra(url, timeout)
     if racecard_identity(final_url) != identity:
         raise ValueError('JRA response changed race identity')
-    card = parse_forecast_card(html, identity, datetime.now(timezone.utc))
+    card = parse_forecast_card(html, identity, datetime.now(timezone.utc), allow_unframed)
     return {**card, 'official_url': final_url, 'source_sha256': hashlib.sha256(body).hexdigest()}
 
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--url',required=True);p.add_argument('--out',required=True)
     p.add_argument('--for-forecast', action='store_true', help='Verify race identity and extract forecast inputs')
+    p.add_argument('--allow-unframed', action='store_true', help='Also save confirmed entries before horse numbers are published')
     args=p.parse_args()
-    result=fetch_for_forecast(args.url) if args.for_forecast else fetch_jra(args.url)
+    if args.allow_unframed and not args.for_forecast:
+        p.error('--allow-unframed requires --for-forecast')
+    result=fetch_for_forecast(args.url, allow_unframed=args.allow_unframed) if args.for_forecast else fetch_jra(args.url)
     with Path(args.out).open('x',encoding='utf-8') as f:
         json.dump(result,f,ensure_ascii=False,indent=2);f.write('\n')
     print(json.dumps({'runners':len(result['runners']),'captured_at':result['captured_at'],'source_sha256':result['source_sha256']}))

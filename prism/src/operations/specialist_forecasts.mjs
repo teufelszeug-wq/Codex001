@@ -205,6 +205,23 @@ export function validateSupplementalEvidence(rows, card, asOf) {
   }
 }
 
+export function restoreSupplementalEvidence(initial) {
+  if (!initial) throw new Error('initial forecast required to recover prior evidence');
+  const entries = new Map();
+  for (const record of initial.records) {
+    if (!Object.hasOwn(SUPPLEMENTAL, record.execution.method)) continue;
+    for (const row of record.diagnoses) {
+      if (!row.source_ref || row.source_ref === initial.source_refs[0] ||
+          !initial.source_refs.includes(row.source_ref) || !Number.isFinite(row.score)) continue;
+      entries.set(`${record.execution.method}:${row.horse_no}`, {
+        method: record.execution.method, horse_no: row.horse_no, score: row.score,
+        reason: row.reason, source_url: row.source_ref, available_at: initial.saved_at,
+      });
+    }
+  }
+  return [...entries.values()];
+}
+
 export async function forecastSpecialist({ agent, card, evidence, now, phase, review, initial, model }) {
   const startedAt = now();
   const field = fieldContext(card, agent.method);
@@ -230,7 +247,7 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
   if (model) {
     const decision = await model({
       agent, card, diagnoses, eligible: hasRanking ? ranked.map(row => row.horse_no) : [],
-      review: review?.topics ?? null, initial, offAt: card.off_at,
+      review: review?.topics ?? null, roundtable: review?.roundtable ?? null, initial, offAt: card.off_at,
     });
     const byNumber = new Map(ranked.map(row => [row.horse_no, row]));
     if (!Array.isArray(decision.horse_nos) || decision.horse_nos.length > MARKS.length ||
@@ -269,10 +286,12 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
   if (review && initial && !modelReason) {
     const before = initial.picks[0];
     const after = picks[0];
-    const compared = review.topics.find(topic => topic.id === 'CASE').nominations
-      .find(row => row.horse_no !== before?.horse_no);
+    const topic = review.roundtable?.topics.find(topic => topic.id === 'CASE');
+    const challenge = topic?.turns.find(turn => turn.kind === 'REBUTTAL' && topic.turns.some(
+      target => target.turn_id === turn.responds_to && target.horse_no === before?.horse_no));
+    const compared = card.active_runners.find(horse => horse.horse_no === challenge?.horse_no);
     reviewReason = after && compared
-      ? `${compared.horse_name}を推す判断と比較し、担当分野の根拠を優先して${after.horse_name}を維持。`
+      ? `${compared.horse_name}を推す意見を確認。担当分野の評価を優先し、${after.horse_name}を維持。`
       : skipReason ?? reviewReason;
   }
   return {

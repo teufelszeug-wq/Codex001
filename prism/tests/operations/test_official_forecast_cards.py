@@ -61,6 +61,19 @@ class OfficialForecastCards(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'prior start'):
             parse_jra(JRA.replace('2026年10月11日', '2026年11月15日'), jra_identity(JRA_URL), CAPTURED)
 
+    def test_unframed_card_requires_explicit_mode_and_never_infers_horse_numbers(self):
+        declarations = (JRA.replace('<img alt="枠1白">', '')
+                        .replace('<td class="num">1', '<td class="num">')
+                        .replace('<td class="num">2', '<td class="num">')
+                        .replace('>架空馬甲</div>', '><a href="?CNAME=pw01dud002021000001/FF">架空馬甲</a></div>')
+                        .replace('>架空馬乙</div>', '><a href="?CNAME=pw01dud002021000002/FF">架空馬乙</a></div>'))
+        with self.assertRaisesRegex(ValueError, 'missing official horse number'):
+            parse_jra(declarations, jra_identity(JRA_URL), CAPTURED)
+        card = parse_jra(declarations, jra_identity(JRA_URL), CAPTURED, allow_unframed=True)
+        self.assertEqual(card['entry_stage'], 'DECLARATIONS')
+        self.assertTrue(all(row['horse_no'] is None and row['frame_no'] is None for row in card['runners']))
+        self.assertEqual([row['horse_id'] for row in card['runners']], ['2021000001', '2021000002'])
+
     def test_nar_ignores_sample_and_keeps_absent_odds(self):
         card = parse_nar(NAR.encode(), nar_identity(NAR_URL), CAPTURED)
         self.assertEqual(card['race_id'], '20261114-NAR-SAGA-04')

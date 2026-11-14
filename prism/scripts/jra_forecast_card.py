@@ -79,7 +79,7 @@ def prior_start(cell, race_date):
     }
 
 
-def card_runners(table, race_date):
+def card_runners(table, race_date, allow_unframed=False):
     runners = []
     frame = None
     for row in table.xpath('./tbody/tr'):
@@ -88,15 +88,17 @@ def card_runners(table, race_date):
             continue
         if not all(len(columns[key]) == 1 for key in ('num', 'horse', 'jockey')):
             raise ValueError('missing official runner columns')
+        frame_explicit = False
         if columns['waku']:
             frame_cell = columns['waku'][0]
             alt = frame_cell.xpath('.//img/@alt')
             frame = number(alt[0] if alt else text(frame_cell), r'(?:枠)?([1-8]).*')
+            frame_explicit = frame is not None
         horse = columns['horse'][0]
         jockey = columns['jockey'][0]
         horse_no = number(text(columns['num'][0]), r'(\d{1,2})')
         name = text(horse, 'name_line', 'name')
-        if horse_no is None or not name:
+        if not name or horse_no is None and (not allow_unframed or text(columns['num'][0])):
             raise ValueError('missing official horse number or name')
         status_text = ' '.join((row.get('class', ''), text(horse, 'odds'), text(jockey, 'jockey')))
         if re.search(r'取消|cancel', status_text, re.IGNORECASE):
@@ -106,6 +108,7 @@ def card_runners(table, race_date):
         else:
             status = 'DECLARED'
         starts = [start for cell in columns['past'] if (start := prior_start(cell, race_date))]
+        weight = re.search(r'(\d{3})\s*kg(?:[（(][+-]?\d+[)）])?', text(horse, 'result_line', 'weight'))
         horse_links = nodes(horse, 'name')
         hrefs = horse_links[0].xpath('.//a/@href') if horse_links else []
         horse_id = re.search(r'CNAME=pw01dud00(\d{10})/', hrefs[0]) if hrefs else None
@@ -118,6 +121,7 @@ def card_runners(table, race_date):
             'jockey_name': text(jockey, 'jockey') if status == 'DECLARED' else None,
             'carried_weight': number(text(jockey, 'weight'), r'(\d+(?:\.\d+)?)\s*kg', float),
             'official_rating': number(text(jockey, 'rating', 'num'), r'(\d{1,3})'),
+            'body_weight': int(weight[1]) if weight else None,
             'win_odds': number(text(horse, 'odds', 'num'), r'(\d+(?:\.\d+)?)', float),
             'pedigree': {
                 'sire': text(horse, 'sire').removeprefix('父：').strip() or None,
@@ -125,6 +129,15 @@ def card_runners(table, race_date):
             },
             'history': sorted(starts, key=lambda start: start['date'], reverse=True),
         })
+        if horse_no is None and frame_explicit:
+            raise ValueError('frame present without official horse number')
+    if allow_unframed and runners and all(r['horse_no'] is None and r['frame_no'] is None for r in runners):
+        identities = [r['horse_id'] for r in runners]
+        if any(identity is None for identity in identities) or len(set(identities)) != len(identities) or len(runners) > 24:
+            raise ValueError('unframed declarations require complete official horse IDs')
+        return runners
+    if any(r['horse_no'] is None for r in runners):
+        raise ValueError('official runner numbers are incomplete')
     numbers = sorted(r['horse_no'] for r in runners)
     if not numbers or numbers != list(range(1, len(runners) + 1)) or len(runners) > 24:
         raise ValueError('official runner numbers are incomplete or duplicated')
@@ -133,7 +146,7 @@ def card_runners(table, race_date):
     return sorted(runners, key=lambda runner: runner['horse_no'])
 
 
-def parse_forecast_card(html, identity, captured_at):
+def parse_forecast_card(html, identity, captured_at, allow_unframed=False):
     page = lxml_html.fromstring(html)
     headers = nodes(page, 'race_header')
     if len(headers) != 1:
@@ -159,11 +172,13 @@ def parse_forecast_card(html, identity, captured_at):
     course = text(header, 'course')
     distance = re.search(r'([\d,]+)メートル', course.replace(' ', ''))
     name = text(header, 'race_name') or text(header, 'category')
+    going = re.search(r'(?:芝|ダート)\s*(良|稍重|重|不良)', text(header, 'baba'))
     if not name or not distance:
         raise ValueError('official JRA race name or distance missing')
     tables = page.xpath('//table[thead//th[@class="waku"] and thead//th[@class="horse"]]')
     if len(tables) != 1:
         raise ValueError('official JRA runner table required')
+    runners = card_runners(tables[0], date, allow_unframed)
     return {
         'schema': 'prism.official_racecard/v1',
         'authority': 'JRA',
@@ -176,10 +191,12 @@ def parse_forecast_card(html, identity, captured_at):
         'captured_at': captured_at.isoformat(),
         'source_verified': True,
         'source_verification': 'JRA_RACECARD_IDENTITY_MATCH',
+        'track_condition': going[1] if going else None,
         'course': {
             'surface': surface(course),
             'distance_m': int(distance[1].replace(',', '')),
             'direction': 'RIGHT' if '右' in course else 'LEFT' if '左' in course else 'STRAIGHT',
         },
-        'runners': card_runners(tables[0], date),
+        'runners': runners,
+        **({'entry_stage': 'DECLARATIONS'} if runners[0]['horse_no'] is None else {}),
     }
