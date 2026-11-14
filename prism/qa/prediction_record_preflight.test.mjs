@@ -10,3 +10,8 @@ test('reject result leakage',()=>assert.ok(validatePredictionRecord({...base,res
 
 test('allow retrospective save after start without mislabeling as pre-race',()=>{const result=validatePredictionRecord({...base,record_type:'retrospective',saved_at:'2026-11-14T18:00:00+09:00',result_known:true});assert.equal(result.valid,true);});
 test('reject pre-race record saved after start even when result unknown',()=>assert.ok(validatePredictionRecord({...base,saved_at:'2026-11-14T18:00:00+09:00'}).errors.includes('not_pre_race')));
+
+test('accept provenance observed before save',()=>assert.equal(validatePredictionRecord({...base,source_observed_at:'2026-11-13T17:00:00+09:00'}).valid,true));
+test('reject provenance observed after save',()=>assert.ok(validatePredictionRecord({...base,source_observed_at:'2026-11-13T19:00:00+09:00'}).errors.includes('source_after_save')));
+test('reject provenance observed at start',()=>assert.ok(validatePredictionRecord({...base,source_observed_at:base.scheduled_start_at}).errors.includes('source_after_start')));
+test('reject malformed provenance timestamp',()=>assert.ok(validatePredictionRecord({...base,source_observed_at:'invalid'}).errors.includes('invalid_datetime:source_observed_at')));
