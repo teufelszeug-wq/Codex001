@@ -43,6 +43,14 @@ def export_engine_predictions(artifact, *, horses, predictor_id, source, saved_a
         raise ValueError('horse_id_mismatch')
     if any(not isinstance(v, str) or not v.strip() for v in horses.values()) or len(set(horses.values())) != len(horses):
         raise ValueError('ambiguous_horse_names')
+    # Reject non-finite, out-of-range, and unnormalised probabilities before export.
+    # bool is intentionally rejected even though it subclasses int in Python.
+    from math import isfinite, fsum
+    probabilities = list(win.values())
+    if any(type(p) not in (int, float) or not isfinite(p) or p < 0 or p > 1 for p in probabilities):
+        raise ValueError('invalid_win_probability')
+    if abs(fsum(probabilities) - 1.0) > 1e-6:
+        raise ValueError('unnormalized_win_probabilities')
     return {
         'race_id': artifact['race_id'], 'scheduled_start_at': scheduled_start_at,
         'saved_at': saved_at, 'version': version, 'source': source,
