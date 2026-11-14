@@ -130,6 +130,8 @@ def run(directory, urls, *, model='local'):
             expected_phase = 'DECLARATIONS' if early else 'FINAL'
             if value['phase'] != expected_phase:
                 raise ValueError('forecast output phase does not match racecard stage')
+            if any(not isinstance(row.get('tickets'), list) for row in forecasts):
+                raise ValueError('forecast output missing tickets list')
             rows.append({
                 'race_id': race, 'race_name': card['race_name'], 'off_at': card['off_at'],
                 'phase': value['phase'], 'publication_window': value['publication_window'],
