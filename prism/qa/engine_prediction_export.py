@@ -4,7 +4,7 @@ Only an upstream verified source may be promoted to a live pre-race edition.
 The engine currently emits source_authenticity_verified=False, so this bridge
 intentionally rejects unverified live output rather than fabricating proof.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 
 def _time(value):
     if not isinstance(value, str):
@@ -14,7 +14,7 @@ def _time(value):
         raise ValueError('timezone_required')
     return dt
 
-def export_engine_predictions(artifact, *, horses, predictor_id, source, saved_at, version, scheduled_start_at):
+def export_engine_predictions(artifact, *, horses, predictor_id, source, saved_at, version, scheduled_start_at, now=None):
     if artifact.get('schema') != 'prism.engine.prediction/v1':
         raise ValueError('invalid_engine_schema')
     if artifact.get('mode') != 'PRE_AVAILABLE':
@@ -34,6 +34,9 @@ def export_engine_predictions(artifact, *, horses, predictor_id, source, saved_a
     lock = _time(artifact.get('locked_at'))
     saved = _time(saved_at)
     start = _time(scheduled_start_at)
+    actual_now = _time(now) if now is not None else datetime.now(timezone.utc)
+    if saved > actual_now:
+        raise ValueError('future_saved_at')
     if lock > saved or saved >= start:
         raise ValueError('invalid_pre_race_timeline')
     if _time(artifact.get('cutoff')) < lock:
