@@ -9,12 +9,17 @@ export function validatePredictionBatch(records) {
   const raceIds = new Set();
   const versions = new Set();
   const recordTypes = new Set();
+  const scheduledStarts = new Set();
   for (const [index, record] of records.entries()) {
     const result = validatePredictionRecord(record);
     errors.push(...result.errors.map(error => `record[${index}]:${error}`));
     if (record?.race_id) raceIds.add(record.race_id);
     if (record?.version) versions.add(record.version);
     if (record?.record_type) recordTypes.add(record.record_type);
+    // One race edition must have one canonical scheduled start, even across predictors.
+    if (record?.scheduled_start_at && Number.isFinite(Date.parse(record.scheduled_start_at))) {
+      scheduledStarts.add(Date.parse(record.scheduled_start_at));
+    }
     const key = [record?.race_id, record?.version, record?.record_type, record?.predictor_id, record?.horse_name].map(v => JSON.stringify(v)).join('|');
     if (seen.has(key)) errors.push(`record[${index}]:duplicate_prediction`);
     seen.add(key);
@@ -22,5 +27,6 @@ export function validatePredictionBatch(records) {
   if (raceIds.size > 1) errors.push('mixed_race_ids');
   if (versions.size > 1) errors.push('mixed_versions');
   if (recordTypes.size > 1) errors.push('mixed_record_types');
+  if (scheduledStarts.size > 1) errors.push('mixed_scheduled_starts');
   return { valid: errors.length === 0, errors };
 }
