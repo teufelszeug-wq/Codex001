@@ -70,3 +70,27 @@ class BatchForecastTests(unittest.TestCase):
                 report = run(Path(tmp), ['official-url'])
                 self.assertEqual(report['finalized'], 0)
                 self.assertIn(expected, report['errors'][0]['error'])
+
+    def test_rejects_future_saved_at_and_wrong_phase(self):
+        import json
+        from datetime import datetime, timedelta, timezone
+        now = datetime.now(timezone.utc)
+        future = (now + timedelta(hours=1)).isoformat()
+        off = (now + timedelta(days=2)).isoformat()
+        past = (now - timedelta(hours=1)).isoformat()
+        card = {'race_name': 'test', 'off_at': off, 'runners': [{}]}
+        base = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                'runners': 1, 'forecasts': [{'execution_id': 'run-1', 'tickets': []}],
+                'roundtable': None}
+        for record, expected in [
+            ({**base, 'saved_at': future}, 'saved_at is in the future'),
+            ({**base, 'saved_at': past, 'phase': 'DECLARATIONS'}, 'phase does not match')
+        ]:
+            with self.subTest(expected=expected), TemporaryDirectory() as tmp, \\
+                    patch('run_forecast_batch.prepare', return_value=('TEST', card)), \\
+                    patch('run_forecast_batch.subprocess.run') as command:
+                command.return_value.returncode = 0
+                command.return_value.stdout = json.dumps(record)
+                report = run(Path(tmp), ['official-url'])
+                self.assertEqual(report['finalized'], 0)
+                self.assertIn(expected, report['errors'][0]['error'])
