@@ -1,0 +1,89 @@
+{
+  "schema": "prism.legacy.recovery_manifest/v1",
+  "created_date": "2026-11-09",
+  "source_policy": "preserve immutable originals; declared times are not independently attested; no post-race promotion",
+  "records": [
+    {
+      "race_id": "20261025-JRA-KYOTO-11",
+      "race_name": "菊花賞",
+      "source": "https://app.notion.com/p/40276efc402981d7913fed712084e6dd",
+      "source_id": "PRISM-20261025-KYOTO-R11-KIKKASHO-PREODDS-RUN93-v1",
+      "source_class": "NOTION_PAGE_ORIGINAL",
+      "evidence_class": "PRE_OFF_DECLARED_WORKING_NOT_ATTESTED",
+      "saved_at": "2026-10-24T07:07:47+09:00",
+      "version": "v1",
+      "forecaster_id": "rio",
+      "runner_count_declared": 18,
+      "full_field_diagnoses_declared": 18,
+      "marks": {
+        "◎": "8 ロブチェン",
+        "○": "6 バステール",
+        "▲": "2 コンジェスタス"
+      },
+      "tickets": [],
+      "missing": [
+        "official card full extraction",
+        "official pre-off timestamp attestation",
+        "independent specialist runs"
+      ],
+      "not_live_certified": true
+    },
+    {
+      "race_id": "20261026-NAR-MORIOKA-11",
+      "race_name": "紅葉特別A二組",
+      "source": "https://app.notion.com/p/40476efc402981778fdddef92d4de46e",
+      "source_id": "PRISM-20261026-MORIOKA-11-20261025T2333JST",
+      "source_class": "NOTION_PAGE_ORIGINAL",
+      "evidence_class": "PRE_OFF_DECLARED_PARTIAL_NOT_ATTESTED",
+      "saved_at": "2026-10-25T23:33:00+09:00",
+      "version": "partial-v1",
+      "forecaster_id": "rio",
+      "runner_count_declared": 12,
+      "full_field_diagnoses_declared": null,
+      "marks": {
+        "◎": "2 ジョリーロジャー",
+        "○": "6 ミシロウェイ",
+        "▲": "9 イタズラベガ"
+      },
+      "tickets": [],
+      "missing": [
+        "full-field diagnosis",
+        "official ID reconciliation",
+        "independent specialist execution"
+      ],
+      "not_live_certified": true
+    },
+    {
+      "race_id": "20261028-NAR-OI-11",
+      "race_name": "マイルグランプリ",
+      "source": "https://app.notion.com/p/40476efc402981e2bd0dc77727dd9413",
+      "source_id": "PRISM-20261028-OI-11-20261026T0305JST-RUN121",
+      "source_class": "NOTION_PAGE_ORIGINAL",
+      "evidence_class": "PRE_OFF_DECLARED_POST_FRAME_WORKING_NOT_ATTESTED",
+      "saved_at": "2026-10-26T03:05:00+09:00",
+      "version": "working-v1",
+      "forecaster_id": "editorial_provisional",
+      "runner_count_declared": 13,
+      "full_field_diagnoses_declared": 13,
+      "marks": {
+        "◎": "3 ソニックスター",
+        "○": "7 リコースパロー",
+        "▲": "8 アレスグート"
+      },
+      "tickets": [],
+      "missing": [
+        "pre-frame baseline",
+        "odds and tickets",
+        "official ID reconciliation"
+      ],
+      "not_live_certified": true
+    }
+  ],
+  "summary": {
+    "unique_races": 3,
+    "notion_original_pages_inspected": 3,
+    "fully_attested_live_snapshots": 0,
+    "settled_tickets": 0,
+    "duplicates_removed": 0
+  }
+}

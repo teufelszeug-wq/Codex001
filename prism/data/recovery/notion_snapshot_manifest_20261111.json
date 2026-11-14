@@ -1,0 +1,125 @@
+{
+  "schema": "prism.legacy.recovery_evidence/v1",
+  "recovered_on": "2026-11-11",
+  "policy": {
+    "immutable_originals": true,
+    "live_promotion_allowed": false,
+    "external_attestation_required": false
+  },
+  "records": [
+    {
+      "race_id": "20261021-NAR-SONODA-11",
+      "race_name": "京都畜産特別B2 3歳以上",
+      "source": "Notion:3ff76efc-4029-814a-a9ee-c974858e69e7",
+      "source_url": "https://app.notion.com/p/3ff76efc4029814aa9eec974858e69e7",
+      "source_class": "NOTION_PAGE_ORIGINAL",
+      "evidence_class": "PRE_RACE_DECLARED_SNAPSHOT_UNATTESTED",
+      "saved_at": null,
+      "declared_frozen_at": "2026-10-20T23:14:00+09:00",
+      "off_at": "2026-10-21T16:15:00+09:00",
+      "version": "v1",
+      "forecaster_id": "RIO",
+      "horse_names": [
+        "マーブルヘイロー",
+        "ハリエンジュ",
+        "ショウナンアトレ",
+        "モイル",
+        "クイッククイーン",
+        "ザゴリ",
+        "モカラエース",
+        "メリーセンス",
+        "メリッササンライズ",
+        "エスオーライジング",
+        "ドゥラルーナ",
+        "ナムラマイケル"
+      ],
+      "marks": [
+        {
+          "mark": "◎",
+          "horse_no": 12,
+          "horse_name": "マーブルヘイロー"
+        },
+        {
+          "mark": "○",
+          "horse_no": 3,
+          "horse_name": "ハリエンジュ"
+        },
+        {
+          "mark": "▲",
+          "horse_no": 2,
+          "horse_name": "ショウナンアトレ"
+        },
+        {
+          "mark": "△",
+          "horse_no": 1,
+          "horse_name": "モイル"
+        },
+        {
+          "mark": "△",
+          "horse_no": 10,
+          "horse_name": "クイッククイーン"
+        },
+        {
+          "mark": "☆",
+          "horse_no": 11,
+          "horse_name": "ザゴリ"
+        }
+      ],
+      "tickets": [],
+      "not_live_certified": true
+    },
+    {
+      "race_id": "20261110-NAR-KAWASAKI-11",
+      "race_name": "富士見オープン",
+      "source": "Notion:41476efc-4029-8103-9e69-dd8655e46095",
+      "source_url": "https://app.notion.com/p/41476efc402981039e69dd8655e46095",
+      "source_class": "NOTION_PROGRESS_REPORT",
+      "evidence_class": "EDITORIAL_DRAFT_REFERENCED_NOT_FULLY_MIGRATED",
+      "saved_at": null,
+      "version": "v1",
+      "forecaster_id": "editorial_single_model",
+      "horse_names": [],
+      "reported_runner_count": 12,
+      "reported_ticket_total_yen": 500,
+      "original_artifact": "prism/runs/2026-11-10/kawasaki-11-editorial-pre-v1-2003.md",
+      "not_live_certified": true
+    },
+    {
+      "race_id": "20261111-NAR-KAWASAKI-11",
+      "race_name": "ロジータ記念",
+      "source": "Notion:41476efc-4029-81e0-a410-c46bdcc1068e",
+      "source_url": "https://app.notion.com/p/41476efc402981e0a410c46bdcc1068e",
+      "source_class": "NOTION_PROGRESS_REPORT",
+      "evidence_class": "EDITORIAL_DRAFT_REFERENCED_NOT_FULLY_MIGRATED",
+      "saved_at": null,
+      "version": "v1",
+      "forecaster_id": "editorial_single_model",
+      "horse_names": [],
+      "reported_runner_count": 14,
+      "reported_ticket_total_yen": 500,
+      "original_artifact": "prism/runs/2026-11-11/kawasaki-11-rozita-editorial-pre-v1-0205.md",
+      "not_live_certified": true
+    }
+  ],
+  "summary": {
+    "notion_pages_read": 3,
+    "new_races_registered": 3,
+    "full_field_horse_names_recovered": 12,
+    "marks_recovered": 6,
+    "editorial_draft_races_referenced": 2,
+    "reported_draft_runner_counts": [
+      12,
+      14
+    ],
+    "certified_live_predictions": 0,
+    "official_horse_ids_reconciled": 0,
+    "source_documents_overwritten": 0
+  },
+  "pending": [
+    "Retrieve complete GitHub editorial draft artifacts and compare race identity",
+    "Verify frozen timestamp against original page history if available",
+    "Reconcile official horse IDs",
+    "Migrate specialist independent forecasts and 100-yen tickets",
+    "Retrieve original RIO 3.x ZIP, full roundtables, horse/jockey DB and newspaper source"
+  ]
+}

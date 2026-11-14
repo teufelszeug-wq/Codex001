@@ -1,0 +1,125 @@
+{
+  "schema": "prism.legacy.recovery_evidence/v1",
+  "recovered_on": "2026-11-10",
+  "policy": {
+    "immutable_originals": true,
+    "live_promotion_allowed": false,
+    "external_attestation_required": false
+  },
+  "records": [
+    {
+      "race_id": "20261108-NAR-KOCHI-07",
+      "race_name": "高知7R",
+      "source": "Library:THREE_ISSUES_PROGRESS.md",
+      "source_class": "LIBRARY_DOCUMENT_ORIGINAL",
+      "evidence_class": "POST_RACE_RETROSPECTIVE_RECONSTRUCTION",
+      "saved_at": null,
+      "version": "source-v1",
+      "forecaster_id": "unresolved",
+      "horse_names": [],
+      "tickets": [
+        {
+          "type": "QUINELLA",
+          "horse_nos": [
+            2,
+            4
+          ],
+          "stake_yen": 100,
+          "result": "LOSE"
+        },
+        {
+          "type": "WIDE",
+          "horse_nos": [
+            2,
+            3
+          ],
+          "stake_yen": 100,
+          "payout_yen": 400,
+          "result": "WIN"
+        }
+      ],
+      "stake_yen": 200,
+      "payout_yen": 400,
+      "source_status": "prior_conversation_transcription_not_reverified_in_this_run",
+      "not_live_certified": true
+    },
+    {
+      "race_id": "20261108-NAR-SAGA-06",
+      "race_name": "佐賀6R",
+      "source": "Library:THREE_ISSUES_PROGRESS.md",
+      "source_class": "LIBRARY_DOCUMENT_ORIGINAL",
+      "evidence_class": "POST_RACE_RETROSPECTIVE_RECONSTRUCTION",
+      "saved_at": null,
+      "version": "source-v1",
+      "forecaster_id": "unresolved",
+      "horse_names": [],
+      "tickets": [
+        {
+          "type": "QUINELLA",
+          "horse_nos": [
+            9,
+            10
+          ],
+          "stake_yen": 100,
+          "result": "LOSE"
+        },
+        {
+          "type": "WIDE",
+          "horse_nos": [
+            3,
+            10
+          ],
+          "stake_yen": 100,
+          "result": "LOSE"
+        }
+      ],
+      "stake_yen": 200,
+      "payout_yen": 0,
+      "source_status": "prior_conversation_transcription_not_reverified_in_this_run",
+      "not_live_certified": true
+    }
+  ],
+  "asset_inventory": [
+    {
+      "source": "Library:PRISM_RIO_legacy_preservation_register_20261108.md",
+      "class": "PRESERVATION_POLICY",
+      "original_confirmed": true,
+      "content_migrated": false
+    },
+    {
+      "source": "Library:V04_STATUS.md",
+      "class": "HISTORICAL_MIGRATION_STATUS",
+      "original_confirmed": true,
+      "content_migrated": false,
+      "declared_prior_migration": {
+        "races": 4,
+        "entries": 6,
+        "official_id_reconciled": 0,
+        "independently_reaudited": false
+      }
+    },
+    {
+      "source": "Library:THREE_ISSUES_PROGRESS.md",
+      "class": "RETROSPECTIVE_SETTLEMENT",
+      "original_confirmed": true,
+      "content_migrated": true
+    },
+    {
+      "source": "Library:README.md",
+      "class": "LEGACY_SQLITE_DESIGN",
+      "original_confirmed": true,
+      "content_migrated": false
+    }
+  ],
+  "summary": {
+    "original_library_documents_read": 4,
+    "retrospective_races_extracted": 2,
+    "retrospective_tickets_extracted": 4,
+    "total_stake_yen": 400,
+    "total_payout_yen": 400,
+    "live_forecasts_certified": 0,
+    "official_horse_ids_reconciled": 0,
+    "previous_notion_races_unchanged": 3,
+    "overlap_with_previous_manifest": 0
+  }
+}
