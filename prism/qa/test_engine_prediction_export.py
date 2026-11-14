@@ -12,7 +12,7 @@ K = {'horses':{'h1':'馬A','h2':'馬B'},'predictor_id':'engine',
 
 class ExportTests(unittest.TestCase):
     def test_success(self):
-        self.assertEqual(len(export_engine_predictions(A, **K)['predictions']), 2)
+        self.assertEqual(len(export_engine_predictions(A, **{**K, 'now':'2026-11-14T10:02:00+09:00'})['predictions']), 2)
     def test_unverified(self):
         with self.assertRaisesRegex(ValueError, 'unverified'):
             export_engine_predictions({**A,'source_authenticity_verified':False}, **K)
@@ -21,7 +21,20 @@ class ExportTests(unittest.TestCase):
             export_engine_predictions(A, **{**K,'horses':{'h1':'馬A'}})
     def test_future_save(self):
         with self.assertRaisesRegex(ValueError, 'timeline'):
-            export_engine_predictions(A, **{**K,'saved_at':'2026-11-15T15:01:00+09:00'})
+            export_engine_predictions(A, **{**K,'saved_at':'2026-11-15T15:01:00+09:00','now':'2026-11-16T00:00:00+09:00'})
+    def test_future_saved_at_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'future_saved_at'):
+            export_engine_predictions(A, **{**K,'now':'2026-11-14T09:59:00+09:00'})
+    def test_equal_saved_at_now_allowed(self):
+        self.assertEqual(len(export_engine_predictions(A, **{**K,'now':K['saved_at']})['predictions']), 2)
+    def test_offset_equivalent_now_allowed(self):
+        self.assertEqual(len(export_engine_predictions(A, **{**K,'now':'2026-11-14T01:01:00Z'})['predictions']), 2)
+    def test_invalid_probability_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'invalid_win_probability'):
+            export_engine_predictions({**A,'win':{'h1':float('nan'),'h2':0.4}}, **{**K,'now':K['saved_at']})
+    def test_unnormalized_probability_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'unnormalized_win_probabilities'):
+            export_engine_predictions({**A,'win':{'h1':0.6,'h2':0.3}}, **{**K,'now':K['saved_at']})
     def test_historical(self):
         with self.assertRaisesRegex(ValueError, 'non_live'):
             export_engine_predictions({**A,'mode':'HISTORICAL_RECONSTRUCTION'}, **K)
