@@ -25,7 +25,7 @@ class BatchForecastTests(unittest.TestCase):
 
     def test_rejects_successful_command_without_forecasts(self):
         card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}, {}, {}]}
-        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
+        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[],"roundtable":null,"saved_at":"2026-01-01T00:00:00Z"}'
         with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
                 patch('run_forecast_batch.subprocess.run') as command:
             command.return_value.returncode = 0
@@ -41,7 +41,7 @@ class BatchForecastTests(unittest.TestCase):
             if url == 'broken':
                 raise ValueError('missing official identity')
             return url, {'race_name': url, 'off_at': '2030-11-14T' + ('06:30:00Z' if url == 'late' else '15:15:00+09:00'), 'runners': [{}, {}, {}]}
-        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"race_id":"early","forecasts":[{"tickets":[],"execution_id":"run-1"}],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
+        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"race_id":"early","forecasts":[{"tickets":[],"execution_id":"run-1"}],"roundtable":null,"saved_at":"2026-01-01T00:00:00Z"}'
         with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', side_effect=prepared), \
                 patch('run_forecast_batch.subprocess.run') as command:
             command.return_value.returncode = 0
@@ -58,7 +58,7 @@ class BatchForecastTests(unittest.TestCase):
         card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
         base = {'race_id': 'WRONG', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
                 'runners': 1, 'forecasts': [{'execution_id': 'run-1', 'tickets': []}],
-                'roundtable': None, 'saved_at': '2030-11-13T11:00:00Z'}
+                'roundtable': None, 'saved_at': '2026-01-01T00:00:00Z'}
         import json
         for record, expected in [(base, 'race_id mismatch'),
                                  ({**base, 'race_id': 'TEST', 'saved_at': '2030-11-14T07:00:00Z'}, 'not saved before')]:
