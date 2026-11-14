@@ -112,6 +112,19 @@ def run(directory, urls, *, model='local'):
                 raise ValueError('forecast output has invalid phase')
             if not value.get('saved_at'):
                 raise ValueError('forecast output has no saved_at')
+            if value.get('race_id') != race:
+                raise ValueError('forecast output race_id mismatch')
+            if value.get('runners') != len(card.get('runners', [])):
+                raise ValueError('forecast output runner count mismatch')
+            identities = [row.get('execution_id') for row in forecasts if isinstance(row, dict)]
+            if len(identities) != len(forecasts) or any(not isinstance(key, str) or not key.strip() for key in identities):
+                raise ValueError('forecast output missing execution_id')
+            if len(set(identities)) != len(identities):
+                raise ValueError('forecast output duplicate execution_id')
+            saved = datetime.fromisoformat(value['saved_at'].replace('Z', '+00:00'))
+            off = datetime.fromisoformat(card['off_at'].replace('Z', '+00:00'))
+            if saved.tzinfo is None or off.tzinfo is None or saved >= off:
+                raise ValueError('forecast output not saved before scheduled start')
             rows.append({
                 'race_id': race, 'race_name': card['race_name'], 'off_at': card['off_at'],
                 'phase': value['phase'], 'publication_window': value['publication_window'],
