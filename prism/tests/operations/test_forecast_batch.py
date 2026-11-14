@@ -86,8 +86,8 @@ class BatchForecastTests(unittest.TestCase):
             ({**base, 'saved_at': future}, 'saved_at is in the future'),
             ({**base, 'saved_at': past, 'phase': 'DECLARATIONS'}, 'phase does not match')
         ]:
-            with self.subTest(expected=expected), TemporaryDirectory() as tmp, \\
-                    patch('run_forecast_batch.prepare', return_value=('TEST', card)), \\
+            with self.subTest(expected=expected), TemporaryDirectory() as tmp, \
+                    patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
                     patch('run_forecast_batch.subprocess.run') as command:
                 command.return_value.returncode = 0
                 command.return_value.stdout = json.dumps(record)
