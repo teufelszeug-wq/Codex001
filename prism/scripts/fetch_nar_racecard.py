@@ -21,12 +21,13 @@ VENUES = {
 }
 
 
-def racecard_identity(url):
+def racecard_identity(url, *, result=False):
     parts = urlsplit(url)
+    path = '/KeibaWeb/TodayRaceInfo/' + ('RaceMarkTable' if result else 'DebaTable')
     if (parts.scheme != 'https' or parts.hostname != 'www.keiba.go.jp'
-            or parts.path != '/KeibaWeb/TodayRaceInfo/DebaTable'
+            or parts.path != path
             or parts.username or parts.password or parts.port not in (None, 443)):
-        raise ValueError('NAR official numbered racecard URL required')
+        raise ValueError('NAR official race result URL required' if result else 'NAR official numbered racecard URL required')
     query = parse_qs(parts.query)
     values = [query.get(key, []) for key in ('k_raceDate', 'k_babaCode', 'k_raceNo')]
     if any(len(value) != 1 for value in values):

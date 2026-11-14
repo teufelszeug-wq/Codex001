@@ -63,7 +63,7 @@ node prism/scripts/run_forecast_panel.mjs --card ./racecard.json --out ./forecas
   その後の `v2.json` に最終予想、座談会ハッシュ、各担当の一次→最終の差分と理由を保存する。
   座談会の発言は担当別計算の根拠を会話形式に編集したもの。
 - `PRE_DAY` はレース日前の予想保存を示す。M-PAPERの発行状況は新聞側で確認する。
-  公式払戻の取得と予測精度の実測は予想コマンドの範囲外。
+  公式払戻は発走後に下記のコマンドで取得・精算する。予測精度は別途評価する。
 
 座談会のMarkdownを出力する。馬番公表前の原稿では `--declarations` を追加する。
 
@@ -92,6 +92,19 @@ node prism/scripts/run_forecast_panel.mjs --card ./racecard-day.json \
 python3 prism/scripts/run_forecast_batch.py --out ./forecasts \\
   --url "$PRISM_FIRST_OFFICIAL_URL" --url "$PRISM_SECOND_OFFICIAL_URL"
 ```
+
+公式結果と払戻の掲載後に、対象の最終版または当日差分版を指定して精算する。
+券種ごとに公式の払戻表を確認し、馬番の並びを区別する券種と区別しない券種を扱う。
+結果の取消・除外馬を含む買い目は返還。結果ページに明示された馬番の券種を対象にする。
+
+```bash
+python3 prism/scripts/fetch_official_result.py --url "$PRISM_OFFICIAL_RESULT_URL" --out ./result.json
+node prism/scripts/settle_forecast.mjs --forecast "./forecasts/$PRISM_RACE_ID/v2.json" \\
+  --result ./result.json --out ./settlement.json
+```
+
+精算には予想版と保存時刻、取得したページのSHA-256、担当別の100円損益が入る。
+結果の時刻は取得時に掲載を観測した時刻。資料側に掲載開始時刻がある場合の代用証明にはしない。
 
 追加の評価資料は `--evidence` で渡せる。JSON配列の各行に `method`、`horse_no`、
 `score`（0〜100）、`reason`、`source_url`（HTTPS）、`available_at`（タイムゾーン付き）を記録する。

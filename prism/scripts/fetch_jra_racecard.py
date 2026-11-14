@@ -62,13 +62,14 @@ class OfficialRedirect(HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def racecard_identity(url):
+def racecard_identity(url, *, result=False):
     parts = official_jra_url(url)
     cnames = parse_qs(parts.query).get('CNAME', [])
-    match = re.fullmatch(r'pw01dde01(\d{2})(\d{4})(\d{2})(\d{2})(\d{2})(\d{8})/[A-F0-9]{2}',
+    prefix, path = ('pw01sde10', '/JRADB/accessS.html') if result else ('pw01dde01', '/JRADB/accessD.html')
+    match = re.fullmatch(prefix + r'(\d{2})(\d{4})(\d{2})(\d{2})(\d{2})(\d{8})/[A-F0-9]{2}',
                          cnames[0]) if len(cnames) == 1 else None
-    if parts.path != '/JRADB/accessD.html' or not match:
-        raise ValueError('JRA official numbered racecard URL required')
+    if parts.path != path or not match:
+        raise ValueError('JRA official race result URL required' if result else 'JRA official numbered racecard URL required')
     venue_code, year, meeting, day, race_no, race_date = match.groups()
     venues = dict(zip((f'{i:02d}' for i in range(1, 11)), (
         ('札幌', 'SAPPORO'), ('函館', 'HAKODATE'), ('福島', 'FUKUSHIMA'), ('新潟', 'NIIGATA'),

@@ -383,7 +383,7 @@ export async function runForecastPanel({
     post_roundtable: compareFinalForecasts(initial, records),
     captured_at: card.captured_at, source_sha256: card.source_sha256, supplemental_evidence: evidence,
     win_odds: fieldValues(card, 'win_odds'), body_weights: fieldValues(card, 'body_weight'),
-    track_condition: card.track_condition ?? null,
+    track_condition: card.track_condition ?? null, entry_status: card.runners,
   };
   try {
     const { record: final } = await persistRevision(directory, card.race_id, 1,
