@@ -125,6 +125,11 @@ def run(directory, urls, *, model='local'):
             off = datetime.fromisoformat(card['off_at'].replace('Z', '+00:00'))
             if saved.tzinfo is None or off.tzinfo is None or saved >= off:
                 raise ValueError('forecast output not saved before scheduled start')
+            if saved > datetime.now(timezone.utc):
+                raise ValueError('forecast output saved_at is in the future')
+            expected_phase = 'DECLARATIONS' if early else 'FINAL'
+            if value['phase'] != expected_phase:
+                raise ValueError('forecast output phase does not match racecard stage')
             rows.append({
                 'race_id': race, 'race_name': card['race_name'], 'off_at': card['off_at'],
                 'phase': value['phase'], 'publication_window': value['publication_window'],
