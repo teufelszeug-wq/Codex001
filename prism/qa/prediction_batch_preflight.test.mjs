@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validatePredictionBatch } from './prediction_batch_preflight.mjs';
+const base = {race_id:'JRA-TEST-11',horse_name:'テスト馬',predictor_id:'editorial',source:'fixture',saved_at:'2026-11-13T18:00:00+09:00',scheduled_start_at:'2026-11-14T15:00:00+09:00',version:'eve-v1',record_type:'pre_race',result_known:false};
+test('accept two distinct predictors',()=>assert.equal(validatePredictionBatch([base,{...base,predictor_id:'rio'}]).valid,true));
+test('reject empty batch',()=>assert.deepEqual(validatePredictionBatch([]).errors,['empty_batch']));
+test('reject duplicate prediction',()=>assert.ok(validatePredictionBatch([base,{...base}]).errors.some(x=>x.includes('duplicate_prediction'))));
+test('reject mixed race',()=>assert.ok(validatePredictionBatch([base,{...base,race_id:'OTHER'}]).errors.includes('mixed_race_ids')));
+test('reject mixed editions',()=>assert.ok(validatePredictionBatch([base,{...base,version:'day-v2'}]).errors.includes('mixed_versions')));
+test('reject post-start member atomically',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',saved_at:base.scheduled_start_at}]).errors.some(x=>x.includes('not_pre_race'))));
