@@ -7,6 +7,10 @@ export async function commitPreRaceEdition(records, { writeAtomic, now = () => n
   if (records.some(r => r.record_type !== 'pre_race')) return { saved: false, errors: ['not_pre_race_edition'] };
   const current = now();
   if (!(current instanceof Date) || !Number.isFinite(current.getTime())) return { saved: false, errors: ['invalid_commit_clock'] };
+  // A record cannot truthfully claim to have been saved after the actual commit clock.
+  // The batch validator already checks saved_at against scheduled_start_at.
+  if (records.some(r => Date.parse(r.saved_at) > current.getTime()))
+    return { saved: false, errors: ['record_saved_at_in_future'] };
   const starts = records.map(r => Date.parse(r.scheduled_start_at));
   if (starts.some(t => !Number.isFinite(t) || current.getTime() >= t)) return { saved: false, errors: ['commit_after_start'] };
   if (typeof writeAtomic !== 'function') return { saved: false, errors: ['missing_atomic_writer'] };
