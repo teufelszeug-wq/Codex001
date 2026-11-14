@@ -83,6 +83,16 @@ node prism/scripts/run_forecast_panel.mjs --card ./racecard-day.json \
 `v2.json` と当初の座談会は読み出して参照する。馬場等は採点済み資料を `--evidence` で渡す。
 同一の入力で再開する場合は、最初の出馬表JSONを使う。
 
+複数競走の定期処理では、公式出馬表のURLを `--url` で繰り返し渡す。
+取得した入力と各版を同じ出力先に保存し、発走時刻順に実行する。次回も同じ出力先を使う。
+馬番公表前の保存が完了した競走は、次回に公式出馬表を取り直し、馬番付きになった時点で続きを実行する。
+一部の競走が失敗しても他の競走を実行し、最後に成功・保留・エラーをJSONで返す。
+
+```bash
+python3 prism/scripts/run_forecast_batch.py --out ./forecasts \\
+  --url "$PRISM_FIRST_OFFICIAL_URL" --url "$PRISM_SECOND_OFFICIAL_URL"
+```
+
 追加の評価資料は `--evidence` で渡せる。JSON配列の各行に `method`、`horse_no`、
 `score`（0〜100）、`reason`、`source_url`（HTTPS）、`available_at`（タイムゾーン付き）を記録する。
 `method` は `video`、`stable`、`pedigree`、`track_bias`、`weather`、`workout`、`learning`。

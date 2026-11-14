@@ -1,0 +1,39 @@
+from pathlib import Path
+import sys
+from tempfile import TemporaryDirectory
+import unittest
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
+from run_forecast_batch import prepare, run
+
+
+class BatchForecastTests(unittest.TestCase):
+    def test_keeps_unframed_capture_until_numbered_card_is_available(self):
+        early = {'race_id': 'TEST', 'entry_stage': 'DECLARATIONS', 'off_at': '2030-11-14T15:30:00+09:00'}
+        numbered = {'race_id': 'TEST', 'off_at': early['off_at']}
+        with TemporaryDirectory() as tmp, patch('run_forecast_batch.target', side_effect=[
+            ('TEST', lambda: early), ('TEST', lambda: self.fail('unexpected request while resuming')),
+            ('TEST', lambda: numbered), ('TEST', lambda: self.fail('unexpected request for frozen card')),
+        ]):
+            directory = Path(tmp)
+            self.assertEqual(prepare(directory, 'url'), ('TEST', early))
+            self.assertEqual(prepare(directory, 'url'), ('TEST', early))
+            (directory / 'TEST' / 'declarations-roundtable-v1.json').touch()
+            self.assertEqual(prepare(directory, 'url'), ('TEST', numbered))
+            self.assertEqual(prepare(directory, 'url'), ('TEST', numbered))
+
+    def test_batches_in_off_time_order_and_keeps_successes_on_input_failure(self):
+        def prepared(_, url):
+            if url == 'broken':
+                raise ValueError('missing official identity')
+            return url, {'race_name': url, 'off_at': '2030-11-14T' + ('06:30:00Z' if url == 'late' else '15:15:00+09:00')}
+        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
+        with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', side_effect=prepared), \
+                patch('run_forecast_batch.subprocess.run') as command:
+            command.return_value.returncode = 0
+            command.return_value.stdout = response
+            report = run(Path(tmp), ['late', 'broken', 'early'])
+        self.assertEqual([row['race_id'] for row in report['races']], ['early', 'late'])
+        self.assertEqual(report['finalized'], 2)
+        self.assertEqual(report['errors'], [{'source': 'broken', 'error': 'missing official identity'}])

@@ -6,6 +6,7 @@ on:
       - 'prism/tests/operations/**'
       - 'prism/data/operations/**'
       - 'prism/scripts/run_forecast_panel.mjs'
+      - 'prism/scripts/run_forecast_batch.py'
       - 'prism/scripts/render_roundtable.mjs'
       - 'prism/scripts/fetch_nar_racecard.py'
       - 'prism/scripts/jra_forecast_card.py'
