@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { commitPreRaceEdition } from './prediction_edition_commit.mjs';
+const sample = () => ({race_id:'20261115-NAR-01',horse_name:'テスト馬',predictor_id:'editor',source:'official',saved_at:'2026-11-14T09:00:00Z',version:'eve-v1',scheduled_start_at:'2026-11-15T09:00:00Z',record_type:'pre_race',result_known:false});
+const opts = {now:()=>new Date('2026-11-14T10:00:00Z')};
+test('atomic receipt required for successful save', async()=>{const r=await commitPreRaceEdition([sample()],{...opts,writeAtomic:async()=>({id:'commit-1'})});assert.equal(r.saved,true);assert.equal(r.count,1)});
+test('no writer means no save',async()=>{assert.deepEqual((await commitPreRaceEdition([sample()],opts)).errors,['missing_atomic_writer'])});
+test('late actual commit rejected even when saved_at was earlier',async()=>{let called=false;const r=await commitPreRaceEdition([sample()],{now:()=>new Date('2026-11-15T09:00:00Z'),writeAtomic:async()=>{called=true;return {id:'x'}}});assert.equal(r.saved,false);assert.equal(called,false)});
+test('retrospective records cannot be issued as pre-race',async()=>{assert.equal((await commitPreRaceEdition([{...sample(),record_type:'retrospective'}],opts)).saved,false)});
+test('writer failure does not report success',async()=>{assert.deepEqual((await commitPreRaceEdition([sample()],{...opts,writeAtomic:async()=>{throw Error('disk full')}})).errors,['atomic_write_failed'])});
+test('writer without durable receipt does not report success',async()=>{assert.deepEqual((await commitPreRaceEdition([sample()],{...opts,writeAtomic:async()=>({})})).errors,['missing_durable_receipt'])});
+test('result leak blocked',async()=>{assert.equal((await commitPreRaceEdition([{...sample(),result_known:true}],opts)).saved,false)});
