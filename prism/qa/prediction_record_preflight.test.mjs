@@ -7,3 +7,6 @@ test('reject post-start save',()=>assert.ok(validatePredictionRecord({...base,sa
 test('reject malformed timestamp',()=>assert.ok(validatePredictionRecord({...base,saved_at:'yesterday'}).errors.includes('invalid_datetime:saved_at')));
 test('reject missing provenance',()=>assert.ok(validatePredictionRecord({...base,source:''}).errors.includes('missing:source')));
 test('reject result leakage',()=>assert.ok(validatePredictionRecord({...base,result_known:true}).errors.includes('result_leak')));
+
+test('allow retrospective save after start without mislabeling as pre-race',()=>{const result=validatePredictionRecord({...base,record_type:'retrospective',saved_at:'2026-11-14T18:00:00+09:00',result_known:true});assert.equal(result.valid,true);});
+test('reject pre-race record saved after start even when result unknown',()=>assert.ok(validatePredictionRecord({...base,saved_at:'2026-11-14T18:00:00+09:00'}).errors.includes('not_pre_race')));
