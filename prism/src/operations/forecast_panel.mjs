@@ -20,10 +20,9 @@ function jstDay(timestamp) {
 }
 
 function verifyRacecard(raw) {
+  if (!raw || typeof raw !== 'object') throw new Error('racecard required');
   const declarations = raw.entry_stage === 'DECLARATIONS';
-  const inputRunners = declarations ? raw.runners.map((horse, index) => ({ ...horse, horse_no: index + 1 })) : raw.runners;
-  const normalized = normalizeOfficialRacecard({ ...raw, runners: inputRunners });
-  const url = new URL(normalized.official_url);
+  const url = new URL(raw.official_url);
   const jra = raw.authority === 'JRA' && ['www.jra.go.jp', 'jra.go.jp'].includes(url.hostname) &&
     url.pathname === '/JRADB/accessD.html' && raw.source_verification === 'JRA_RACECARD_IDENTITY_MATCH';
   const nar = raw.authority === 'NAR' && url.hostname === 'www.keiba.go.jp' &&
@@ -42,6 +41,10 @@ function verifyRacecard(raw) {
       /^\d{10}$/.test(horse.horse_id)) || new Set(raw.runners.map(horse => horse.horse_id)).size !== raw.runners.length)) {
     throw new Error('unframed declarations require distinct official horse IDs and empty frame/horse numbers');
   }
+  const inputRunners = declarations ? raw.runners.map((horse, index) => ({ ...horse, horse_no: index + 1 })) : raw.runners;
+  const { verification_ref: _verificationRef, ...normalized } = normalizeOfficialRacecard({
+    ...raw, runners: inputRunners, verification_ref: `${raw.source_verification}:sha256:${raw.source_sha256}`,
+  });
   const facts = new Map(inputRunners.map(horse => [horse.horse_no, horse]));
   const active = normalized.active_runners.map(horse => {
     const source = facts.get(horse.horse_no);
