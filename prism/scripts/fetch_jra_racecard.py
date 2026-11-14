@@ -5,7 +5,7 @@ official markup changes or horse numbers cannot be identified, no racecard is sa
 """
 from html.parser import HTMLParser
 from urllib.request import HTTPRedirectHandler, Request, build_opener
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlencode, urlsplit
 from datetime import datetime, timezone
 from pathlib import Path
 import json
@@ -65,7 +65,7 @@ class OfficialRedirect(HTTPRedirectHandler):
 def racecard_identity(url, *, result=False):
     parts = official_jra_url(url)
     cnames = parse_qs(parts.query).get('CNAME', [])
-    prefix, path = (r'pw01sde(?:01|10)', '/JRADB/accessS.html') if result else ('pw01dde01', '/JRADB/accessD.html')
+    prefix, path = (r'pw01sde(?:01|10)', '/JRADB/accessS.html') if result else (r'pw01dde(?:01|10)', '/JRADB/accessD.html')
     match = re.fullmatch(prefix + r'(\d{2})(\d{4})(\d{2})(\d{2})(\d{2})(\d{8})/[A-F0-9]{2}',
                          cnames[0]) if len(cnames) == 1 else None
     if parts.path != path or not match:
@@ -82,9 +82,10 @@ def racecard_identity(url, *, result=False):
     return race_date, venue, venue_id, int(meeting), int(day), int(race_no)
 
 
-def read_jra(url, timeout=15):
+def read_jra(url, timeout=15, *, form_code=None):
     official_jra_url(url)
-    req=Request(url,headers={'User-Agent':'PRISM-Racecard-Research/0.1 (official-source reader)'})
+    data = urlencode({'cname': form_code}).encode('ascii') if form_code is not None else None
+    req=Request(url,data=data,headers={'User-Agent':'PRISM-Racecard-Research/0.1 (official-source reader)'})
     with build_opener(OfficialRedirect).open(req,timeout=timeout) as response:
         final_url = response.geturl()
         official_jra_url(final_url)
@@ -104,14 +105,14 @@ def fetch_jra(url, timeout=15):
             'note':'Retrieved from JRA domain; official HTML layout and race identity require independent validation before PRE_AVAILABLE prediction.'}
 
 
-def fetch_for_forecast(url, timeout=15, allow_unframed=False):
+def fetch_for_forecast(url, timeout=15, allow_unframed=False, previous_runners=()):
     from jra_forecast_card import parse_forecast_card
 
     identity = racecard_identity(url)
     final_url, body, html = read_jra(url, timeout)
     if racecard_identity(final_url) != identity:
         raise ValueError('JRA response changed race identity')
-    card = parse_forecast_card(html, identity, datetime.now(timezone.utc), allow_unframed)
+    card = parse_forecast_card(html, identity, datetime.now(timezone.utc), allow_unframed, previous_runners)
     return {**card, 'official_url': final_url, 'source_sha256': hashlib.sha256(body).hexdigest()}
 
 def main():

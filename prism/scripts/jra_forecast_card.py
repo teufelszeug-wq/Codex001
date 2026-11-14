@@ -79,7 +79,7 @@ def prior_start(cell, race_date):
     }
 
 
-def card_runners(table, race_date, allow_unframed=False):
+def card_runners(table, race_date, allow_unframed=False, previous_runners=()):
     runners = []
     frame = None
     for row in table.xpath('./tbody/tr'):
@@ -96,17 +96,19 @@ def card_runners(table, race_date, allow_unframed=False):
             frame_explicit = frame is not None
         horse = columns['horse'][0]
         jockey = columns['jockey'][0]
-        horse_no = number(text(columns['num'][0]), r'(\d{1,2})')
+        number_cell = text(columns['num'][0])
+        horse_no = number(number_cell, r'(\d{1,2})')
         name = text(horse, 'name_line', 'name')
-        if not name or horse_no is None and (not allow_unframed or text(columns['num'][0])):
-            raise ValueError('missing official horse number or name')
-        status_text = ' '.join((row.get('class', ''), text(horse, 'odds'), text(jockey, 'jockey')))
+        status_text = ' '.join((row.get('class', ''), number_cell, text(horse, 'odds'), text(jockey, 'jockey')))
         if re.search(r'取消|cancel', status_text, re.IGNORECASE):
             status = 'SCRATCHED'
         elif re.search(r'除外|exclude', status_text, re.IGNORECASE):
             status = 'EXCLUDED'
         else:
             status = 'DECLARED'
+        if not name or (horse_no is None and status == 'DECLARED' and
+                        (not allow_unframed or number_cell or frame_explicit)):
+            raise ValueError('missing official horse number or name')
         starts = [start for cell in columns['past'] if (start := prior_start(cell, race_date))]
         weight = re.search(r'(\d{3})\s*kg(?:[（(][+-]?\d+[)）])?', text(horse, 'result_line', 'weight'))
         horse_links = nodes(horse, 'name')
@@ -129,16 +131,13 @@ def card_runners(table, race_date, allow_unframed=False):
             },
             'history': sorted(starts, key=lambda start: start['date'], reverse=True),
         })
-        if horse_no is None and frame_explicit:
-            raise ValueError('frame present without official horse number')
     if allow_unframed and runners and all(r['horse_no'] is None and r['frame_no'] is None for r in runners):
         identities = [r['horse_id'] for r in runners]
         if any(identity is None for identity in identities) or len(set(identities)) != len(identities) or len(runners) > 24:
             raise ValueError('unframed declarations require complete official horse IDs')
         return runners
-    if any(r['horse_no'] is None for r in runners):
-        raise ValueError('official runner numbers are incomplete')
-    numbers = sorted(r['horse_no'] for r in runners)
+    recover_removed_numbers(runners, previous_runners)
+    numbers = sorted(runner['horse_no'] for runner in runners)
     if not numbers or numbers != list(range(1, len(runners) + 1)) or len(runners) > 24:
         raise ValueError('official runner numbers are incomplete or duplicated')
     if any(r['frame_no'] is None for r in runners):
@@ -146,7 +145,32 @@ def card_runners(table, race_date, allow_unframed=False):
     return sorted(runners, key=lambda runner: runner['horse_no'])
 
 
-def parse_forecast_card(html, identity, captured_at, allow_unframed=False):
+def recover_removed_numbers(runners, previous_runners):
+    former = {(row['horse_id'], row['horse_name']): row for row in previous_runners if row.get('horse_id')}
+    known = {row['horse_no'] for row in runners if row['horse_no'] is not None}
+    removed = [row for row in runners if row['horse_no'] is None]
+    unresolved = []
+    for row in removed:
+        if row['status'] == 'DECLARED':
+            raise ValueError('official runner numbers are incomplete')
+        old = former.get((row['horse_id'], row['horse_name']))
+        if old and old['horse_no'] not in known and row['frame_no'] == old['frame_no']:
+            row['horse_no'] = old['horse_no']
+            row['horse_no_source'] = 'PREVIOUS_OFFICIAL_RACECARD'
+            known.add(row['horse_no'])
+        else:
+            unresolved.append(row)
+    if not unresolved:
+        return
+    missing = set(range(1, len(runners) + 1)) - known
+    if len(unresolved) != 1 or len(missing) != 1 or not unresolved[0]['frame_no']:
+        raise ValueError('official scratched horse numbers cannot be uniquely resolved')
+    # The official grid has one withheld number and a complete set of other slots.
+    unresolved[0]['horse_no'] = missing.pop()
+    unresolved[0]['horse_no_source'] = 'SOLE_UNDISPLAYED_RACECARD_SLOT'
+
+
+def parse_forecast_card(html, identity, captured_at, allow_unframed=False, previous_runners=()):
     page = lxml_html.fromstring(html)
     headers = nodes(page, 'race_header')
     if len(headers) != 1:
@@ -178,7 +202,7 @@ def parse_forecast_card(html, identity, captured_at, allow_unframed=False):
     tables = page.xpath('//table[thead//th[@class="waku"] and thead//th[@class="horse"]]')
     if len(tables) != 1:
         raise ValueError('official JRA runner table required')
-    runners = card_runners(tables[0], date, allow_unframed)
+    runners = card_runners(tables[0], date, allow_unframed, previous_runners)
     return {
         'schema': 'prism.official_racecard/v1',
         'authority': 'JRA',

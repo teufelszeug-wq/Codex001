@@ -61,6 +61,15 @@ class OfficialForecastCards(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'prior start'):
             parse_jra(JRA.replace('2026年10月11日', '2026年11月15日'), jra_identity(JRA_URL), CAPTURED)
 
+    def test_jra_recovers_the_only_hidden_number_for_a_marked_scratch(self):
+        scratch = JRA.replace('<td class="num">2', '<td class="num">取消')
+        card = parse_jra(scratch, jra_identity(JRA_URL), CAPTURED)
+        self.assertEqual(card['runners'][1]['horse_no'], 2)
+        self.assertEqual(card['runners'][1]['horse_no_source'], 'SOLE_UNDISPLAYED_RACECARD_SLOT')
+        ambiguous = scratch.replace('<td class="num">1', '<td class="num">取消')
+        with self.assertRaisesRegex(ValueError, 'cannot be uniquely resolved'):
+            parse_jra(ambiguous, jra_identity(JRA_URL), CAPTURED)
+
     def test_unframed_card_requires_explicit_mode_and_never_infers_horse_numbers(self):
         declarations = (JRA.replace('<img alt="枠1白">', '')
                         .replace('<td class="num">1', '<td class="num">')
