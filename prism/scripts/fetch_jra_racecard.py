@@ -65,7 +65,7 @@ class OfficialRedirect(HTTPRedirectHandler):
 def racecard_identity(url, *, result=False):
     parts = official_jra_url(url)
     cnames = parse_qs(parts.query).get('CNAME', [])
-    prefix, path = ('pw01sde10', '/JRADB/accessS.html') if result else ('pw01dde01', '/JRADB/accessD.html')
+    prefix, path = (r'pw01sde(?:01|10)', '/JRADB/accessS.html') if result else ('pw01dde01', '/JRADB/accessD.html')
     match = re.fullmatch(prefix + r'(\d{2})(\d{4})(\d{2})(\d{2})(\d{2})(\d{8})/[A-F0-9]{2}',
                          cnames[0]) if len(cnames) == 1 else None
     if parts.path != path or not match:

@@ -38,6 +38,10 @@ NAR = """
 
 
 class OfficialResultTests(unittest.TestCase):
+    def test_accepts_both_official_jra_result_routes(self):
+        identity = jra_identity(JRA_URL, result=True)
+        self.assertEqual(jra_identity(JRA_URL.replace('pw01sde10', 'pw01sde01'), result=True), identity)
+
     def test_keeps_all_dead_heat_winners_and_scratch(self):
         race, finishers, payouts = parse_jra(html.fromstring(JRA), jra_identity(JRA_URL, result=True))
         result = result_record(race, finishers, payouts, JRA_URL, JRA.encode(), '2026-11-08T08:00:00Z')
