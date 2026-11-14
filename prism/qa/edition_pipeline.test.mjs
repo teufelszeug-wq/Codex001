@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { publishPreRaceEdition } from './edition_pipeline.mjs';
+const base = { race_id:'20261115_JRA_TOKYO_11',horse_name:'TEST_HORSE',predictor_id:'RIO',source:'fixture',saved_at:'2026-11-14T18:00:00+09:00',version:'eve-v1',scheduled_start_at:'2026-11-15T15:30:00+09:00',record_type:'pre_race',source_observed_at:'2026-11-14T17:00:00+09:00' };
+const clock=()=>new Date('2026-11-14T19:00:00+09:00');
+test('publish, readback, immutable duplicate rejection', async()=>{const d=await mkdtemp(join(tmpdir(),'prism-'));try {const a=await publishPreRaceEdition([base],{directory:d,now:clock});assert.equal(a.saved,true);assert.equal(a.verified,true);const b=await publishPreRaceEdition([base],{directory:d,now:clock});assert.equal(b.saved,false);assert.ok(b.errors.includes('atomic_write_failed'));}finally{await rm(d,{recursive:true,force:true})}});
+test('reject post-start commit',async()=>{const d=await mkdtemp(join(tmpdir(),'prism-'));try{const r=await publishPreRaceEdition([base],{directory:d,now:()=>new Date('2026-11-15T16:00:00+09:00')});assert.deepEqual(r.errors,['commit_after_start']);}finally{await rm(d,{recursive:true,force:true})}});
+test('reject missing storage directory',async()=>{assert.deepEqual(await publishPreRaceEdition([base]),{saved:false,errors:['missing_directory']})});
+test('reject retrospective record',async()=>{const d=await mkdtemp(join(tmpdir(),'prism-'));try{const r=await publishPreRaceEdition([{...base,record_type:'retrospective'}],{directory:d,now:clock});assert.equal(r.saved,false)}finally{await rm(d,{recursive:true,force:true})}});
