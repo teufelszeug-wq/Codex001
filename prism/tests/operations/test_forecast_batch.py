@@ -94,3 +94,19 @@ class BatchForecastTests(unittest.TestCase):
                 report = run(Path(tmp), ['official-url'])
                 self.assertEqual(report['finalized'], 0)
                 self.assertIn(expected, report['errors'][0]['error'])
+
+    def test_malformed_ticket_list_is_reported_without_aborting_batch(self):
+        import json
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
+        record = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                  'runners': 1, 'forecasts': [{'execution_id': 'run-1'}],
+                  'roundtable': None, 'saved_at': '2026-01-01T00:00:00Z'}
+        with TemporaryDirectory() as tmp, \
+                patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
+                patch('run_forecast_batch.subprocess.run') as command:
+            command.return_value.returncode = 0
+            command.return_value.stdout = json.dumps(record)
+            report = run(Path(tmp), ['official-url'])
+        self.assertEqual(report['finalized'], 0)
+        self.assertEqual(report['races'], [])
+        self.assertIn('missing tickets list', report['errors'][0]['error'])
