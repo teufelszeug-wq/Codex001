@@ -5,8 +5,10 @@ const required = (v, name) => { if (typeof v !== 'string' || !v.trim()) throw ne
 /** A real provider must supply the racecard and independent model outputs. */
 export async function runPreOffRace({ rawRacecard, forecasters, directory, now = () => new Date().toISOString() }) {
   const card = normalizeOfficialRacecard(rawRacecard);
+  if (card.source_verified !== true) throw new Error('verified official racecard required before forecast persistence');
   if (!Array.isArray(forecasters) || !forecasters.length) throw new Error('forecasters required');
   const saved_at = now();
+  if (Date.parse(saved_at) < Date.parse(card.captured_at)) throw new Error('forecast timestamp precedes racecard capture');
   if (Date.parse(saved_at) >= Date.parse(card.off_at)) throw new Error('race already off');
   const active = card.active_runners.map(({horse_no,horse_name})=>({horse_no,horse_name}));
   const records = [];
@@ -18,6 +20,7 @@ export async function runPreOffRace({ rawRacecard, forecasters, directory, now =
     records.push({ ...output, forecaster_id:agent.id, independent_execution:output?.independent_execution===true });
   }
   const final_saved_at = now();
+  if (!Number.isFinite(Date.parse(final_saved_at)) || Date.parse(final_saved_at) < Date.parse(card.captured_at) || Date.parse(final_saved_at) >= Date.parse(card.off_at)) throw new Error('final forecast timestamp outside verified pre-off window');
   return persistInitialForecast(directory,{ race_id:card.race_id,race_name:card.race_name,off_at:card.off_at,saved_at:final_saved_at,runners:active,records,source_refs:[card.official_url] });
 }
 export async function runPostRaceSettlement({ forecast, officialResult, settled_at }) {
