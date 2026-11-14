@@ -11,3 +11,6 @@ test('reject post-start member atomically',()=>assert.ok(validatePredictionBatch
 
 test('reject pre-race and retrospective records in one edition',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',record_type:'retrospective'}]).errors.includes('mixed_record_types')));
 test('reject simulation and pre-race records in one edition',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',record_type:'simulation'}]).errors.includes('mixed_record_types')));
+
+test('reject inconsistent scheduled starts for the same race edition',()=>assert.ok(validatePredictionBatch([base,{...base,predictor_id:'rio',scheduled_start_at:'2026-11-14T15:05:00+09:00'}]).errors.includes('mixed_scheduled_starts')));
+test('accept equivalent scheduled starts in different offsets',()=>assert.equal(validatePredictionBatch([base,{...base,predictor_id:'rio',scheduled_start_at:'2026-11-14T06:00:00Z'}]).valid,true));
