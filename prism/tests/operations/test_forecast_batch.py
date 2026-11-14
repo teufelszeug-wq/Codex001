@@ -24,7 +24,7 @@ class BatchForecastTests(unittest.TestCase):
             self.assertEqual(prepare(directory, 'url'), ('TEST', numbered))
 
     def test_rejects_successful_command_without_forecasts(self):
-        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00'}
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}, {}, {}]}
         response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
         with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
                 patch('run_forecast_batch.subprocess.run') as command:
@@ -40,13 +40,33 @@ class BatchForecastTests(unittest.TestCase):
         def prepared(_, url):
             if url == 'broken':
                 raise ValueError('missing official identity')
-            return url, {'race_name': url, 'off_at': '2030-11-14T' + ('06:30:00Z' if url == 'late' else '15:15:00+09:00')}
-        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"forecasts":[{"tickets":[]}],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
+            return url, {'race_name': url, 'off_at': '2030-11-14T' + ('06:30:00Z' if url == 'late' else '15:15:00+09:00'), 'runners': [{}, {}, {}]}
+        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"race_id":"early","forecasts":[{"tickets":[],"execution_id":"run-1"}],"roundtable":null,"saved_at":"2030-11-13T11:00:00Z"}'
         with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', side_effect=prepared), \
                 patch('run_forecast_batch.subprocess.run') as command:
             command.return_value.returncode = 0
-            command.return_value.stdout = response
+            command.side_effect = [
+                type('Result', (), {'returncode': 0, 'stdout': response})(),
+                type('Result', (), {'returncode': 0, 'stdout': response.replace('"race_id":"early"', '"race_id":"late"')})(),
+            ]
             report = run(Path(tmp), ['late', 'broken', 'early'])
         self.assertEqual([row['race_id'] for row in report['races']], ['early', 'late'])
         self.assertEqual(report['finalized'], 2)
         self.assertEqual(report['errors'], [{'source': 'broken', 'error': 'missing official identity'}])
+
+    def test_rejects_mismatched_race_id_and_post_start_timestamp(self):
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
+        base = {'race_id': 'WRONG', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                'runners': 1, 'forecasts': [{'execution_id': 'run-1', 'tickets': []}],
+                'roundtable': None, 'saved_at': '2030-11-13T11:00:00Z'}
+        import json
+        for record, expected in [(base, 'race_id mismatch'),
+                                 ({**base, 'race_id': 'TEST', 'saved_at': '2030-11-14T07:00:00Z'}, 'not saved before')]:
+            with self.subTest(expected=expected), TemporaryDirectory() as tmp, \
+                    patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
+                    patch('run_forecast_batch.subprocess.run') as command:
+                command.return_value.returncode = 0
+                command.return_value.stdout = json.dumps(record)
+                report = run(Path(tmp), ['official-url'])
+                self.assertEqual(report['finalized'], 0)
+                self.assertIn(expected, report['errors'][0]['error'])
