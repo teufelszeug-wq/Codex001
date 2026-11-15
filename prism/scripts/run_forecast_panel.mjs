@@ -27,7 +27,7 @@ async function main() {
   });
   const forecast = declarations ?? final;
   const summaries = forecast.records.map(record => ({
-    name: record.display_name, specialty: record.specialty, execution_id: record.execution_id,
+    forecaster_id: record.forecaster_id, name: record.display_name, specialty: record.specialty, execution_id: record.execution_id,
     top_pick: record.picks[0] ?? null, tickets: record.tickets,
     skip_reason: record.skip_reason,
   }));
