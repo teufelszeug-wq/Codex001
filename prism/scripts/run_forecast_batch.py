@@ -106,14 +106,6 @@ def validate_panel_output(value, race, card, expected_phase):
         raise ValueError('forecast output missing execution_id')
     if len(set(identities)) != len(identities):
         raise ValueError('forecast output duplicate execution_id')
-    roster_path = Path(__file__).resolve().parents[1] / 'data' / 'operations' / 'forecast_roster.json'
-    roster = read_json(roster_path)['forecasters']
-    if len(forecasts) != len(roster):
-        raise ValueError(f'forecast output incomplete forecaster roster: {len(forecasts)}/{len(roster)}')
-    names = [row.get('name') for row in forecasts]
-    expected_names = {row['name'] for row in roster}
-    if len(set(names)) != len(names) or set(names) != expected_names:
-        raise ValueError('forecast output forecaster roster names mismatch')
     saved = datetime.fromisoformat(value['saved_at'].replace('Z', '+00:00'))
     off = datetime.fromisoformat(card['off_at'].replace('Z', '+00:00'))
     if saved.tzinfo is None or off.tzinfo is None or saved >= off:
@@ -124,6 +116,14 @@ def validate_panel_output(value, race, card, expected_phase):
         raise ValueError('forecast output phase does not match racecard stage')
     if any(not isinstance(row.get('tickets'), list) for row in forecasts):
         raise ValueError('forecast output missing tickets list')
+    roster_path = Path(__file__).resolve().parents[1] / 'data' / 'operations' / 'forecast_roster.json'
+    roster = read_json(roster_path)['forecasters']
+    if len(forecasts) != len(roster):
+        raise ValueError(f'forecast output incomplete forecaster roster: {len(forecasts)}/{len(roster)}')
+    names = [row.get('name') for row in forecasts]
+    expected_names = {row['name'] for row in roster}
+    if len(set(names)) != len(names) or set(names) != expected_names:
+        raise ValueError('forecast output forecaster roster names mismatch')
 
 
 def run(directory, urls, *, model='local'):
