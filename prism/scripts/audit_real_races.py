@@ -24,6 +24,10 @@ def audit(targets, forecast_files):
                 raise ValueError('not a verified pre-off timestamp')
             if not isinstance(doc['version'],int) or doc['version']<1 or not doc['source_refs'] or not doc['records']:
                 raise ValueError('missing version, source, or predictions')
+            if not isinstance(doc['records'],list) or not all(isinstance(r,dict) for r in doc['records']):
+                raise ValueError('records must be a nonempty list of objects')
+            if not isinstance(doc['source_refs'],list) or not all(isinstance(s,str) and s.strip() for s in doc['source_refs']):
+                raise ValueError('source_refs must be a nonempty list of nonblank strings')
             # A locally written timestamp is insufficient proof: a pre-off
             # Git commit or external immutable provenance must be verified.
             rows[rid]['reason']='TIMESTAMP_PRESENT_BUT_EXTERNAL_PRE_OFF_PROOF_REQUIRED'
