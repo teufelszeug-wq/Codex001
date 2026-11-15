@@ -1,4 +1,4 @@
-import unittest,sys,tempfile,json
+import unittest,sys,tempfile,json,subprocess
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from audit_real_races import audit
@@ -15,5 +15,18 @@ class AuditTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    p=Path(d)/'v1.json'
    p.write_text(json.dumps({'race_id':'R1','version':1,'saved_at':'2026-11-15T14:00:00+09:00','off_at':'2026-11-15T15:40:00+09:00','source_refs':['official'],'records':[{'picks':[]}]}))
-   self.assertEqual(audit(TARGET,[p])['races'][0]['reason'],'TIMESTAMP_PRESENT_BUT_EXTERNAL_PRE_OFF_PROOF_REQUIRED')
+   self.assertEqual(audit(TARGET,[p])['races'][0]['reason'],'PRE_OFF_CANDIDATE_AWAITING_GIT_OR_STORAGE_HISTORY')
+ def test_git_commit_after_off_not_verified(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d)
+   subprocess.run(['git','init',str(root)],check=True,capture_output=True)
+   subprocess.run(['git','-C',d,'config','user.email','test@example.invalid'],check=True)
+   subprocess.run(['git','-C',d,'config','user.name','Test'],check=True)
+   p=root/'v1.json'
+   p.write_text(json.dumps({'race_id':'R1','version':1,'saved_at':'2026-11-15T14:00:00+09:00','off_at':'2026-11-15T15:40:00+09:00','source_refs':['official'],'records':[{'picks':[]}]}))
+   subprocess.run(['git','-C',d,'add','v1.json'],check=True)
+   subprocess.run(['git','-C',d,'commit','-m','late'],check=True,capture_output=True)
+   result=audit(TARGET,[p],root)
+   self.assertEqual(result['verified_pre_off_count'],0)
+   self.assertEqual(result['pre_off_candidate_count'],1)
 if __name__=='__main__':unittest.main()
