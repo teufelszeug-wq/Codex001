@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 REQUIRED = ('race_id','version','saved_at','off_at','source_refs','records')
-def git_pre_off_evidence(file, off, repo):
+def git_pre_off_evidence(file, off, repo, saved=None):
     repo = Path(repo).resolve()
     file = Path(file).resolve()
     relative = file.relative_to(repo).as_posix()
@@ -19,7 +19,7 @@ def git_pre_off_evidence(file, off, repo):
             continue
         stamp = subprocess.run(['git', '-C', str(repo), 'show', '-s', '--format=%cI', sha],
                                capture_output=True, text=True, check=True).stdout.strip()
-        if datetime.fromisoformat(stamp) < off:
+        if datetime.fromisoformat(stamp) < off and (saved is None or datetime.fromisoformat(stamp) >= saved):
             return {'commit_sha': sha, 'committed_at': stamp}
     return None
 
@@ -41,7 +41,7 @@ def audit(targets, forecast_files, git_repo=None):
             expected=datetime.fromisoformat(by_id[rid]['off_at'])
             if not saved.tzinfo or not off.tzinfo or saved>=off or off!=expected:
                 raise ValueError('not a verified pre-off timestamp')
-            if not isinstance(doc['version'],int) or doc['version']<1 or not doc['source_refs'] or not doc['records']:
+            if type(doc['version']) is not int or doc['version']<1 or not doc['source_refs'] or not doc['records']:
                 raise ValueError('missing version, source, or predictions')
             if not isinstance(doc['records'],list) or not all(isinstance(r,dict) for r in doc['records']):
                 raise ValueError('records must be a nonempty list of objects')
@@ -53,7 +53,7 @@ def audit(targets, forecast_files, git_repo=None):
             evidence = None
             if git_repo is not None:
                 try:
-                    evidence = git_pre_off_evidence(file, off, git_repo)
+                    evidence = git_pre_off_evidence(file, off, git_repo, saved)
                 except (OSError, ValueError, subprocess.CalledProcessError) as exc:
                     rejected.append({'file':str(file),'error_type':type(exc).__name__,
                                      'reason':'Git evidence check failed: '+str(exc)})
