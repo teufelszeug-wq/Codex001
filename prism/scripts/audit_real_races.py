@@ -50,6 +50,11 @@ def audit(targets, forecast_files, git_repo=None):
                 raise ValueError('records must be a nonempty list of objects')
             if not all(isinstance(r.get('forecaster_id'),str) and r['forecaster_id'].strip() for r in doc['records']):
                 raise ValueError('each record requires a nonblank forecaster_id')
+            forecaster_ids = [r['forecaster_id'].strip() for r in doc['records']]
+            if len(forecaster_ids) != len(set(forecaster_ids)):
+                raise ValueError('duplicate forecaster_id within forecast version')
+            if not isinstance(rid,str) or not rid.strip():
+                raise ValueError('race_id must be a nonblank string')
             if not isinstance(doc['source_refs'],list) or not all(isinstance(s,str) and s.strip() for s in doc['source_refs']):
                 raise ValueError('source_refs must be a nonempty list of nonblank strings')
             # A self-reported timestamp is a candidate, not independent proof.
