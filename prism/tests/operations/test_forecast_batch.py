@@ -178,11 +178,11 @@ class BatchForecastTests(unittest.TestCase):
 
     def test_pre_day_uses_japan_date_when_off_at_is_utc(self):
         from run_forecast_batch import validate_panel_output
-        card = {'off_at': '2030-11-14T06:15:00Z', 'runners': [{}]}
+        card = {'off_at': '2026-01-02T06:15:00Z', 'runners': [{}]}
         base = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
                 'runners': 1, 'forecasts': complete_forecasts()}
-        # 2030-11-13 15:30 UTC is already Nov 14 in Japan.
+        # Jan 1 at 15:30 UTC is already Jan 2 in Japan.
         with self.assertRaisesRegex(ValueError, 'not before race-local calendar day'):
-            validate_panel_output({**base, 'saved_at': '2030-11-13T15:30:00Z'}, 'TEST', card, 'FINAL')
+            validate_panel_output({**base, 'saved_at': '2026-01-01T15:30:00Z'}, 'TEST', card, 'FINAL')
         # A genuinely previous-day save must still pass.
-        validate_panel_output({**base, 'saved_at': '2026-01-01T00:00:00Z'}, 'TEST', card, 'FINAL')
+        validate_panel_output({**base, 'saved_at': '2025-12-31T14:30:00Z'}, 'TEST', card, 'FINAL')
