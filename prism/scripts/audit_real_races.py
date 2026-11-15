@@ -1,11 +1,29 @@
 """Fail-closed real-race audit: never count CI or post-off predictions as pre-off."""
 import argparse
 import json
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
 REQUIRED = ('race_id','version','saved_at','off_at','source_refs','records')
-def audit(targets, forecast_files):
+def git_pre_off_evidence(file, off, repo):
+    repo = Path(repo).resolve()
+    file = Path(file).resolve()
+    relative = file.relative_to(repo).as_posix()
+    log = subprocess.run(['git', '-C', str(repo), 'log', '--format=%H', '--', relative],
+                         capture_output=True, text=True, check=True)
+    for sha in log.stdout.splitlines():
+        blob = subprocess.run(['git', '-C', str(repo), 'show', f'{sha}:{relative}'],
+                              capture_output=True, check=True).stdout
+        if blob != file.read_bytes():
+            continue
+        stamp = subprocess.run(['git', '-C', str(repo), 'show', '-s', '--format=%cI', sha],
+                               capture_output=True, text=True, check=True).stdout.strip()
+        if datetime.fromisoformat(stamp) < off:
+            return {'commit_sha': sha, 'committed_at': stamp}
+    return None
+
+def audit(targets, forecast_files, git_repo=None):
     by_id = {r['race_id']:r for r in targets['targets']}
     if len(by_id)!=len(targets['targets']):
         raise ValueError('duplicate target race IDs')
@@ -32,7 +50,18 @@ def audit(targets, forecast_files):
             # A self-reported timestamp is a candidate, not independent proof.
             # Ordinary Git history or contemporaneous storage logs are sufficient;
             # third-party TSA/Object Lock is NOT required.
-            rows[rid]['reason']='PRE_OFF_CANDIDATE_AWAITING_GIT_OR_STORAGE_HISTORY'
+            evidence = None
+            if git_repo is not None:
+                try:
+                    evidence = git_pre_off_evidence(file, off, git_repo)
+                except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+                    rejected.append({'file':str(file),'error_type':type(exc).__name__,
+                                     'reason':'Git evidence check failed: '+str(exc)})
+            if evidence:
+                rows[rid].update(pre_off_verified=True, reason='GIT_COMMIT_PRE_OFF_VERIFIED',
+                                 evidence=evidence)
+            else:
+                rows[rid]['reason']='PRE_OFF_CANDIDATE_AWAITING_GIT_OR_STORAGE_HISTORY'
             candidates.append({'race_id':rid,'file':str(file),'saved_at':doc['saved_at'],
                                'off_at':doc['off_at'],'version':doc['version'],
                                'source_refs':doc['source_refs']})
@@ -51,7 +80,8 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument('--targets',type=Path,required=True)
     p.add_argument('--forecast',type=Path,action='append',default=[])
+    p.add_argument('--git-repo',type=Path)
     a=p.parse_args()
-    print(json.dumps(audit(json.loads(a.targets.read_text(encoding='utf-8')),a.forecast),ensure_ascii=False,indent=2))
+    print(json.dumps(audit(json.loads(a.targets.read_text(encoding='utf-8')),a.forecast,a.git_repo),ensure_ascii=False,indent=2))
 
 if __name__=='__main__':main()
