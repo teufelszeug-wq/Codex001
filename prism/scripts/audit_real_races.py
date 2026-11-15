@@ -39,7 +39,10 @@ def audit(targets, forecast_files, git_repo=None):
             saved=datetime.fromisoformat(doc['saved_at'])
             off=datetime.fromisoformat(doc['off_at'])
             expected=datetime.fromisoformat(by_id[rid]['off_at'])
-            if not saved.tzinfo or not off.tzinfo or saved>=off or off!=expected:
+            if (not saved.tzinfo or saved.utcoffset() is None or
+                not off.tzinfo or off.utcoffset() is None or
+                not expected.tzinfo or expected.utcoffset() is None or
+                saved >= off or off != expected):
                 raise ValueError('not a verified pre-off timestamp')
             if type(doc['version']) is not int or doc['version']<1 or not doc['source_refs'] or not doc['records']:
                 raise ValueError('missing version, source, or predictions')
