@@ -101,7 +101,9 @@ def validate_panel_output(value, race, card, expected_phase):
         raise ValueError('forecast output race_id mismatch')
     if value.get('runners') != sum(row.get('status') not in {'SCRATCHED', 'EXCLUDED'} for row in card['runners']):
         raise ValueError('forecast output runner count mismatch')
-    identities = [row.get('execution_id') for row in forecasts if isinstance(row, dict)]
+    if any(not isinstance(row, dict) for row in forecasts):
+        raise ValueError('forecast output contains malformed forecaster record')
+    identities = [row.get('execution_id') for row in forecasts]
     if len(identities) != len(forecasts) or any(not isinstance(key, str) or not key.strip() for key in identities):
         raise ValueError('forecast output missing execution_id')
     if len(set(identities)) != len(identities):
