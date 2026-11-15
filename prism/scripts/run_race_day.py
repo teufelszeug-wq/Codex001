@@ -89,6 +89,13 @@ def active_history(history, days, today, lookback):
 
 
 def race_day_changes(before, card):
+    # A horse identity change is not an ordinary odds/track-condition update.
+    # Stop before issuing a new forecast and require an official identity review.
+    previous_names = {row['horse_no']: row['horse_name'] for row in before['runners']}
+    current_names = {row['horse_no']: row['horse_name'] for row in card['runners'] if row['status'] not in {'SCRATCHED', 'EXCLUDED'}}
+    for number in previous_names.keys() & current_names.keys():
+        if previous_names[number] != current_names[number]:
+            raise ValueError(f'official runner identity mismatch at horse {number}: {previous_names[number]} != {current_names[number]}')
     previous_active = {row['horse_no']: row.get('jockey_name') for row in before['runners']}
     active = [row for row in card['runners'] if row['status'] not in {'SCRATCHED', 'EXCLUDED'}]
     old_metadata = before['metadata']
