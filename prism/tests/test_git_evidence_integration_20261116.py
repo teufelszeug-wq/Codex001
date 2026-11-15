@@ -85,5 +85,21 @@ class GitEvidenceRegression(unittest.TestCase):
             self.assertEqual(result["verified_pre_off_count"], 0)
             self.assertEqual(result["pre_off_candidate_count"], 1)
 
+    def test_empty_forecaster_id_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            file = Path(tmp) / "forecast.json"
+            off = "2026-11-16T12:00:00+09:00"
+            file.write_text(json.dumps({
+                "race_id": "test-race", "version": 1,
+                "saved_at": "2026-11-15T20:00:00+09:00",
+                "off_at": off, "source_refs": ["fixture"],
+                "records": [{}]
+            }), encoding="utf-8")
+            result = audit_module.audit(
+                {"targets": [{"race_id": "test-race", "off_at": off}]}, [file])
+            self.assertEqual(result["pre_off_candidate_count"], 0)
+            self.assertEqual(result["rejected_count"], 1)
+            self.assertIn("forecaster_id", result["rejected_files"][0]["reason"])
+
 if __name__ == "__main__":
     unittest.main()
