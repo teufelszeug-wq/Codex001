@@ -163,3 +163,15 @@ class BatchForecastTests(unittest.TestCase):
         self.assertEqual(report['finalized'], 0)
         self.assertEqual(report['races'], [])
         self.assertIn('not a PRE_DAY edition', report['errors'][0]['error'])
+
+    def test_pre_day_requires_actual_prior_race_local_date(self):
+        import json
+        from run_forecast_batch import validate_panel_output
+        card = {'off_at': '2026-01-01T15:15:00+09:00', 'runners': [{}]}
+        base = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                'runners': 1, 'forecasts': complete_forecasts(),
+                'saved_at': '2026-01-01T00:00:00Z'}
+        with self.assertRaisesRegex(ValueError, 'not before race-local calendar day'):
+            validate_panel_output(base, 'TEST', card, 'FINAL')
+        prior = {**base, 'saved_at': '2025-12-31T14:59:00Z'}
+        validate_panel_output(prior, 'TEST', card, 'FINAL')
