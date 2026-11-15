@@ -62,6 +62,9 @@ class BatchForecastTests(unittest.TestCase):
         self.assertEqual([row['race_id'] for row in report['races']], ['early', 'late'])
         self.assertEqual(report['finalized'], 2)
         self.assertEqual([row['model_backend'] for row in report['races']], ['unverified', 'unverified'])
+        self.assertEqual(report['model_backend_counts'], {'unverified': 2})
+        self.assertEqual(report['external_model_races'], 0)
+        self.assertEqual(report['local_or_unverified_races'], 2)
         self.assertEqual(report['errors'], [{'source': 'broken', 'error': 'missing official identity'}])
 
     def test_rejects_mismatched_race_id_and_post_start_timestamp(self):
