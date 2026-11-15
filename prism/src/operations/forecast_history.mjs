@@ -7,6 +7,14 @@ const date = (v, field) => {
 const fail = message => { throw new Error(message); };
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const requireText = (value, field) => typeof value === 'string' && value.trim() ? value : fail(field + ': required');
+export function verifyForecastRecord(record, raceId, version) {
+  const { content_sha256: contentHash, ...payload } = record;
+  if (payload.race_id !== raceId || payload.version !== version || hash(payload) !== contentHash) {
+    throw new Error('stored forecast identity or content hash mismatch');
+  }
+  return record;
+}
+
 const requireTicket = ticket => {
   if (!ticket || !['WIN', 'PLACE', 'QUINELLA', 'EXACTA', 'TRIO', 'TRIFECTA', 'WIDE'].includes(ticket.type)) fail('unsupported ticket');
   if (!Array.isArray(ticket.horse_nos) || !ticket.horse_nos.length || !ticket.horse_nos.every(n => Number.isInteger(n) && n > 0) || new Set(ticket.horse_nos).size !== ticket.horse_nos.length) fail('invalid ticket horse numbers');
@@ -14,7 +22,7 @@ const requireTicket = ticket => {
   if (ticket.horse_nos.length !== legs[ticket.type]) fail('ticket leg count');
   if (!Number.isInteger(ticket.stake_yen) || ticket.stake_yen < 100 || ticket.stake_yen % 100) fail('stake must be positive 100-yen units');
 };
-export function createPreRaceLedger({ race_id, race_name, off_at, runners, records, saved_at, source_refs = [] }) {
+export function createPreRaceLedger({ race_id, race_name, off_at, runners, records, saved_at, source_refs = [], metadata }) {
   requireText(race_id, 'race_id'); requireText(race_name, 'race_name');
   const off = date(off_at, 'off_at'), saved = date(saved_at, 'saved_at');
   if (saved >= off) fail('forecast must be saved before off');
@@ -33,12 +41,15 @@ export function createPreRaceLedger({ race_id, race_name, off_at, runners, recor
   }
   if (!Array.isArray(source_refs) || !source_refs.every(x => typeof x === 'string' && x.trim())) fail('source refs invalid');
   const payload = { schema: 'prism.forecast_history/v1', race_id, race_name, off_at, runners, records, saved_at, source_refs, version: 1, status: 'PRE_UNATTESTED' };
+  if (metadata !== undefined) payload.metadata = metadata;
   return { ...payload, content_sha256: hash(payload) };
 }
-export function appendRevision(previous, { records, saved_at }) {
+export function appendRevision(previous, { records, saved_at, metadata, off_at, runners, source_refs }) {
   if (!previous || previous.schema !== 'prism.forecast_history/v1') fail('previous record required');
   if (date(saved_at, 'saved_at') <= date(previous.saved_at, 'previous saved_at')) fail('revision must have later saved_at');
-  const next = createPreRaceLedger({ race_id: previous.race_id, race_name: previous.race_name, off_at: previous.off_at, runners: previous.runners, records, saved_at, source_refs: previous.source_refs });
+  const next = createPreRaceLedger({ race_id: previous.race_id, race_name: previous.race_name,
+    off_at: off_at ?? previous.off_at, runners: runners ?? previous.runners,
+    records, saved_at, source_refs: source_refs ?? previous.source_refs, metadata });
   const { content_sha256: _, ...payload } = next;
   payload.version = previous.version + 1;
   payload.previous_sha256 = previous.content_sha256;

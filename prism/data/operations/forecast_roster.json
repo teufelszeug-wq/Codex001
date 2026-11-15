@@ -1,0 +1,160 @@
+{
+  "facilitator": {
+    "id": "PRISM-EDITOR-01",
+    "name": "篠宮 律",
+    "role": "編集長"
+  },
+  "forecasters": [
+    {
+      "id": "HONSHI",
+      "name": "本紙",
+      "method": "editorial",
+      "specialty": "予想エンジン・編集部総合評価",
+      "role": "本紙"
+    },
+    {
+      "id": "RIO-REPORTER-01",
+      "name": "りお",
+      "method": "reporter",
+      "specialty": "全頭診断・取材・質問・予想・反省学習・新聞制作",
+      "role": "新人記者",
+      "profile_status": "確定"
+    },
+    {
+      "id": "RIO-VIDEO-01",
+      "name": "三崎 レイ",
+      "method": "video",
+      "specialty": "映像・不利",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-STATE-01",
+      "name": "佐伯 恒一",
+      "method": "state",
+      "specialty": "状態・ローテ",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-LEARNING-01",
+      "name": "児玉 栞",
+      "method": "learning",
+      "specialty": "学習・成長",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-ABILITY-01",
+      "name": "堂前 岳",
+      "method": "ability",
+      "specialty": "能力・馬体",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-COURSE-01",
+      "name": "宮坂 直矩",
+      "method": "course",
+      "specialty": "コース構造",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-VALUE-01",
+      "name": "御影 透",
+      "method": "value",
+      "specialty": "オッズ・期待値",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-START-01",
+      "name": "戸倉 迅",
+      "method": "position",
+      "specialty": "発馬・位置取り",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-PACE-01",
+      "name": "早瀬 展",
+      "method": "pace",
+      "specialty": "展開・ペース",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-JOCKEY-01",
+      "name": "桐生 駿",
+      "method": "jockey",
+      "specialty": "騎手",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-BIAS-01",
+      "name": "橘 潮",
+      "method": "track_bias",
+      "specialty": "馬場バイアス",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-REPORT-01",
+      "name": "牧野 俊介",
+      "method": "stable",
+      "specialty": "厩舎・取材",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-BLOOD-01",
+      "name": "白峰 遥",
+      "method": "pedigree",
+      "specialty": "血統",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-VALUE-01",
+      "name": "穴見 爆",
+      "method": "longshot",
+      "specialty": "穴馬発掘",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-WEATHER-01",
+      "name": "藤代 環",
+      "method": "weather",
+      "specialty": "気象",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-SECTIONAL-01",
+      "name": "高梨 慧",
+      "method": "sectional",
+      "specialty": "上がり・ラップ",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "PRISM-WORKOUT-01",
+      "name": "鷹取 美冬",
+      "method": "workout",
+      "specialty": "調教",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    },
+    {
+      "id": "RIO-DATA-01",
+      "name": "黒川 統司",
+      "method": "statistics",
+      "specialty": "統計・勝率",
+      "role": "専門AI",
+      "profile_status": "要照合"
+    }
+  ]
+}

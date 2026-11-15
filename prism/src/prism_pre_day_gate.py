@@ -33,6 +33,10 @@ def check_publication(race, preliminary, discussions, final, published_at):
             saved = datetime.fromisoformat(record["saved_at"])
             if saved.tzinfo is None or saved >= start:
                 errors.append(f"INVALID_FINAL_TIMESTAMP:{author}")
+            elif saved.astimezone(JST).date() >= local_start.date():
+                errors.append(f"LATE_FINAL_SAVE:{author}")
+            elif saved > published:
+                errors.append(f"FINAL_AFTER_PUBLICATION:{author}")
         if record.get("mode") == "independent_execution" and not record.get("execution_id"):
             errors.append(f"INDEPENDENT_EXECUTION_UNPROVEN:{author}")
         if not record.get("picks") and not record.get("skip_reason"):
