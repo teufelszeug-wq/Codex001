@@ -60,7 +60,8 @@ def audit(targets, forecast_files, git_repo=None):
             if evidence:
                 rows[rid].update(pre_off_verified=True, reason='GIT_COMMIT_PRE_OFF_VERIFIED',
                                  evidence=evidence)
-            else:
+            elif not rows[rid]['pre_off_verified']:
+                # An unverified duplicate must not erase earlier verified evidence.
                 rows[rid]['reason']='PRE_OFF_CANDIDATE_AWAITING_GIT_OR_STORAGE_HISTORY'
             candidates.append({'race_id':rid,'file':str(file),'saved_at':doc['saved_at'],
                                'off_at':doc['off_at'],'version':doc['version'],
