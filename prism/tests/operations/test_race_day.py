@@ -38,7 +38,7 @@ class RaceDayTests(unittest.TestCase):
         self.assertEqual(list(nar_racecard_links(page, date(2026, 11, 15), 31)), ['20261115-NAR-KOCHI-01'])
 
     def test_refresh_only_for_a_material_change(self):
-        horse = {'horse_no': 1, 'status': 'DECLARED', 'jockey_name': '架空騎手', 'win_odds': 7.5}
+        horse = {'horse_no': 1, 'horse_name': '架空馬', 'status': 'DECLARED', 'jockey_name': '架空騎手', 'win_odds': 7.5}
         previous = {'runners': [horse], 'metadata': {'win_odds': {'1': 7.5}},
                     'off_at': '2026-11-15T15:40:00+09:00'}
         card = {'runners': [horse], 'off_at': '2026-11-15T06:40:00Z'}
