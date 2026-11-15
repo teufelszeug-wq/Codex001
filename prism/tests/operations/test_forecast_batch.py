@@ -148,3 +148,18 @@ class BatchForecastTests(unittest.TestCase):
         self.assertEqual(report['finalized'], 0)
         self.assertEqual(report['races'], [])
         self.assertIn('malformed forecaster record', report['errors'][0]['error'])
+
+    def test_final_count_rejects_non_pre_day_edition(self):
+        import json
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
+        record = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'RACE_DAY',
+                  'runners': 1, 'forecasts': complete_forecasts(),
+                  'roundtable': None, 'saved_at': '2026-01-01T00:00:00Z'}
+        with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
+                patch('run_forecast_batch.subprocess.run') as command:
+            command.return_value.returncode = 0
+            command.return_value.stdout = json.dumps(record)
+            report = run(Path(tmp), ['official-url'])
+        self.assertEqual(report['finalized'], 0)
+        self.assertEqual(report['races'], [])
+        self.assertIn('not a PRE_DAY edition', report['errors'][0]['error'])
