@@ -191,6 +191,20 @@ class BatchForecastTests(unittest.TestCase):
         # A genuinely previous-day save must still pass.
         validate_panel_output({**base, 'saved_at': '2025-12-31T14:30:00Z'}, 'TEST', card, 'FINAL')
 
+    def test_forecaster_ids_cannot_be_swapped_between_names(self):
+        from run_forecast_batch import validate_panel_output
+        card = {'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
+        forecasts = [{**row, 'forecaster_id': agent['id']}
+                     for row, agent in zip(complete_forecasts(), ROSTER)]
+        record = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                  'runners': 1, 'forecasts': forecasts, 'saved_at': '2026-01-01T00:00:00Z'}
+        validate_panel_output(record, 'TEST', card, 'FINAL')
+        swapped = [dict(row) for row in forecasts]
+        swapped[0]['forecaster_id'], swapped[1]['forecaster_id'] = (
+            swapped[1]['forecaster_id'], swapped[0]['forecaster_id'])
+        with self.assertRaisesRegex(ValueError, 'forecaster ID/name mismatch'):
+            validate_panel_output({**record, 'forecasts': swapped}, 'TEST', card, 'FINAL')
+
     def test_malformed_backend_is_unverified_not_a_batch_crash(self):
         import json
         card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
