@@ -48,6 +48,8 @@ def audit(targets, forecast_files, git_repo=None):
                 raise ValueError('missing version, source, or predictions')
             if not isinstance(doc['records'],list) or not all(isinstance(r,dict) for r in doc['records']):
                 raise ValueError('records must be a nonempty list of objects')
+            if not all(isinstance(r.get('forecaster_id'),str) and r['forecaster_id'].strip() for r in doc['records']):
+                raise ValueError('each record requires a nonblank forecaster_id')
             if not isinstance(doc['source_refs'],list) or not all(isinstance(s,str) and s.strip() for s in doc['source_refs']):
                 raise ValueError('source_refs must be a nonempty list of nonblank strings')
             # A self-reported timestamp is a candidate, not independent proof.
