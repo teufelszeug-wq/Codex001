@@ -166,7 +166,16 @@ def run(directory, urls, *, model='local'):
             })
         except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
             errors.append({'race_id': race, 'error': str(error)})
+    # Distinguish completed local-rule forecasts from independently executed API models.
+    # Unknown legacy backends must never be counted as verified external inference.
+    backend_counts = {}
+    for row in rows:
+        backend = row['model_backend']
+        backend_counts[backend] = backend_counts.get(backend, 0) + 1
     return {'generated_at': datetime.now(timezone.utc).isoformat(), 'requested_urls': len(urls),
+            'model_backend_counts': backend_counts,
+            'external_model_races': sum(row['model_backend'].startswith('openai:') for row in rows),
+            'local_or_unverified_races': sum(not row['model_backend'].startswith('openai:') for row in rows),
             'finalized': sum(row['phase'] == 'FINAL' for row in rows),
             'declarations': sum(row['phase'] == 'DECLARATIONS' for row in rows), 'races': rows, 'errors': errors}
 
