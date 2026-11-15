@@ -57,7 +57,7 @@ class RaceDayTests(unittest.TestCase):
         forecasts = [{'name': person['name'], 'execution_id': f'id-{index}', 'tickets': []}
                      for index, person in enumerate(roster)]
         value = {'race_id': '20261115-JRA-KYOTO-11', 'runners': 1, 'phase': 'FINAL',
-                 'saved_at': '2020-11-14T12:00:00Z', 'forecasts': forecasts}
+                 'saved_at': '2020-11-14T12:00:00Z', 'publication_window': 'PRE_DAY', 'forecasts': forecasts}
         validate_panel_output(value, value['race_id'], card, 'FINAL')
         with self.assertRaisesRegex(ValueError, 'runner count'):
             validate_panel_output({**value, 'runners': 2}, value['race_id'], card, 'FINAL')
