@@ -11,6 +11,7 @@ def audit(targets, forecast_files):
         raise ValueError('duplicate target race IDs')
     rows={rid:{'race_id':rid,'pre_off_verified':False,'reason':'NO_VERIFIED_PRE_OFF_FORECAST'} for rid in by_id}
     rejected=[]
+    candidates=[]
     for file in forecast_files:
         try:
             doc=json.loads(Path(file).read_text(encoding='utf-8'))
@@ -28,9 +29,13 @@ def audit(targets, forecast_files):
                 raise ValueError('records must be a nonempty list of objects')
             if not isinstance(doc['source_refs'],list) or not all(isinstance(s,str) and s.strip() for s in doc['source_refs']):
                 raise ValueError('source_refs must be a nonempty list of nonblank strings')
-            # A locally written timestamp is insufficient proof: a pre-off
-            # Git commit or external immutable provenance must be verified.
-            rows[rid]['reason']='TIMESTAMP_PRESENT_BUT_EXTERNAL_PRE_OFF_PROOF_REQUIRED'
+            # A self-reported timestamp is a candidate, not independent proof.
+            # Ordinary Git history or contemporaneous storage logs are sufficient;
+            # third-party TSA/Object Lock is NOT required.
+            rows[rid]['reason']='PRE_OFF_CANDIDATE_AWAITING_GIT_OR_STORAGE_HISTORY'
+            candidates.append({'race_id':rid,'file':str(file),'saved_at':doc['saved_at'],
+                               'off_at':doc['off_at'],'version':doc['version'],
+                               'source_refs':doc['source_refs']})
         except (OSError,ValueError,TypeError,KeyError) as exc:
             # Keep a machine-readable failure trail instead of silently dropping
             # malformed or temporally invalid evidence.
@@ -38,7 +43,9 @@ def audit(targets, forecast_files):
     return {'schema':'prism.real_race_audit/v1','target_count':len(by_id),
             'verified_pre_off_count':sum(r['pre_off_verified'] for r in rows.values()),
             'status':'CRITICAL' if not any(r['pre_off_verified'] for r in rows.values()) else 'INCOMPLETE',
-            'races':list(rows.values()),'rejected_files':rejected,'rejected_count':len(rejected)}
+            'races':list(rows.values()),'pre_off_candidates':candidates,
+            'pre_off_candidate_count':len(candidates),
+            'rejected_files':rejected,'rejected_count':len(rejected)}
 
 def main():
     p=argparse.ArgumentParser()
