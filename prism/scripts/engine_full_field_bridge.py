@@ -17,7 +17,7 @@ def predict_full_field(observations, locked_at, horse_names, config=None):
         mode = 'PRE_AVAILABLE'
     else:
         raise ValueError('only SYNTHETIC or genuine PRE_AVAILABLE observations accepted')
-    if observations.get('schema') == 'prism.engine.observations/v1':
+    if observations.get('schema') in {'prism.engine.observations/v1','prism.engine.observations/v2'}:
         raw, _ = normalize(observations)
     else:
         raw = observations
@@ -26,17 +26,18 @@ def predict_full_field(observations, locked_at, horse_names, config=None):
     ids = {r['horse_id'] for r in runners}
     if not isinstance(horse_names, dict) or set(horse_names) != ids:
         raise ValueError('all horse IDs require explicit names; no synthetic names inferred')
-    numbers = [r['horse_no'] for r in runners]
+    numbers = [r['horse_no'] for r in runners if r['horse_no'] is not None]
     if len(set(numbers)) != len(numbers):
         raise ValueError('horse numbers ambiguous')
     diagnostics = []
-    for runner in sorted(runners, key=lambda r:r['horse_no']):
+    for runner in sorted(runners, key=lambda r:(r['horse_no'] is None,r['horse_no'] or 0,r['horse_id'])):
         horse_id = runner['horse_id']
         name = horse_names[horse_id]
         if not isinstance(name,str) or not name.strip():
             raise ValueError('missing horse name')
         probability = lock['win'][horse_id]
         diagnostics.append({'horse_id':horse_id,'horse_no':runner['horse_no'],
+                            'frame_no':runner['frame_no'],'barrier_no':runner['barrier_no'],
                             'horse_name':name,'win_probability':probability,
                             'score':lock['scores'][horse_id],
                             'reason':'Core experimental score and probability; consult coverage and feature evidence',

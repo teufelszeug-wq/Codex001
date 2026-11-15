@@ -10,3 +10,21 @@ test('full-field and independent AI evidence required',()=>{assert.throws(()=>cr
 test('100 yen and real runner ticket constraints',()=>{assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'WIN',horse_nos:[1],stake_yen:150}]}]}),/100-yen/);assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'WIN',horse_nos:[3],stake_yen:100}]}]}),/non-runner/);});
 test('append revision preserves linked hash and forbids backdated changes',()=>{const a=createPreRaceLedger(base);const b=appendRevision(a,{records:[rec],saved_at:'2026-11-09T14:59:30+09:00'});assert.equal(b.version,2);assert.equal(b.previous_sha256,a.content_sha256);assert.throws(()=>appendRevision(a,{records:[rec],saved_at:base.saved_at}),/later/);});
 test('post-race edits rejected',()=>{const a=createPreRaceLedger(base);assert.throws(()=>appendRevision(a,{records:[rec],saved_at:'2026-11-09T15:00:01+09:00'}),/before off/);});
+test('unordered tickets are normalized without changing caller input',()=>{
+  const records=[{...rec,tickets:[{type:'QUINELLA',horse_nos:[2,1],stake_yen:300}]}];
+  const x=createPreRaceLedger({...base,records});
+  assert.deepEqual(x.records[0].tickets[0].horse_nos,[1,2]);
+  assert.deepEqual(records[0].tickets[0].horse_nos,[2,1]);
+  assert.equal(x.independent_execution_verified,false);
+});
+test('duplicate combinations are rejected and frame identities are not horse numbers',()=>{
+  assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'QUINELLA',horse_nos:[1,2],stake_yen:100},{type:'QUINELLA',horse_nos:[2,1],stake_yen:100}]}]}),/duplicate ticket/);
+  assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'FRAME',horse_nos:[1,2],stake_yen:100}]}]}),/invalid/);
+  const framed=runner.map(r=>({...r,frame_no:1}));
+  const x=createPreRaceLedger({...base,runners:framed,records:[{...rec,tickets:[{type:'FRAME',frame_nos:[1,1],stake_yen:100}]}]});
+  assert.deepEqual(x.records[0].tickets[0].frame_nos,[1,1]);
+});
+test('revision rejects a modified prior snapshot',()=>{
+  const previous=createPreRaceLedger(base);previous.records[0].tickets[0].stake_yen=200;
+  assert.throws(()=>appendRevision(previous,{records:[rec],saved_at:'2026-11-09T14:59:30+09:00'}),/hash mismatch/);
+});

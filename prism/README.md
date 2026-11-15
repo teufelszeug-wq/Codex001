@@ -1,5 +1,11 @@
 # PRISM Development Master Plan v3
 
+2026-11-15 operational implementation: [runbook](docs/OPERATIONS_RUNBOOK.md).
+The preceding-day API workflow, immutable day revisions, official settlement and
+vertical PDF/PNG path have software/layout acceptance evidence. Real independent
+API calls, a complete live JRA/NAR cycle and production deployment remain open;
+existing local-rule forecasts are preserved separately, not promoted.
+
 PRISM is the integrated successor to the RIO research/prediction/newspaper system.
 
 Current implementation and measured gates: [2026-10-19 A–E integration](docs/roadmap/PHASE_ABCDE_PARALLEL_20261019.md).

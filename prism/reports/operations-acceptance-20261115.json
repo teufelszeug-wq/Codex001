@@ -1,0 +1,231 @@
+{
+  "schema": "prism.ops.acceptance/v1",
+  "observed_at": "2026-11-15T11:39:38.598063+00:00",
+  "base_commit": "b8d2a4147de1e43649c718f3b035a8d95d5f484b",
+  "status": "VERIFIED_SCOPED_SOFTWARE_AND_SYNTHETIC_LAYOUT_ONLY",
+  "release_status": "BLOCKED",
+  "verification": {
+    "schema": "prism.ops.software_verification/v1",
+    "observed_at": "2026-11-15T11:37:39.994725+00:00",
+    "groups": [
+      {
+        "group": "tests",
+        "exit_code": 0,
+        "tests_run": 64,
+        "passed": true,
+        "log": "tests.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/dialogue",
+        "exit_code": 0,
+        "tests_run": 30,
+        "passed": true,
+        "log": "tests-dialogue.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/engine",
+        "exit_code": 0,
+        "tests_run": 112,
+        "passed": true,
+        "log": "tests-engine.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/exchange",
+        "exit_code": 0,
+        "tests_run": 30,
+        "passed": true,
+        "log": "tests-exchange.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/integration",
+        "exit_code": 0,
+        "tests_run": 13,
+        "passed": true,
+        "log": "tests-integration.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/model_readiness",
+        "exit_code": 0,
+        "tests_run": 13,
+        "passed": true,
+        "log": "tests-model_readiness.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/operations",
+        "exit_code": 0,
+        "tests_run": 18,
+        "passed": true,
+        "log": "tests-operations.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/ops",
+        "exit_code": 0,
+        "tests_run": 118,
+        "passed": true,
+        "log": "tests-ops.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/paper",
+        "exit_code": 0,
+        "tests_run": 23,
+        "passed": true,
+        "log": "tests-paper.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/records",
+        "exit_code": 0,
+        "tests_run": 111,
+        "passed": true,
+        "log": "tests-records.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/recovery",
+        "exit_code": 0,
+        "tests_run": 12,
+        "passed": true,
+        "log": "tests-recovery.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/research_models",
+        "exit_code": 0,
+        "tests_run": 13,
+        "passed": true,
+        "log": "tests-research_models.log",
+        "skipped": []
+      },
+      {
+        "group": "tests/validation",
+        "exit_code": 0,
+        "tests_run": 23,
+        "passed": true,
+        "log": "tests-validation.log",
+        "skipped": []
+      },
+      {
+        "group": "legacy-audit",
+        "exit_code": 0,
+        "tests_run": 15,
+        "passed": true,
+        "log": "legacy-audit.log",
+        "skipped": []
+      },
+      {
+        "group": "node",
+        "exit_code": 0,
+        "tests_run": 65,
+        "passed": true,
+        "log": "node.log",
+        "skipped": [
+          0
+        ]
+      }
+    ],
+    "passed": true,
+    "source_file_count": 141,
+    "source_tree_sha256": "f28a14ac8e398c0cc5590a8cd75761aaab05728319b9e24d63d6d3c5cc61dc49",
+    "count_scope": "suite executions; root discovery may repeat package tests",
+    "independent_model_executions": 0,
+    "live_pre_day_publications": 0,
+    "official_forward_settlements": 0,
+    "production_deployed": false
+  },
+  "suite_execution_total": 660,
+  "capabilities": [
+    {
+      "phase": "A",
+      "status": "VERIFIED",
+      "scope": "v2 entries/draw identity, immutable source and character snapshot software contracts; measured official-source parsing is separately recorded"
+    },
+    {
+      "phase": "B",
+      "status": "IMPLEMENTED",
+      "scope": "OpenAI individual call adapter and core bridge; mock connection regressions verified; actual API execution blocked"
+    },
+    {
+      "phase": "C",
+      "status": "VERIFIED",
+      "scope": "synthetic initial/discussion/final persistence and day revision/POST regressions only; actual independent discussion and learning adoption not executed"
+    },
+    {
+      "phase": "D",
+      "status": "EXECUTED",
+      "scope": "software validation only; existing B0-B11, February and genuine-forward model acceptance remain open"
+    },
+    {
+      "phase": "E",
+      "status": "VERIFIED",
+      "scope": "synthetic 43-page vertical PDF/PNG layout QA; actual official newspaper not published"
+    },
+    {
+      "phase": "F",
+      "status": "EXECUTED",
+      "scope": "Docker build, non-root status and synthetic one-page PDF/PNG smoke; persistent production service not deployed"
+    }
+  ],
+  "paper_qa": {
+    "mode": "SYNTHETIC",
+    "pages": 43,
+    "writing_mode": "vertical-rl",
+    "reviewed_at": "2026-11-15T11:20:56.591354+00:00",
+    "qa_hash": "f7fe9e7441f52c698616e7f8099f95777664456df486bc7ba195769340d910d1",
+    "manifest_hash": "fcebf3d2443a0627dd61564ad9850807c834353739b58431906416a5e702a135",
+    "pdf_sha256": "86f058efd4e8b814adaa34b70fd1f865659a50c34109149e89862df49ba934ad",
+    "mechanical_checks": {
+      "passed": true,
+      "pages": 43,
+      "bands_per_page": 3,
+      "blocks": 292,
+      "errors": [],
+      "all_text_retained": true,
+      "font_ready": true,
+      "trimmed_blank_pdf_pages": 1
+    },
+    "real_editorial_acceptance": false
+  },
+  "docker": {
+    "image_id": "sha256:7e07a9ec25b8cfe91ed6a0d0ab4ef573f57ccca1ff9626f0df675a7481da0d2c",
+    "build_executed": true,
+    "non_root_status_passed": true,
+    "synthetic_pdf_pages": 1,
+    "synthetic_paper_qa": "EXECUTED",
+    "image_scope": "runtime smoke candidate; final source is the committed checkout",
+    "production_deployed": false
+  },
+  "this_task_new_counts": {
+    "independent_api_executions": 0,
+    "live_pre_day_publications": 0,
+    "live_roundtables": 0,
+    "official_forward_settlements": 0,
+    "training_adoptions": 0
+  },
+  "prior_reported_history": {
+    "source": "Notion master / draft PR #12 / Library reports",
+    "forecasts_reported": 149,
+    "settlements_reported": 12,
+    "classification": "reported local-rule history; archive records not fully re-audited here; never promoted to independent API evidence"
+  },
+  "remaining_gates": [
+    "OPENAI_API_KEY and explicit PRISM_OPENAI_MODEL not configured",
+    "persistent deployment target and real scheduled operations not configured/verified",
+    "current race-specific source-backed features and full specialist models require existing B/D acceptance",
+    "actual JRA and NAR preceding-day publication through official next-day reconciliation not executed",
+    "historical controls and candidate-to-shadow learning adoption remain open"
+  ],
+  "source_evidence_reports": [
+    "official-acquisition-20261115.json",
+    "official-source-probe-20261115.json"
+  ],
+  "legacy_policy": "No mandatory TSA, RFC3161, S3 Object Lock or former M4 gate reinstated",
+  "public_data_policy": "No raw official pages, private database, API keys or private character configuration committed"
+}

@@ -1,5 +1,15 @@
 # PRISM status — 2026-10-19
 
+## Operational update — 2026-11-15
+
+See [the operational runbook](OPERATIONS_RUNBOOK.md) for the current pre-day,
+discussion, day-delta and POST execution interfaces. The experimental engine and
+older research evidence below remain intact. New software/layout verification
+does not close the trained-model, historical-control or genuine-forward gates.
+API authentication and a persistent production host remain unconfigured in this
+task. PR #12/Library reports of 149 forecasts and 12 settlements are reported
+local-rule/history evidence, not newly verified independent API executions.
+
 Latest: [A–E integration and next gates](roadmap/PHASE_ABCDE_PARALLEL_20261019.md).
 Source versioning now feeds one shared as-of conversation prefetch. A fitted
 residual model was compared on 701 identical held-out January races: adding
