@@ -5,7 +5,13 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from run_forecast_batch import prepare, run
+from run_forecast_batch import prepare, run, read_json
+
+ROSTER = read_json(Path(__file__).resolve().parents[2] / 'data' / 'operations' / 'forecast_roster.json')['forecasters']
+
+def complete_forecasts():
+    return [{'name': person['name'], 'execution_id': f"run-{i}", 'tickets': []}
+            for i, person in enumerate(ROSTER)]
 
 
 class BatchForecastTests(unittest.TestCase):
@@ -41,13 +47,16 @@ class BatchForecastTests(unittest.TestCase):
             if url == 'broken':
                 raise ValueError('missing official identity')
             return url, {'race_name': url, 'off_at': '2030-11-14T' + ('06:30:00Z' if url == 'late' else '15:15:00+09:00'), 'runners': [{}, {}, {}]}
-        response = '{"phase":"FINAL","publication_window":"PRE_DAY","runners":3,"race_id":"early","forecasts":[{"tickets":[],"execution_id":"run-1"}],"roundtable":null,"saved_at":"2026-01-01T00:00:00Z"}'
+        import json
+        response = json.dumps({'phase': 'FINAL', 'publication_window': 'PRE_DAY', 'runners': 3,
+                               'race_id': 'early', 'forecasts': complete_forecasts(),
+                               'roundtable': None, 'saved_at': '2026-01-01T00:00:00Z'})
         with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', side_effect=prepared), \
                 patch('run_forecast_batch.subprocess.run') as command:
             command.return_value.returncode = 0
             command.side_effect = [
                 type('Result', (), {'returncode': 0, 'stdout': response})(),
-                type('Result', (), {'returncode': 0, 'stdout': response.replace('"race_id":"early"', '"race_id":"late"')})(),
+                type('Result', (), {'returncode': 0, 'stdout': json.dumps({**json.loads(response), 'race_id': 'late'})})(),
             ]
             report = run(Path(tmp), ['late', 'broken', 'early'])
         self.assertEqual([row['race_id'] for row in report['races']], ['early', 'late'])
@@ -110,3 +119,17 @@ class BatchForecastTests(unittest.TestCase):
         self.assertEqual(report['finalized'], 0)
         self.assertEqual(report['races'], [])
         self.assertIn('missing tickets list', report['errors'][0]['error'])
+
+    def test_incomplete_roster_cannot_be_counted_as_finalized(self):
+        import json
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
+        record = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                  'runners': 1, 'forecasts': complete_forecasts()[:-1],
+                  'roundtable': None, 'saved_at': '2026-01-01T00:00:00Z'}
+        with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
+                patch('run_forecast_batch.subprocess.run') as command:
+            command.return_value.returncode = 0
+            command.return_value.stdout = json.dumps(record)
+            report = run(Path(tmp), ['official-url'])
+        self.assertEqual(report['finalized'], 0)
+        self.assertIn('incomplete forecaster roster', report['errors'][0]['error'])
