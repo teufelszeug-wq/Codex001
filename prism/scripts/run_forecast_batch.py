@@ -159,6 +159,7 @@ def run(directory, urls, *, model='local'):
             rows.append({
                 'race_id': race, 'race_name': card['race_name'], 'off_at': card['off_at'],
                 'phase': value['phase'], 'publication_window': value['publication_window'],
+                'model_backend': value.get('model_backend', 'unverified'),
                 'runners': value['runners'], 'forecasters': len(value['forecasts']),
                 'tickets': sum(len(row['tickets']) for row in value['forecasts']),
                 'roundtable': value['roundtable'], 'saved_at': value['saved_at'],
