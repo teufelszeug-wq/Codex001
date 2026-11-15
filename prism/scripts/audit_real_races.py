@@ -10,6 +10,7 @@ def audit(targets, forecast_files):
     if len(by_id)!=len(targets['targets']):
         raise ValueError('duplicate target race IDs')
     rows={rid:{'race_id':rid,'pre_off_verified':False,'reason':'NO_VERIFIED_PRE_OFF_FORECAST'} for rid in by_id}
+    rejected=[]
     for file in forecast_files:
         try:
             doc=json.loads(Path(file).read_text(encoding='utf-8'))
@@ -27,13 +28,13 @@ def audit(targets, forecast_files):
             # Git commit or external immutable provenance must be verified.
             rows[rid]['reason']='TIMESTAMP_PRESENT_BUT_EXTERNAL_PRE_OFF_PROOF_REQUIRED'
         except (OSError,ValueError,TypeError,KeyError) as exc:
-            if isinstance(exc,ValueError) and 'duplicate target' in str(exc):raise
-            # Invalid files never increase completion counts.
-            pass
+            # Keep a machine-readable failure trail instead of silently dropping
+            # malformed or temporally invalid evidence.
+            rejected.append({'file':str(file),'error_type':type(exc).__name__,'reason':str(exc)})
     return {'schema':'prism.real_race_audit/v1','target_count':len(by_id),
             'verified_pre_off_count':sum(r['pre_off_verified'] for r in rows.values()),
             'status':'CRITICAL' if not any(r['pre_off_verified'] for r in rows.values()) else 'INCOMPLETE',
-            'races':list(rows.values())}
+            'races':list(rows.values()),'rejected_files':rejected,'rejected_count':len(rejected)}
 
 def main():
     p=argparse.ArgumentParser()
