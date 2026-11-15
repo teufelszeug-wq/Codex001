@@ -190,3 +190,19 @@ class BatchForecastTests(unittest.TestCase):
             validate_panel_output({**base, 'saved_at': '2026-01-01T15:30:00Z'}, 'TEST', card, 'FINAL')
         # A genuinely previous-day save must still pass.
         validate_panel_output({**base, 'saved_at': '2025-12-31T14:30:00Z'}, 'TEST', card, 'FINAL')
+
+    def test_malformed_backend_is_unverified_not_a_batch_crash(self):
+        import json
+        card = {'race_name': 'test', 'off_at': '2030-11-14T15:15:00+09:00', 'runners': [{}]}
+        response = {'race_id': 'TEST', 'phase': 'FINAL', 'publication_window': 'PRE_DAY',
+                    'runners': 1, 'forecasts': complete_forecasts(), 'roundtable': None,
+                    'saved_at': '2026-01-01T00:00:00Z', 'model_backend': None}
+        with TemporaryDirectory() as tmp, patch('run_forecast_batch.prepare', return_value=('TEST', card)), \
+                patch('run_forecast_batch.subprocess.run') as command:
+            command.return_value.returncode = 0
+            command.return_value.stdout = json.dumps(response)
+            report = run(Path(tmp), ['official-url'])
+        self.assertEqual(report['finalized'], 1)
+        self.assertEqual(report['model_backend_counts'], {'unverified': 1})
+        self.assertEqual(report['external_model_races'], 0)
+        self.assertEqual(report['errors'], [])
