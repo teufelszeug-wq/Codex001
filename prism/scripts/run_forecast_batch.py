@@ -127,6 +127,12 @@ def validate_panel_output(value, race, card, expected_phase):
     roster = read_json(roster_path)['forecasters']
     if len(forecasts) != len(roster):
         raise ValueError(f'forecast output incomplete forecaster roster: {len(forecasts)}/{len(roster)}')
+    # New output carries stable IDs; legacy name-only records remain readable.
+    if any('forecaster_id' in row for row in forecasts):
+        expected_pairs = {(agent['id'], agent['name']) for agent in roster}
+        actual_pairs = [(row.get('forecaster_id'), row.get('name')) for row in forecasts]
+        if len(set(actual_pairs)) != len(actual_pairs) or set(actual_pairs) != expected_pairs:
+            raise ValueError('forecast output forecaster ID/name mismatch')
     names = [row.get('name') for row in forecasts]
     expected_names = {row['name'] for row in roster}
     if len(set(names)) != len(names) or set(names) != expected_names:
