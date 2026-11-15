@@ -118,6 +118,8 @@ def validate_panel_output(value, race, card, expected_phase):
         raise ValueError('forecast output phase does not match racecard stage')
     if expected_phase == 'FINAL' and value.get('publication_window') != 'PRE_DAY':
         raise ValueError('final forecast is not a PRE_DAY edition')
+    if expected_phase == 'FINAL' and saved.astimezone(off.tzinfo).date() >= off.date():
+        raise ValueError('final forecast saved_at is not before race-local calendar day')
     if any(not isinstance(row.get('tickets'), list) for row in forecasts):
         raise ValueError('forecast output missing tickets list')
     roster_path = Path(__file__).resolve().parents[1] / 'data' / 'operations' / 'forecast_roster.json'
