@@ -9,6 +9,7 @@ import subprocess
 import sys
 from tempfile import NamedTemporaryFile
 from urllib.parse import urlsplit
+from zoneinfo import ZoneInfo
 
 from fetch_jra_racecard import fetch_for_forecast as fetch_jra, racecard_identity as jra_identity
 from fetch_nar_racecard import fetch_for_forecast as fetch_nar, racecard_identity as nar_identity, VENUES
@@ -118,7 +119,7 @@ def validate_panel_output(value, race, card, expected_phase):
         raise ValueError('forecast output phase does not match racecard stage')
     if expected_phase == 'FINAL' and value.get('publication_window') != 'PRE_DAY':
         raise ValueError('final forecast is not a PRE_DAY edition')
-    if expected_phase == 'FINAL' and saved.astimezone(off.tzinfo).date() >= off.date():
+    if expected_phase == 'FINAL' and saved.astimezone(ZoneInfo('Asia/Tokyo')).date() >= off.astimezone(ZoneInfo('Asia/Tokyo')).date():
         raise ValueError('final forecast saved_at is not before race-local calendar day')
     if any(not isinstance(row.get('tickets'), list) for row in forecasts):
         raise ValueError('forecast output missing tickets list')
