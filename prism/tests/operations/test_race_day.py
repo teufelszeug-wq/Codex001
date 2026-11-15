@@ -51,8 +51,13 @@ class RaceDayTests(unittest.TestCase):
     def test_batch_completion_counts_active_runners(self):
         card = {'runners': [{'status': 'DECLARED'}, {'status': 'SCRATCHED'}],
                 'off_at': '2020-11-15T15:40:00+09:00'}
+        roster_path = Path(__file__).resolve().parents[2] / 'data' / 'operations' / 'forecast_roster.json'
+        from run_forecast_batch import read_json
+        roster = read_json(roster_path)['forecasters']
+        forecasts = [{'name': person['name'], 'execution_id': f'id-{index}', 'tickets': []}
+                     for index, person in enumerate(roster)]
         value = {'race_id': '20261115-JRA-KYOTO-11', 'runners': 1, 'phase': 'FINAL',
-                 'saved_at': '2020-11-14T12:00:00Z', 'forecasts': [{'execution_id': 'id', 'tickets': []}]}
+                 'saved_at': '2020-11-14T12:00:00Z', 'forecasts': forecasts}
         validate_panel_output(value, value['race_id'], card, 'FINAL')
         with self.assertRaisesRegex(ValueError, 'runner count'):
             validate_panel_output({**value, 'runners': 2}, value['race_id'], card, 'FINAL')
