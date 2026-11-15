@@ -61,6 +61,7 @@ class BatchForecastTests(unittest.TestCase):
             report = run(Path(tmp), ['late', 'broken', 'early'])
         self.assertEqual([row['race_id'] for row in report['races']], ['early', 'late'])
         self.assertEqual(report['finalized'], 2)
+        self.assertEqual([row['model_backend'] for row in report['races']], ['unverified', 'unverified'])
         self.assertEqual(report['errors'], [{'source': 'broken', 'error': 'missing official identity'}])
 
     def test_rejects_mismatched_race_id_and_post_start_timestamp(self):
