@@ -11,7 +11,7 @@ class BridgeTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.a = Path(self.tmp.name) / "forecast.json"
         self.b = Path(self.tmp.name) / "official.json"
-        self.forecast = {"race_id":"TEST-01","version":1,"saved_at":"2026-11-15T18:00:00+09:00","off_at":"2026-11-16T15:00:00+09:00","records":[{"forecaster_id":"RIO","decision":"bet","bets":[{"horse_name":"架空馬","bet_type":"win","selection":"3","stake_yen":200}]}]}
+        self.forecast = {"race_id":"TEST-01","version":1,"saved_at":"2026-11-15T18:00:00+09:00","off_at":"2026-11-16T15:00:00+09:00","source_refs":["https://example.org/entries"],"records":[{"forecaster_id":"RIO","decision":"bet","bets":[{"horse_name":"架空馬","bet_type":"win","selection":"3","stake_yen":200}]}]}
         self.official = {"race_id":"TEST-01","status":"official","source_url":"https://example.org/official","payouts":[{"bet_type":"win","selection":"3","payout_yen_per_100":340}]}
     def run_case(self):
         self.a.write_text(json.dumps(self.forecast),encoding="utf8")
@@ -30,7 +30,13 @@ class BridgeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"selection"): self.run_case()
     def test_post_off(self):
         self.forecast["saved_at"]="2026-11-16T16:00:00+09:00"
-        with self.assertRaisesRegex(ValueError,"pre-off"): self.run_case()
+        with self.assertRaisesRegex(ValueError,"pre_off_time"): self.run_case()
+    def test_missing_source_refs(self):
+        del self.forecast["source_refs"]
+        with self.assertRaisesRegex(ValueError,"missing:source_refs"): self.run_case()
+    def test_invalid_stake(self):
+        self.forecast["records"][0]["bets"][0]["stake_yen"] = 150
+        with self.assertRaisesRegex(ValueError,"stake_yen"): self.run_case()
     def test_duplicate_payout(self):
         self.official["payouts"]*=2
         with self.assertRaisesRegex(ValueError,"duplicate"): self.run_case()
