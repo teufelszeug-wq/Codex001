@@ -77,7 +77,7 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
                     continue
                 if timestamp(value) > locked:
                     raise ValueError('feature observation from future: ' + feature + '.' + field)
-                if field == 'occurred_at' and timestamp(feature_data['available_at']) < timestamp(value):
+                if timestamp(feature_data['available_at']) < timestamp(value):
                     raise ValueError('feature availability precedes occurrence: ' + feature)
         # Evidence must not overwrite racecard identities or the assigned barrier.
         reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
