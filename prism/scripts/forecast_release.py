@@ -10,6 +10,7 @@ else:
 import json
 import sys
 from pathlib import Path
+from datetime import datetime, timezone
 from forecast_preflight import validate
 
 @contextlib.contextmanager
@@ -41,7 +42,7 @@ def exclusive_lock(handle):
             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
-def release(source, destination):
+def release(source, destination, live_off_at=None):
     doc = json.loads(Path(source).read_text(encoding="utf-8"))
     if not isinstance(doc, dict):
         raise ValueError("document must be object")
@@ -60,6 +61,13 @@ def release(source, destination):
     # The lock lives outside the release glob and is never treated as a release.
     lock_path = target_dir / ".release.lock"
     with open(lock_path, "a+b") as lock, exclusive_lock(lock):
+        # Check actual wall clock *inside* the publication lock. A prior
+        # check in the caller can become stale while waiting for this lock.
+        if live_off_at is not None:
+            if live_off_at.tzinfo is None or live_off_at.utcoffset() is None:
+                raise ValueError("live_off_at must be timezone-aware")
+            if datetime.now(timezone.utc) >= live_off_at:
+                raise ValueError("live publication rejected: deadline passed during release")
         if any(p != target for p in target_dir.glob(f"v{doc['version']}-*.json")):
             raise ValueError("version already published with different payload")
         try:
