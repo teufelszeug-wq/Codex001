@@ -39,6 +39,15 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
             raise ValueError('horse evidence provenance required')
         if timestamp(entry['available_at'])>locked:
             raise ValueError('horse evidence from future')
+        # A timely evidence envelope can still contain post-cutoff observations.
+        # Refuse known observation timestamps after the prediction lock.
+        for observation in entry['history']:
+            if not isinstance(observation, dict):
+                raise ValueError('history observation must be mapping')
+            for field in ('available_at', 'captured_at', 'observed_at', 'race_date', 'off_at'):
+                value = observation.get(field)
+                if value is not None and timestamp(value)>locked:
+                    raise ValueError('history observation from future: ' + field)
         # Evidence must not overwrite racecard identities or the assigned barrier.
         reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
         overlap = reserved.intersection(entry)
