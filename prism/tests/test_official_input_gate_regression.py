@@ -139,6 +139,33 @@ class OfficialInputGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "feature availability precedes occurrence"):
                 run(card([1, 2]), e)
 
+    def test_valid_workout_with_observation_timestamp_reaches_contract(self):
+        """Audit timestamps must not leak into strict engine feature schema."""
+        c = card([1, 2])
+        e = evidence([1, 2])
+        for number in ("1", "2"):
+            e[number]["history"] = [{
+                "occurred_at": "2026-11-10T12:00:00+09:00",
+                "available_at": "2026-11-10T15:00:00+09:00",
+                "performance_score": 65, "distance_m": 1600,
+                "surface": "TURF", "direction": "RIGHT",
+                "class_rating": 1, "venue": "TEST",
+            }]
+        e["1"]["workout"] = {
+            "score": 80,
+            "observed_at": "2026-11-17T15:00:00+09:00",
+            "available_at": "2026-11-17T16:00:00+09:00",
+        }
+        raw, _ = assemble_engine_input(
+            c, e, venue="TEST", surface="TURF", distance_m=1600,
+            direction="RIGHT", class_rating=1, barrier_count=8,
+            locked_at="2026-11-17T18:00:00+09:00"
+        )
+        self.assertEqual(raw["runners"][0]["workout"], {
+            "score": 80, "available_at": "2026-11-17T16:00:00+09:00"
+        })
+        self.assertIn("observed_at", e["1"]["workout"])
+
     def test_valid_two_runner_input_reaches_contract(self):
         """Positive control: valid evidence must produce an engine input, not just reject bad cases."""
         c = card([1, 2])
