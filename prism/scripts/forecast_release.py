@@ -89,5 +89,7 @@ def release(source, destination, live_off_at=None):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         raise SystemExit("usage: forecast_release.py INPUT.json OUTPUT_DIR")
-    path, sha, created = release(sys.argv[1], sys.argv[2])
-    print(json.dumps({"path": path, "sha256": sha, "created": created}, ensure_ascii=False))
+    # Public CLI must enforce actual live timing; raw release() remains an internal
+    # primitive for verified migrations and test fixtures only.
+    from publish_live_forecast import publish_live
+    print(json.dumps(publish_live(sys.argv[1], sys.argv[2]), ensure_ascii=False))
