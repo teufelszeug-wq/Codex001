@@ -106,6 +106,28 @@ class OfficialInputGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "feature availability timestamp required"):
                 run(card([1, 2]), e)
 
+    def test_optional_feature_future_observation_backdated_availability_rejected(self):
+        e = evidence([1, 2])
+        e["1"]["workout"] = {
+            "score": 80,
+            "available_at": "2026-11-17T17:00:00+09:00",
+            "observed_at": "2026-11-17T19:00:00+09:00",
+        }
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "feature observation from future"):
+                run(card([1, 2]), e)
+
+    def test_optional_feature_availability_before_occurrence_rejected(self):
+        e = evidence([1, 2])
+        e["1"]["workout"] = {
+            "score": 80,
+            "available_at": "2026-11-17T16:00:00+09:00",
+            "occurred_at": "2026-11-17T17:00:00+09:00",
+        }
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "feature availability precedes occurrence"):
+                run(card([1, 2]), e)
+
     def test_valid_two_runner_input_reaches_contract(self):
         """Positive control: valid evidence must produce an engine input, not just reject bad cases."""
         c = card([1, 2])
