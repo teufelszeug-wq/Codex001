@@ -23,7 +23,7 @@ def publish_live(source, destination, now=None):
         raise ValueError("live publication rejected: race already started")
     if saved > now + timedelta(minutes=2):
         raise ValueError("live publication rejected: saved_at is in the future")
-    path, digest, created = release(source, destination)
+    path, digest, created = release(source, destination, live_off_at=off)
     return {"path": path, "sha256": digest, "created": created,
             "published_at": now.isoformat(), "provenance": "local_clock_only",
             "historical_import": False}
