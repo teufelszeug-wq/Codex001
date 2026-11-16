@@ -51,7 +51,11 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
             # Require an explicit per-observation availability timestamp.
             if not observation.get('available_at'):
                 raise ValueError('history observation availability timestamp required')
-            for field in ('available_at', 'captured_at', 'observed_at', 'race_date', 'off_at'):
+            # A published observation cannot predate the event it describes.
+            # Otherwise a future race result could be backdated into training.
+            if observation.get('occurred_at') and timestamp(observation['available_at']) < timestamp(observation['occurred_at']):
+                raise ValueError('history availability precedes occurrence')
+            for field in ('available_at', 'captured_at', 'observed_at', 'race_date', 'off_at', 'occurred_at'):
                 value = observation.get(field)
                 if value is not None and timestamp(value)>locked:
                     raise ValueError('history observation from future: ' + field)
