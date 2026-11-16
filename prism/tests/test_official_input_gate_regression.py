@@ -1,0 +1,66 @@
+"""Regression tests for official racecard identity and time gates."""
+import unittest
+from unittest.mock import patch
+from datetime import datetime, timezone
+from scripts.assemble_official_engine_input import assemble_engine_input
+
+def ts(value):
+    if isinstance(value, datetime):
+        return value
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+def card(numbers):
+    return {
+        "schema": "prism.official_racecard/v1",
+        "source_verified": True,
+        "race_id": "TEST-20261118-01",
+        "off_at": "2026-11-18T12:00:00+09:00",
+        "captured_at": "2026-11-17T12:00:00+09:00",
+        "official_url": "https://example.invalid/official",
+        "active_runners": [
+            {"horse_no": n, "horse_name": f"horse-{i}", "frame_no": 1}
+            for i, n in enumerate(numbers)
+        ],
+    }
+
+def evidence(numbers):
+    return {
+        str(n): {
+            "horse_id": f"id-{n}",
+            "source_url": "https://example.invalid/history",
+            "available_at": "2026-11-17T11:00:00+09:00",
+            "carried_weight": 55,
+            "history": [{"available_at": "2026-11-16T11:00:00+09:00"}],
+        }
+        for n in numbers
+    }
+
+def run(c, e):
+    return assemble_engine_input(
+        c, e, venue="TEST", surface="turf", distance_m=1600,
+        direction="right", class_rating=1, barrier_count=8,
+        locked_at="2026-11-17T18:00:00+09:00"
+    )
+
+class OfficialInputGateTests(unittest.TestCase):
+    def test_duplicate_horse_number_rejected(self):
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "duplicate horse number"):
+                run(card([1, 1]), evidence([1]))
+
+    def test_future_history_rejected(self):
+        e = evidence([1])
+        e["1"]["history"][0]["available_at"] = "2026-11-18T13:00:00+09:00"
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "history observation from future"):
+                run(card([1]), e)
+
+    def test_missing_history_availability_rejected(self):
+        e = evidence([1])
+        del e["1"]["history"][0]["available_at"]
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "availability timestamp required"):
+                run(card([1]), e)
+
+if __name__ == "__main__":
+    unittest.main()
