@@ -25,6 +25,9 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         raise ValueError('racecard not available at prediction time')
     active=card['active_runners']
     ids={str(r['horse_no']) for r in active}
+    # A set comparison alone silently collapses duplicate official horse numbers.
+    if len(ids)!=len(active):
+        raise ValueError('duplicate horse number in official racecard')
     if set(evidence)!=ids:
         raise ValueError('complete evidence required for all active horses')
     runners=[];names={}
