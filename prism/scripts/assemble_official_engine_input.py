@@ -79,6 +79,15 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
                     raise ValueError('feature observation from future: ' + feature + '.' + field)
                 if timestamp(feature_data['available_at']) < timestamp(value):
                     raise ValueError('feature availability precedes occurrence: ' + feature)
+        # The canonical engine contract permits available_at but not audit-only
+        # observation timestamps. Validate above, then strip those audit fields
+        # from the engine payload; the source evidence remains unchanged.
+        for feature in ('state', 'style', 'workout', 'condition', 'jockey',
+                        'sectional', 'ban_ei', 'jump'):
+            feature_data = entry.get(feature)
+            if isinstance(feature_data, dict):
+                for audit_field in ('occurred_at', 'captured_at', 'observed_at'):
+                    feature_data.pop(audit_field, None)
         # Evidence must not overwrite racecard identities or the assigned barrier.
         reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
         overlap = reserved.intersection(entry)
