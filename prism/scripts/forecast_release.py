@@ -2,12 +2,12 @@
 import hashlib
 import contextlib
 import time
+import os
 if os.name == "nt":
     import msvcrt
 else:
     import fcntl
 import json
-import os
 import sys
 from pathlib import Path
 from forecast_preflight import validate
@@ -19,7 +19,7 @@ def exclusive_lock(handle):
         handle.seek(0)
         if handle.read(1) == b"":
             handle.seek(0)
-            handle.write(b"\\0")
+            handle.write(bytes([0]))
             handle.flush()
         while True:
             try:
