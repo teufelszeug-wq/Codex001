@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from settlement_100yen import settle
+from forecast_preflight import validate as validate_forecast
 
 def settle_release(forecast_path, official_path):
     raw = Path(forecast_path).read_bytes()
@@ -11,6 +12,9 @@ def settle_release(forecast_path, official_path):
     result = json.loads(Path(official_path).read_text(encoding="utf-8"))
     if not isinstance(doc, dict) or not isinstance(result, dict):
         raise ValueError("documents must be objects")
+    preflight_errors = validate_forecast(doc)
+    if preflight_errors:
+        raise ValueError("forecast preflight failed: " + ",".join(preflight_errors))
     race = doc.get("race_id")
     if not isinstance(race, str) or not race.strip() or race != result.get("race_id"):
         raise ValueError("race_id mismatch")
