@@ -70,6 +70,15 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
                 raise ValueError('feature availability timestamp required: ' + feature)
             if timestamp(feature_data['available_at']) > locked:
                 raise ValueError('feature from future relative to prediction lock: ' + feature)
+            # A backdated availability stamp must not conceal a later observation.
+            for field in ('occurred_at', 'captured_at', 'observed_at'):
+                value = feature_data.get(field)
+                if value is None:
+                    continue
+                if timestamp(value) > locked:
+                    raise ValueError('feature observation from future: ' + feature + '.' + field)
+                if field == 'occurred_at' and timestamp(feature_data['available_at']) < timestamp(value):
+                    raise ValueError('feature availability precedes occurrence: ' + feature)
         # Evidence must not overwrite racecard identities or the assigned barrier.
         reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
         overlap = reserved.intersection(entry)
