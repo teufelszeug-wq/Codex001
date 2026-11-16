@@ -76,5 +76,30 @@ class OfficialInputGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "horse evidence from future"):
                 run(card([1]), e)
 
+
+    def test_valid_two_runner_input_reaches_contract(self):
+        """Positive control: valid evidence must produce an engine input, not just reject bad cases."""
+        c = card([1, 2])
+        e = evidence([1, 2])
+        for number in ("1", "2"):
+            e[number]["history"] = [{
+                "occurred_at": "2026-11-10T12:00:00+09:00",
+                "available_at": "2026-11-10T15:00:00+09:00",
+                "performance_score": 65,
+                "distance_m": 1600,
+                "surface": "TURF",
+                "direction": "RIGHT",
+                "class_rating": 1,
+                "venue": "TEST",
+            }]
+        raw, names = assemble_engine_input(
+            c, e, venue="TEST", surface="TURF", distance_m=1600,
+            direction="RIGHT", class_rating=1, barrier_count=8,
+            locked_at="2026-11-17T18:00:00+09:00"
+        )
+        self.assertEqual(raw["mode"], "PRE_AVAILABLE")
+        self.assertEqual(len(raw["runners"]), 2)
+        self.assertEqual(len(names), 2)
+
 if __name__ == "__main__":
     unittest.main()
