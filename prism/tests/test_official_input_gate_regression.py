@@ -92,6 +92,20 @@ class OfficialInputGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "history observation from future"):
                 run(card([1]), e)
 
+    def test_optional_feature_after_lock_rejected(self):
+        e = evidence([1, 2])
+        e["1"]["workout"] = {"score": 80, "available_at": "2026-11-17T19:00:00+09:00"}
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "feature from future relative to prediction lock"):
+                run(card([1, 2]), e)
+
+    def test_optional_feature_without_availability_rejected(self):
+        e = evidence([1, 2])
+        e["1"]["workout"] = {"score": 80}
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "feature availability timestamp required"):
+                run(card([1, 2]), e)
+
     def test_valid_two_runner_input_reaches_contract(self):
         """Positive control: valid evidence must produce an engine input, not just reject bad cases."""
         c = card([1, 2])
