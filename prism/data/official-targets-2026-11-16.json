@@ -1,0 +1,73 @@
+{
+  "schema": "prism.audit_targets/v1",
+  "date": "2026-11-16",
+  "timezone": "Asia/Tokyo",
+  "status": "OFFICIAL_SCHEDULE_VERIFIED_NOT_FORECAST",
+  "scope": "NAR four venue featured races; JRA none; not all NAR races",
+  "targets": [
+    {
+      "race_id": "20261116-NAR-OBIHIRO-11",
+      "venue": "OBIHIRO",
+      "race_no": 11,
+      "race_name": "北見富士特別",
+      "off_at": "2026-11-16T20:15:00+09:00",
+      "runner_count": 10,
+      "authority": "NAR",
+      "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_babaCode=3&k_raceDate=2026%2F11%2F16",
+      "official_racecard_verified": false,
+      "full_field_diagnosis_verified": false,
+      "pre_off_forecast_verified": false,
+      "independent_ai_verified": false,
+      "five_topic_roundtable_verified": false,
+      "official_settlement_verified": false
+    },
+    {
+      "race_id": "20261116-NAR-MIZUSAWA-12",
+      "venue": "MIZUSAWA",
+      "race_no": 12,
+      "race_name": "ノベンバーカップ",
+      "off_at": "2026-11-16T18:10:00+09:00",
+      "runner_count": 12,
+      "authority": "NAR",
+      "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_babaCode=11&k_raceDate=2026%2F11%2F16",
+      "official_racecard_verified": false,
+      "full_field_diagnosis_verified": false,
+      "pre_off_forecast_verified": false,
+      "independent_ai_verified": false,
+      "five_topic_roundtable_verified": false,
+      "official_settlement_verified": false
+    },
+    {
+      "race_id": "20261116-NAR-OI-11",
+      "venue": "OI",
+      "race_no": 11,
+      "race_name": "オフト大郷賞",
+      "off_at": "2026-11-16T20:10:00+09:00",
+      "runner_count": 9,
+      "authority": "NAR",
+      "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_babaCode=20&k_raceDate=2026%2F11%2F16",
+      "official_racecard_verified": false,
+      "full_field_diagnosis_verified": false,
+      "pre_off_forecast_verified": false,
+      "independent_ai_verified": false,
+      "five_topic_roundtable_verified": false,
+      "official_settlement_verified": false
+    },
+    {
+      "race_id": "20261116-NAR-KANAZAWA-12",
+      "venue": "KANAZAWA",
+      "race_no": 12,
+      "race_name": "楽天競馬で馬券を買おう！楽天競馬特別",
+      "off_at": "2026-11-16T18:45:00+09:00",
+      "runner_count": 5,
+      "authority": "NAR",
+      "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_babaCode=22&k_raceDate=2026%2F11%2F16",
+      "official_racecard_verified": false,
+      "full_field_diagnosis_verified": false,
+      "pre_off_forecast_verified": false,
+      "independent_ai_verified": false,
+      "five_topic_roundtable_verified": false,
+      "official_settlement_verified": false
+    }
+  ]
+}
