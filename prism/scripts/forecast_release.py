@@ -1,11 +1,45 @@
 """Immutable local PRISM forecast release; does not prove Git timing."""
 import hashlib
-import fcntl
+import contextlib
+import time
+if os.name == "nt":
+    import msvcrt
+else:
+    import fcntl
 import json
 import os
 import sys
 from pathlib import Path
 from forecast_preflight import validate
+
+@contextlib.contextmanager
+def exclusive_lock(handle):
+    """Cross-process advisory lock for POSIX and Windows, held until release."""
+    if os.name == "nt":
+        handle.seek(0)
+        if handle.read(1) == b"":
+            handle.seek(0)
+            handle.write(b"\\0")
+            handle.flush()
+        while True:
+            try:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                break
+            except OSError:
+                time.sleep(0.05)
+        try:
+            yield
+        finally:
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
 
 def release(source, destination):
     doc = json.loads(Path(source).read_text(encoding="utf-8"))
@@ -25,28 +59,24 @@ def release(source, destination):
     # Serialize version checks and creation across concurrent publisher processes.
     # The lock lives outside the release glob and is never treated as a release.
     lock_path = target_dir / ".release.lock"
-    with open(lock_path, "a+b") as lock:
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+    with open(lock_path, "a+b") as lock, exclusive_lock(lock):
+        if any(p != target for p in target_dir.glob(f"v{doc['version']}-*.json")):
+            raise ValueError("version already published with different payload")
         try:
-            if any(p != target for p in target_dir.glob(f"v{doc['version']}-*.json")):
-                raise ValueError("version already published with different payload")
-            try:
-                fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)
-            except FileExistsError:
-                if target.read_bytes() != payload:
-                    raise ValueError("hash collision or altered existing release")
-                return str(target), digest, False
-            try:
-                with os.fdopen(fd, "wb") as f:
-                    f.write(payload)
-                    f.flush()
-                    os.fsync(f.fileno())
-            except BaseException:
-                target.unlink(missing_ok=True)
-                raise
-            return str(target), digest, True
-        finally:
-            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+            fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)
+        except FileExistsError:
+            if target.read_bytes() != payload:
+                raise ValueError("hash collision or altered existing release")
+            return str(target), digest, False
+        try:
+            with os.fdopen(fd, "wb") as f:
+                f.write(payload)
+                f.flush()
+                os.fsync(f.fileno())
+        except BaseException:
+            target.unlink(missing_ok=True)
+            raise
+        return str(target), digest, True
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
