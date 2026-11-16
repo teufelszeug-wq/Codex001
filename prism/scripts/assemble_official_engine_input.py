@@ -44,6 +44,10 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         for observation in entry['history']:
             if not isinstance(observation, dict):
                 raise ValueError('history observation must be mapping')
+            # A dated race alone does not prove when its result became public.
+            # Require an explicit per-observation availability timestamp.
+            if not observation.get('available_at'):
+                raise ValueError('history observation availability timestamp required')
             for field in ('available_at', 'captured_at', 'observed_at', 'race_date', 'off_at'):
                 value = observation.get(field)
                 if value is not None and timestamp(value)>locked:
