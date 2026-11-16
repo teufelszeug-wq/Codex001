@@ -59,6 +59,17 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
                 value = observation.get(field)
                 if value is not None and timestamp(value)>locked:
                     raise ValueError('history observation from future: ' + field)
+        # Contract validation uses race off-time as cutoff; publication is locked earlier.
+        # Check every optional runner feature against the actual prediction lock.
+        for feature in ('state', 'style', 'workout', 'condition', 'jockey',
+                        'sectional', 'ban_ei', 'jump'):
+            feature_data = entry.get(feature)
+            if feature_data is None:
+                continue
+            if not isinstance(feature_data, dict) or not feature_data.get('available_at'):
+                raise ValueError('feature availability timestamp required: ' + feature)
+            if timestamp(feature_data['available_at']) > locked:
+                raise ValueError('feature from future relative to prediction lock: ' + feature)
         # Evidence must not overwrite racecard identities or the assigned barrier.
         reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
         overlap = reserved.intersection(entry)
