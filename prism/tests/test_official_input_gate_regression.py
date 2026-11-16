@@ -128,6 +128,17 @@ class OfficialInputGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "feature availability precedes occurrence"):
                 run(card([1, 2]), e)
 
+    def test_optional_feature_availability_before_observation_rejected(self):
+        e = evidence([1, 2])
+        e["1"]["workout"] = {
+            "score": 80,
+            "available_at": "2026-11-17T16:00:00+09:00",
+            "observed_at": "2026-11-17T17:00:00+09:00",
+        }
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "feature availability precedes occurrence"):
+                run(card([1, 2]), e)
+
     def test_valid_two_runner_input_reaches_contract(self):
         """Positive control: valid evidence must produce an engine input, not just reject bad cases."""
         c = card([1, 2])
