@@ -62,5 +62,19 @@ class OfficialInputGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "availability timestamp required"):
                 run(card([1]), e)
 
+    def test_racecard_identity_override_rejected(self):
+        e = evidence([1])
+        e["1"]["horse_no"] = 99
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "overrides racecard fields"):
+                run(card([1]), e)
+
+    def test_future_evidence_envelope_rejected(self):
+        e = evidence([1])
+        e["1"]["available_at"] = "2026-11-18T13:00:00+09:00"
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "horse evidence from future"):
+                run(card([1]), e)
+
 if __name__ == "__main__":
     unittest.main()
