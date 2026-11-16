@@ -77,6 +77,21 @@ class OfficialInputGateTests(unittest.TestCase):
                 run(card([1]), e)
 
 
+    def test_future_occurrence_rejected_even_if_availability_is_backdated(self):
+        e = evidence([1])
+        e["1"]["history"][0]["occurred_at"] = "2026-11-18T13:00:00+09:00"
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "availability precedes occurrence"):
+                run(card([1]), e)
+
+    def test_future_occurrence_rejected_with_timely_availability(self):
+        e = evidence([1])
+        e["1"]["history"][0]["occurred_at"] = "2026-11-18T13:00:00+09:00"
+        e["1"]["history"][0]["available_at"] = "2026-11-18T14:00:00+09:00"
+        with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
+            with self.assertRaisesRegex(ValueError, "history observation from future"):
+                run(card([1]), e)
+
     def test_valid_two_runner_input_reaches_contract(self):
         """Positive control: valid evidence must produce an engine input, not just reject bad cases."""
         c = card([1, 2])
