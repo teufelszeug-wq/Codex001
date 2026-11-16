@@ -39,7 +39,12 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
             raise ValueError('horse evidence provenance required')
         if timestamp(entry['available_at'])>locked:
             raise ValueError('horse evidence from future')
-        # Evidence must not overwrite racecard identities or the assigned barrier.\n        reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}\n        overlap = reserved.intersection(entry)\n        if overlap:\n            raise ValueError('horse evidence overrides racecard fields: ' + ','.join(sorted(overlap)))\n        horse_id=entry.pop('horse_id')
+        # Evidence must not overwrite racecard identities or the assigned barrier.
+        reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
+        overlap = reserved.intersection(entry)
+        if overlap:
+            raise ValueError('horse evidence overrides racecard fields: ' + ','.join(sorted(overlap)))
+        horse_id=entry.pop('horse_id')
         entry.pop('source_url');entry.pop('available_at')
         if horse_id in names:
             raise ValueError('duplicate horse identity')
