@@ -11,6 +11,8 @@ def adapt_engine_lock(card, lock):
     runners = card.get("active_runners")
     if not isinstance(runners, list) or not runners:
         raise ValueError("active runners required")
+    if any(not isinstance(r, dict) or not isinstance(r.get("horse_name"), str) or not r["horse_name"].strip() for r in runners):
+        raise ValueError("invalid official runner identity")
     ids = [r.get("horse_id") for r in runners]
     if any(not isinstance(i, str) or not i.strip() for i in ids) or len(ids) != len(set(ids)):
         raise ValueError("duplicate or invalid horse ids")
