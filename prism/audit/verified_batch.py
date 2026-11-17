@@ -13,7 +13,11 @@ def publish_verified_batch(directory, card, predictions, *, predictor_id, versio
     runners = card.get("active_runners")
     if not isinstance(runners, list) or not runners or not isinstance(predictions, dict):
         raise ValueError("missing runners or predictions")
+    if any(not isinstance(r, dict) or not isinstance(r.get("horse_id"), str) or not r["horse_id"].strip() or not isinstance(r.get("horse_name"), str) or not r["horse_name"].strip() for r in runners):
+        raise ValueError("invalid official runner identity")
     official = {r["horse_id"]: r["horse_name"] for r in runners}
+    if len(set(official.values())) != len(runners):
+        raise ValueError("duplicate official horse names")
     if len(official) != len(runners) or set(predictions) != set(official):
         raise ValueError("incomplete or duplicate runner identities")
     saved = _time(saved_at)
@@ -36,6 +40,10 @@ def publish_verified_batch(directory, card, predictions, *, predictor_id, versio
         prediction = predictions[horse_id]
         if not isinstance(prediction, dict) or not prediction:
             raise ValueError("missing model output")
+        if "horse_id" in prediction and prediction["horse_id"] != horse_id:
+            raise ValueError("prediction horse_id mismatch")
+        if "horse_name" in prediction and prediction["horse_name"] != official[horse_id]:
+            raise ValueError("prediction horse_name mismatch")
         rows.append(dict(race_id=card["race_id"], horse_id=horse_id,
             horse_name=official[horse_id], predictor_id=predictor_id,
             source=source, saved_at=saved_at, version=version,
