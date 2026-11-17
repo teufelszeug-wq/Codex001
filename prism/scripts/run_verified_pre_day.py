@@ -7,6 +7,11 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / 'prism' / 'src'))
 
 from prism.audit.official_input_gate import validate_engine_input
 from prism.audit.engine_publish import publish_engine_lock
