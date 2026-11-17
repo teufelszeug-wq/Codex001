@@ -48,10 +48,18 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
         barrier_count=barrier_count, locked_at=locked_at)
     if set(names) != {r["horse_id"] for r in runners}:
         raise ValueError("assembled horse IDs do not match official card")
+    # Never backdate the publication timestamp to the prediction cutoff.
+    # Recheck the real clock after potentially expensive inference.
+    published_at = datetime.now(timezone.utc) if now is None else actual
+    if published_at >= datetime.fromisoformat(card["off_at"].replace("Z", "+00:00")):
+        raise ValueError("prediction completed after off time")
     lock = predict(raw, locked_at)
+    published_at = datetime.now(timezone.utc) if now is None else actual
+    if published_at >= datetime.fromisoformat(card["off_at"].replace("Z", "+00:00")):
+        raise ValueError("prediction completed after off time")
     return publish_engine_lock(
         output_dir, card, lock, predictor_id=predictor_id, version=version,
-        source=source, evidence=source_evidence, saved_at=locked_at, now=now)
+        source=source, evidence=source_evidence, saved_at=published_at.isoformat(), now=published_at.isoformat())
 
 
 def main():
