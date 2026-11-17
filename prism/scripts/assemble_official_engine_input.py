@@ -94,6 +94,11 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         if overlap:
             raise ValueError('horse evidence overrides racecard fields: ' + ','.join(sorted(overlap)))
         horse_id=entry.pop('horse_id')
+        # Prevent a correctly numbered evidence row from silently naming a
+        # different horse. Historical features must belong to the official runner.
+        official_id = horse.get('horse_id')
+        if official_id is not None and str(official_id) != str(horse_id):
+            raise ValueError('horse evidence identity conflicts with official racecard')
         entry.pop('source_url');entry.pop('available_at')
         if horse_id in names:
             raise ValueError('duplicate horse identity')
