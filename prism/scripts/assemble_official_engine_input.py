@@ -16,6 +16,13 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         raise ValueError('normalized official racecard required')
     if card.get('source_verified') is not True:
         raise ValueError('official racecard identity has not been verified')
+    # Use the same verified URL field as official_input_gate; never accept
+    # a conflicting legacy alias or silently publish an unverified URL.
+    official_url = card.get('source_url')
+    if not isinstance(official_url, str) or not official_url.startswith('https://'):
+        raise ValueError('verified official source_url required')
+    if card.get('official_url') is not None and card['official_url'] != official_url:
+        raise ValueError('conflicting official source URLs')
     if not isinstance(evidence,dict):
         raise ValueError('horse evidence mapping required')
     locked=timestamp(locked_at)
@@ -113,7 +120,7 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
                  'class_rating':class_rating,'cutoff':card['off_at'],
                  'barrier_count':barrier_count},
          'runners':runners,
-         'source':{'source_id':card['official_url'],'available_at':card['captured_at'],
+         'source':{'source_id':official_url,'available_at':card['captured_at'],
                    'content_hash':''}}
     raw['source']['content_hash']=digest({k:v for k,v in raw.items() if k!='source'})
     validate(raw)
