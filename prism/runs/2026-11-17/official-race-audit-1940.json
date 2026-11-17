@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-17",
+  "audit_time_jst": "2026-11-17T19:40:31+09:00",
+  "status": "CRITICAL_UNVERIFIED_PRODUCTION",
+  "jra_main_races": 0,
+  "nar_venues_official": [
+    "水沢",
+    "大井",
+    "金沢"
+  ],
+  "nar_full_target_count": "unverified",
+  "verified_races": [
+    {
+      "race_id": "2026-11-17_NAR_OOI_11",
+      "name": "トパーズ賞",
+      "start_jst": "2026-11-17T20:10:00+09:00",
+      "entries": 14,
+      "entry_source": "https://keibagrant.jp/pdf/2026/20261117/201120261117.pdf",
+      "official_race_list": "https://www.keiba.go.jp/KeibaWeb_IPAT/TodayRaceInfo/RefundMoneyList_ipat?k_babaCode=20&k_raceDate=2026%2F11%2F17&k_raceNo=1",
+      "forecast_saved_at": null,
+      "forecast_version": null,
+      "forecaster_run_ids": [],
+      "roundtable_run_id": null,
+      "newspaper_file": null,
+      "official_settlement_id": null,
+      "production_accepted": false
+    }
+  ],
+  "completed_full_diagnoses": 0,
+  "verified_pre_race_forecasts": 0,
+  "verified_independent_ai_runs": 0,
+  "verified_roundtables": 0,
+  "verified_settlements": 0,
+  "verified_vertical_newspapers": 0,
+  "notes": "Only verified items are recorded. No forecasts were generated or backdated. Existing versions must remain unchanged. This manifest is not a prediction or completed production run. External authentication excluded."
+}
