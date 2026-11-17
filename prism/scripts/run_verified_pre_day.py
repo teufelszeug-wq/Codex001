@@ -40,6 +40,11 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     actual = datetime.now(timezone.utc) if now is None else datetime.fromisoformat(now.replace("Z", "+00:00"))
     if actual.tzinfo is None:
         raise ValueError("actual time must be timezone-aware")
+    cutoff = datetime.fromisoformat(locked_at.replace("Z", "+00:00"))
+    if cutoff.tzinfo is None:
+        raise ValueError("prediction cutoff must be timezone-aware")
+    if cutoff > actual:
+        raise ValueError("prediction cutoff cannot be in the future at publication")
     if actual >= datetime.fromisoformat(card["off_at"].replace("Z", "+00:00")):
         raise ValueError("cannot publish pre-race after off")
     raw, names = assemble_engine_input(
