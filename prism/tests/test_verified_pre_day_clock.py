@@ -16,7 +16,7 @@ class PreDayClockGateTests(unittest.TestCase):
         self.now = datetime.now(timezone.utc).replace(microsecond=0)
         self.card = {
             "off_at": (self.now + timedelta(hours=2)).isoformat(),
-            "active_runners": [{"horse_no": 1, "horse_number": "1", "horse_id": "H1"}],
+            "active_runners": [{"horse_no": 1, "horse_number": "1", "horse_id": "H1", "horse_name": "Test Horse"}],
         }
         self.kwargs = dict(
             venue="TEST", surface="turf", distance_m=1600,
@@ -119,6 +119,21 @@ class PreDayClockGateTests(unittest.TestCase):
         self.assertLess(saved_at, datetime.fromisoformat(self.card["off_at"]))
         self.assertGreaterEqual(saved_at, start)
         self.assertEqual(kwargs["now"], kwargs["saved_at"])
+
+
+    def test_mismatched_assembled_horse_name_never_publishes(self):
+        # Correct ID but a stale or incorrectly joined horse name.
+        from unittest.mock import patch
+        cutoff = (self.now - timedelta(hours=1)).isoformat()
+        with patch.object(runner, "validate_engine_input"), patch.object(
+            runner, "assemble_engine_input", return_value=({}, {"H1": "Wrong Horse"})
+        ), patch.object(runner, "predict") as predict, patch.object(
+            runner, "publish_engine_lock"
+        ) as publish:
+            with self.assertRaisesRegex(ValueError, "assembled horse names"):
+                runner.run(self.card, {}, locked_at=cutoff, **self.kwargs)
+            predict.assert_not_called()
+            publish.assert_not_called()
 
 
 if __name__ == "__main__":
