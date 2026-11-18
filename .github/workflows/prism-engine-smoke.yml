@@ -1,0 +1,21 @@
+name: PRISM engine direct smoke
+on:
+  push:
+    branches: [prism/independent-forecasts]
+    paths:
+      - 'prism/src/prism_engine/**'
+      - 'prism/tests/test_engine_full_synthetic_smoke.py'
+      - '.github/workflows/prism-engine-smoke.yml'
+  workflow_dispatch:
+jobs:
+  engine-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile engine and test
+        run: python -m compileall -q prism/src/prism_engine prism/tests/test_engine_full_synthetic_smoke.py
+      - name: Run direct synthetic engine tests
+        run: python -m unittest discover -s prism/tests -p 'test_engine_full_synthetic_smoke.py' -v
