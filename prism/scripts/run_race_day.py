@@ -37,7 +37,8 @@ def restore_history(history, archive):
             name = PurePosixPath(info.filename)
             valid_race = (len(name.parts) == 2 and RACE_ID.fullmatch(name.parts[0]) and name.name.endswith(('.json', '.md', '.txt')))
             valid_root = (len(name.parts) == 1 and name.name in ROOT_SIDECARS)
-            if not (valid_race or valid_root) or '..' in name.parts:
+            valid_audit = (len(name.parts) == 2 and name.parts[0] == 'audit' and name.name.endswith('.json'))
+            if not (valid_race or valid_root or valid_audit) or '..' in name.parts:
                 continue
             if info.file_size > 12_000_000:
                 raise ValueError(f'oversized history record: {name}')
@@ -53,6 +54,11 @@ def export_history(history, archive, report):
         for directory in saved_races(history):
             for path in sorted(directory.iterdir()):
                 if path.is_file() and path.suffix in {'.json', '.md', '.txt'}:
+                    package.write(path, path.relative_to(history))
+        audit = history / 'audit'
+        if audit.is_dir():
+            for path in sorted(audit.glob('*.json')):
+                if path.is_file():
                     package.write(path, path.relative_to(history))
         for filename in ROOT_SIDECARS - {'cycle-report.json'}:
             sidecar = history / filename
