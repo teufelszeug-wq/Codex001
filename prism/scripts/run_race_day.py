@@ -19,6 +19,8 @@ OPERATIONS = Path(__file__).parent
 RACE_ID = re.compile(r'\d{8}-(?:JRA|NAR)-[A-Z]+-\d{2}')
 VERSIONS = re.compile(r'v([2-9]|[1-9]\d+)\.json')
 RECOVERABLE = (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError)
+# Preserve editorial sidecars and prior audit evidence across archive cycles.
+ROOT_SIDECARS = frozenset({'cycle-report.json', 'forecast-index.md'})
 STATE_FILE = re.compile(
     r'(?:racecard(?:-v\d+)?|v\d+(?:-racecard)?|declarations-(?:racecard|v1|roundtable-v1)'
     r'|roundtable-v1|official-result|settlement|post-race-review)\.json'
@@ -33,7 +35,9 @@ def restore_history(history, archive):
     with ZipFile(archive) as package:
         for info in package.infolist():
             name = PurePosixPath(info.filename)
-            if len(name.parts) != 2 or not RACE_ID.fullmatch(name.parts[0]) or not STATE_FILE.fullmatch(name.name):
+            valid_race = (len(name.parts) == 2 and RACE_ID.fullmatch(name.parts[0]) and name.name.endswith(('.json', '.md', '.txt')))
+            valid_root = (len(name.parts) == 1 and name.name in ROOT_SIDECARS)
+            if not (valid_race or valid_root) or '..' in name.parts:
                 continue
             if info.file_size > 12_000_000:
                 raise ValueError(f'oversized history record: {name}')
@@ -48,8 +52,12 @@ def export_history(history, archive, report):
     with ZipFile(archive, 'x', compression=ZIP_DEFLATED) as package:
         for directory in saved_races(history):
             for path in sorted(directory.iterdir()):
-                if path.is_file() and STATE_FILE.fullmatch(path.name):
+                if path.is_file() and path.suffix in {'.json', '.md', '.txt'}:
                     package.write(path, path.relative_to(history))
+        for filename in ROOT_SIDECARS - {'cycle-report.json'}:
+            sidecar = history / filename
+            if sidecar.is_file():
+                package.write(sidecar, filename)
         package.writestr('cycle-report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
 
 
