@@ -44,6 +44,10 @@ class PreDayClockGateTests(unittest.TestCase):
     def test_naive_cutoff_is_rejected(self):
         self.invoke(self.now.replace(tzinfo=None).isoformat())
 
+    def test_naive_off_time_is_rejected_before_inference(self):
+        self.card["off_at"] = (self.now + timedelta(hours=2)).replace(tzinfo=None).isoformat()
+        self.invoke((self.now - timedelta(hours=1)).isoformat())
+
     def test_publication_at_off_time_is_rejected(self):
         self.card["off_at"] = self.now.isoformat()
         self.invoke((self.now - timedelta(hours=1)).isoformat())
