@@ -68,6 +68,10 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     # but a different horse name.
     official_names = {str(r["horse_id"]): r["horse_name"] for r in runners}
     assembled_names = {str(horse_id): horse_name for horse_id, horse_name in names.items()}
+    # String normalization must not silently collapse distinct raw IDs
+    # (e.g. integer 7 and string "7") into one runner.
+    if len(assembled_names) != len(names):
+        raise ValueError("assembled horse IDs collide after normalization")
     if any(assembled_names[horse_id] != official_name for horse_id, official_name in official_names.items()):
         raise ValueError("assembled horse names do not match official card")
     # Never backdate the publication timestamp to the prediction cutoff.
