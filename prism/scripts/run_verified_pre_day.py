@@ -59,7 +59,10 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     # Never backdate the publication timestamp to the prediction cutoff.
     # Recheck the real clock after potentially expensive inference.
     lock = predict(raw, locked_at)
-    # Publication time must be measured from the real clock even when a test\n    # supplies `now` for deterministic pre-inference validation.\n    published_at = datetime.now(timezone.utc)\n    if published_at >= off_at:
+    # Publication time must be measured from the real clock even when a test
+    # supplies `now` for deterministic pre-inference validation.
+    published_at = datetime.now(timezone.utc)
+    if published_at >= off_at:
         raise ValueError("prediction completed after off time")
     return publish_engine_lock(
         output_dir, card, lock, predictor_id=predictor_id, version=version,
