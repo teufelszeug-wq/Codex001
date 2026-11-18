@@ -100,7 +100,9 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         overlap = reserved.intersection(entry)
         if overlap:
             raise ValueError('horse evidence overrides racecard fields: ' + ','.join(sorted(overlap)))
-        horse_id=entry.pop('horse_id')
+        horse_id=str(entry.pop('horse_id'))
+        # Engine contract requires string IDs. Normalize after the source
+        # identity check, preserving the original evidence via deepcopy.
         # Prevent a correctly numbered evidence row from silently naming a
         # different horse. Historical features must belong to the official runner.
         official_id = horse.get('horse_id')
