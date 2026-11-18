@@ -50,11 +50,33 @@ class FullEngineSmoke(unittest.TestCase):
     def test_future_source_rejected(self):
         raw = fixture()
         raw["source"]["available_at"] = "2026-11-19T01:00:00+09:00"
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "source unavailable at lock"):
+            predict(raw, LOCK)
+
+    def test_source_integrity_mismatch_rejected(self):
+        raw = fixture()
+        raw["runners"][0]["horse_no"] = 3
+        with self.assertRaisesRegex(ValueError, "source hash mismatch"):
+            predict(raw, LOCK)
+
+    def test_history_after_lock_rejected(self):
+        raw = fixture()
+        raw["runners"][0]["history"] = [{
+            "occurred_at": "2026-11-19T00:30:00+09:00",
+            "available_at": "2026-11-19T00:31:00+09:00",
+            "performance_score": 55,
+            "distance_m": 1600,
+            "surface": "TURF",
+            "direction": "RIGHT",
+            "class_rating": 50,
+            "venue": "TEST",
+        }]
+        raw["source"]["content_hash"] = digest({k: v for k, v in raw.items() if k != "source"})
+        with self.assertRaisesRegex(ValueError, "history occurred after lock"):
             predict(raw, LOCK)
 
     def test_after_cutoff_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "prediction locked after cutoff"):
             predict(fixture(), "2026-11-20T15:01:00+09:00")
 
 if __name__ == "__main__":
