@@ -28,12 +28,20 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     runners = []
     for runner in card.get("active_runners", []):
         r = dict(runner)
-        if "horse_no" in r and "horse_number" in r and str(r["horse_no"]) != str(r["horse_number"]):
-            raise ValueError("conflicting official horse numbers")
-        if "horse_no" not in r:
-            r["horse_no"] = r.get("horse_number")
-        if "horse_number" not in r:
-            r["horse_number"] = r.get("horse_no")
+        # The official gate requires an integer horse_number, while legacy
+        # cards may carry numeric strings. Normalize both without accepting
+        # booleans, fractions, signs, or ambiguous zero-padded identifiers.
+        def canonical_number(value):
+            if type(value) is int and value > 0:
+                return value
+            if isinstance(value, str) and value.isascii() and value.isdecimal() and value == str(int(value)) and int(value) > 0:
+                return int(value)
+            raise ValueError("official horse number must be a positive canonical integer")
+        numbers = [canonical_number(r[key]) for key in ("horse_no", "horse_number") if key in r]
+        if not numbers or len(set(numbers)) != 1:
+            raise ValueError("missing or conflicting official horse numbers")
+        r["horse_no"] = numbers[0]
+        r["horse_number"] = numbers[0]
         runners.append(r)
     card["active_runners"] = runners
     validate_engine_input(card, as_of=locked_at)
