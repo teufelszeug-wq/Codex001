@@ -112,7 +112,11 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         # Prevent a correctly numbered evidence row from silently naming a
         # different horse. Historical features must belong to the official runner.
         official_id = horse.get('horse_id')
-        if official_id is not None and str(official_id) != str(horse_id):
+        # Horse-number-only joins cannot prove identity when official IDs are absent.
+        # Fail closed instead of publishing a possibly misattributed prediction.
+        if official_id is None or str(official_id).strip() == '':
+            raise ValueError('official horse identity required for verified prediction')
+        if str(official_id) != str(horse_id):
             raise ValueError('horse evidence identity conflicts with official racecard')
         entry.pop('source_url');entry.pop('available_at')
         # Normalize identities for uniqueness: 123 and '123' denote one horse.
