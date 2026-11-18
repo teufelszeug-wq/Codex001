@@ -22,6 +22,13 @@ from prism_engine import predict
 def run(card, evidence, *, venue, surface, distance_m, direction,
         class_rating, barrier_count, locked_at, output_dir, predictor_id,
         version, source, source_evidence, now=None):
+    # Fail before expensive inference if publication provenance is unusable.
+    # publish_engine_lock enforces the same contract at the final write boundary.
+    if not isinstance(source_evidence, list) or not source_evidence:
+        raise ValueError("source evidence required")
+    for field, value in (("predictor_id", predictor_id), ("version", version), ("source", source)):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(field + " required")
     # The gate's canonical number field differs from the assembler's horse_no.
     # Reconcile only when both representations agree; never silently remap IDs.
     card = dict(card)
