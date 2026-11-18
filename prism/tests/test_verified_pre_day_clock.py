@@ -136,5 +136,21 @@ class PreDayClockGateTests(unittest.TestCase):
             publish.assert_not_called()
 
 
+    def test_colliding_assembled_horse_ids_never_predict(self):
+        # Distinct raw keys must not collapse when canonicalized as strings.
+        cutoff = (self.now - timedelta(hours=1)).isoformat()
+        self.card["active_runners"].append({"horse_no": 2, "horse_number": 2, "horse_id": "1", "horse_name": "Other Horse"})
+        with patch.object(runner, "validate_engine_input"), patch.object(
+            runner, "assemble_engine_input",
+            return_value=({}, {"H1": "Test Horse", 1: "Other Horse", "1": "Other Horse"})
+        ), patch.object(runner, "predict") as predict, patch.object(
+            runner, "publish_engine_lock"
+        ) as publish:
+            with self.assertRaises(ValueError):
+                runner.run(self.card, {}, locked_at=cutoff, **self.kwargs)
+            predict.assert_not_called()
+            publish.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
