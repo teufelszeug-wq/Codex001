@@ -45,7 +45,10 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
         raise ValueError("prediction cutoff must be timezone-aware")
     if cutoff > actual:
         raise ValueError("prediction cutoff cannot be in the future at publication")
-    if actual >= datetime.fromisoformat(card["off_at"].replace("Z", "+00:00")):
+    off_at = datetime.fromisoformat(card["off_at"].replace("Z", "+00:00"))
+    if off_at.tzinfo is None:
+        raise ValueError("official off time must be timezone-aware")
+    if actual >= off_at:
         raise ValueError("cannot publish pre-race after off")
     raw, names = assemble_engine_input(
         card, evidence, venue=venue, surface=surface, distance_m=distance_m,
@@ -56,11 +59,11 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     # Never backdate the publication timestamp to the prediction cutoff.
     # Recheck the real clock after potentially expensive inference.
     published_at = datetime.now(timezone.utc) if now is None else actual
-    if published_at >= datetime.fromisoformat(card["off_at"].replace("Z", "+00:00")):
+    if published_at >= off_at:
         raise ValueError("prediction completed after off time")
     lock = predict(raw, locked_at)
     published_at = datetime.now(timezone.utc) if now is None else actual
-    if published_at >= datetime.fromisoformat(card["off_at"].replace("Z", "+00:00")):
+    if published_at >= off_at:
         raise ValueError("prediction completed after off time")
     return publish_engine_lock(
         output_dir, card, lock, predictor_id=predictor_id, version=version,
