@@ -51,7 +51,7 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
         card, evidence, venue=venue, surface=surface, distance_m=distance_m,
         direction=direction, class_rating=class_rating,
         barrier_count=barrier_count, locked_at=locked_at)
-    if set(names) != {r["horse_id"] for r in runners}:
+    if {str(horse_id) for horse_id in names} != {str(r["horse_id"]) for r in runners}:
         raise ValueError("assembled horse IDs do not match official card")
     # Never backdate the publication timestamp to the prediction cutoff.
     # Recheck the real clock after potentially expensive inference.
