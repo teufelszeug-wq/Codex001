@@ -58,9 +58,6 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
         raise ValueError("assembled horse IDs do not match official card")
     # Never backdate the publication timestamp to the prediction cutoff.
     # Recheck the real clock after potentially expensive inference.
-    published_at = datetime.now(timezone.utc) if now is None else actual
-    if published_at >= off_at:
-        raise ValueError("prediction completed after off time")
     lock = predict(raw, locked_at)
     published_at = datetime.now(timezone.utc) if now is None else actual
     if published_at >= off_at:
