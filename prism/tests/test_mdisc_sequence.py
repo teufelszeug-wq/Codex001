@@ -27,4 +27,16 @@ class Tests(unittest.TestCase):
     def test_late_paper(self):
         self.paper["published_at"]="2026-11-22T08:00:00+09:00"
         self.assertIn("PAPER_NOT_PREVIOUS_DAY",self.check()["errors"])
+    def test_pre_between_discussions(self):
+        self.pre["rio"]["saved_at"]="2026-11-20T13:02:30+09:00"
+        self.assertIn("PRE_NOT_BEFORE_DISCUSSION:rio",self.check()["errors"])
+    def test_unknown_mode(self):
+        self.final["rio"]["mode"]="pretend_independent"
+        self.assertIn("FINAL_MODE_UNKNOWN:rio",self.check()["errors"])
+    def test_final_without_pre(self):
+        self.final["extra"]=dict(self.final["rio"])
+        self.assertIn("FINAL_WITHOUT_PRE:extra",self.check()["errors"])
+    def test_no_discussion_times(self):
+        self.ds=[]
+        self.assertIn("FINAL_BEFORE_DISCUSSION_END:rio",self.check()["errors"])
 if __name__=="__main__": unittest.main()
