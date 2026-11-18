@@ -28,7 +28,7 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     runners = []
     for runner in card.get("active_runners", []):
         r = dict(runner)
-        if "horse_no" in r and "horse_number" in r and r["horse_no"] != r["horse_number"]:
+        if "horse_no" in r and "horse_number" in r and str(r["horse_no"]) != str(r["horse_number"]):
             raise ValueError("conflicting official horse numbers")
         if "horse_no" not in r:
             r["horse_no"] = r.get("horse_number")
