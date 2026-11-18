@@ -48,6 +48,26 @@ class PreDayClockGateTests(unittest.TestCase):
         self.card["off_at"] = (self.now + timedelta(hours=2)).replace(tzinfo=None).isoformat()
         self.invoke((self.now - timedelta(hours=1)).isoformat())
 
+    def test_inference_crossing_off_time_never_publishes(self):
+        # An initially valid lock must not be published if inference finishes late.
+        start = self.now
+        self.card["off_at"] = (start + timedelta(seconds=2)).isoformat()
+        with patch.object(runner, "validate_engine_input"), patch.object(
+            runner, "assemble_engine_input", return_value=({}, {"H1": "Test Horse"})
+        ), patch.object(runner, "predict", return_value={}) as predict, patch.object(
+            runner, "publish_engine_lock"
+        ) as publish, patch.object(runner, "datetime", wraps=datetime) as clock:
+            clock.now.side_effect = [start, start + timedelta(seconds=3)]
+            kwargs = dict(self.kwargs)
+            kwargs["now"] = None
+            with self.assertRaisesRegex(ValueError, "prediction completed after off time"):
+                runner.run(
+                    self.card, {}, locked_at=(start - timedelta(hours=1)).isoformat(),
+                    **kwargs
+                )
+            predict.assert_called_once()
+            publish.assert_not_called()
+
     def test_publication_at_off_time_is_rejected(self):
         self.card["off_at"] = self.now.isoformat()
         self.invoke((self.now - timedelta(hours=1)).isoformat())
