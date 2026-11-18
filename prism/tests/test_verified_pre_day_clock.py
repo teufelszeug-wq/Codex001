@@ -91,5 +91,35 @@ class PreDayClockGateTests(unittest.TestCase):
         self.invoke((self.now - timedelta(hours=1)).isoformat())
 
 
+    def test_valid_pre_off_inference_publishes_actual_clock_time(self):
+        # Positive-path coverage: the gate must permit a valid pre-off run,
+        # not merely reject invalid runs. All predictions here are mocked.
+        from pathlib import Path
+        start = datetime.now(timezone.utc).replace(microsecond=0)
+        self.card["off_at"] = (start + timedelta(hours=2)).isoformat()
+        cutoff = (start - timedelta(hours=1)).isoformat()
+        with patch.object(runner, "validate_engine_input") as validate, patch.object(
+            runner, "assemble_engine_input", return_value=({"sample": True}, {"H1": "Test Horse"})
+        ) as assemble, patch.object(
+            runner, "predict", return_value={"mock": True}
+        ) as predict, patch.object(
+            runner, "publish_engine_lock", return_value=Path("/tmp/prism-clock-test/lock.json")
+        ) as publish:
+            result = runner.run(
+                self.card, {}, locked_at=cutoff, **self.kwargs
+            )
+        self.assertEqual(result.name, "lock.json")
+        validate.assert_called_once()
+        assemble.assert_called_once()
+        predict.assert_called_once_with({"sample": True}, cutoff)
+        publish.assert_called_once()
+        args, kwargs = publish.call_args
+        saved_at = datetime.fromisoformat(kwargs["saved_at"])
+        self.assertIsNotNone(saved_at.tzinfo)
+        self.assertLess(saved_at, datetime.fromisoformat(self.card["off_at"]))
+        self.assertGreaterEqual(saved_at, start)
+        self.assertEqual(kwargs["now"], kwargs["saved_at"])
+
+
 if __name__ == "__main__":
     unittest.main()
