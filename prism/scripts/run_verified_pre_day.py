@@ -67,7 +67,8 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     # Prevent publishing stale histories associated with a correct horse ID
     # but a different horse name.
     official_names = {str(r["horse_id"]): r["horse_name"] for r in runners}
-    if any(names[horse_id] != official_name for horse_id, official_name in official_names.items()):
+    assembled_names = {str(horse_id): horse_name for horse_id, horse_name in names.items()}
+    if any(assembled_names[horse_id] != official_name for horse_id, official_name in official_names.items()):
         raise ValueError("assembled horse names do not match official card")
     # Never backdate the publication timestamp to the prediction cutoff.
     # Recheck the real clock after potentially expensive inference.
