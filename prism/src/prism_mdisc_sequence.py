@@ -18,6 +18,14 @@ def audit(race, preliminary, discussions, finals, paper):
     if not paper: errors.append("PAPER_MISSING")
     for topic in TOPICS:
         if topic not in {d.get("topic") for d in discussions}: errors.append("TOPIC_MISSING:"+topic)
+    discussion_times = []
+    for d in discussions:
+        if not d.get("saved_at"): errors.append("DISCUSSION_UNSAVED"); continue
+        t = instant(d["saved_at"]); discussion_times.append(t)
+        if t >= start: errors.append("DISCUSSION_AFTER_START")
+        if not d.get("character_id") or not d.get("character_url"): errors.append("CHARACTER_ATTRIBUTION_MISSING")
+        if d.get("mode") not in MODES: errors.append("DISCUSSION_MODE_UNKNOWN")
+        if d.get("mode") == "independent_execution" and not d.get("execution_id"): errors.append("DISCUSSION_EXECUTION_UNPROVEN")
     for author, pre in preliminary.items():
         if pre.get("mode") not in MODES: errors.append("PRE_MODE_UNKNOWN:"+author)
         if not pre.get("saved_at"): errors.append("PRE_UNSAVED:"+author); continue
@@ -27,14 +35,6 @@ def audit(race, preliminary, discussions, finals, paper):
         if author not in finals: errors.append("FINAL_MISSING_FOR:"+author)
         if not discussion_times or t >= min(discussion_times):
             errors.append("PRE_NOT_BEFORE_DISCUSSION:"+author)
-    discussion_times = []
-    for d in discussions:
-        if not d.get("saved_at"): errors.append("DISCUSSION_UNSAVED"); continue
-        t = instant(d["saved_at"]); discussion_times.append(t)
-        if t >= start: errors.append("DISCUSSION_AFTER_START")
-        if not d.get("character_id") or not d.get("character_url"): errors.append("CHARACTER_ATTRIBUTION_MISSING")
-        if d.get("mode") not in MODES: errors.append("DISCUSSION_MODE_UNKNOWN")
-        if d.get("mode") == "independent_execution" and not d.get("execution_id"): errors.append("DISCUSSION_EXECUTION_UNPROVEN")
     for author, final in finals.items():
         if author not in preliminary: errors.append("FINAL_WITHOUT_PRE:"+author)
         if final.get("mode") not in MODES: errors.append("FINAL_MODE_UNKNOWN:"+author)
