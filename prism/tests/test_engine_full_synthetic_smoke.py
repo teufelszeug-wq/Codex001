@@ -1,0 +1,61 @@
+"""Full engine smoke test using explicitly synthetic inputs; not a real-race result."""
+import copy
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from prism_engine.contracts import digest
+from prism_engine.engine import predict
+
+LOCK = "2026-11-19T00:00:00+09:00"
+CUTOFF = "2026-11-20T15:00:00+09:00"
+
+def fixture():
+    runners = [
+        {"horse_id": "SYNTH-A", "horse_no": 1, "frame_no": 1,
+         "barrier_no": 1, "carried_weight": 55, "history": []},
+        {"horse_id": "SYNTH-B", "horse_no": 2, "frame_no": 2,
+         "barrier_no": 2, "carried_weight": 55, "history": []},
+    ]
+    raw = {
+        "schema": "prism.engine.raw/v1",
+        "mode": "SYNTHETIC",
+        "race": {"race_id": "SYNTH-ENGINE-SMOKE", "venue": "TEST",
+                 "surface": "TURF", "distance_m": 1600,
+                 "direction": "RIGHT", "class_rating": 50,
+                 "cutoff": CUTOFF, "barrier_count": 2},
+        "runners": runners,
+        "source": {"source_id": "SYNTHETIC-TEST-ONLY",
+                   "available_at": LOCK, "content_hash": ""},
+    }
+    raw["source"]["content_hash"] = digest({k: v for k, v in raw.items() if k != "source"})
+    return raw
+
+class FullEngineSmoke(unittest.TestCase):
+    def test_predict_directly(self):
+        output = predict(fixture(), LOCK, config={
+            "half_life_days": 180., "cold_start_prior": 50.,
+            "score_temperature": 18., "runs": 100, "seed": 42,
+            "budget_yen": 500, "max_points": 5, "min_net_ev": 0.,
+            "max_quote_age_seconds": 300, "candidate_pool_limit": 20,
+            "max_exposure_per_leg": 3, "longshot_odds_min": 10.,
+        })
+        self.assertEqual(output["race_id"], "SYNTH-ENGINE-SMOKE")
+        self.assertEqual(set(output["win"]), {"SYNTH-A", "SYNTH-B"})
+        self.assertAlmostEqual(sum(output["win"].values()), 1.)
+        self.assertFalse(output["performance_validated"])
+        self.assertFalse(output["source_authenticity_verified"])
+
+    def test_future_source_rejected(self):
+        raw = fixture()
+        raw["source"]["available_at"] = "2026-11-19T01:00:00+09:00"
+        with self.assertRaises(ValueError):
+            predict(raw, LOCK)
+
+    def test_after_cutoff_rejected(self):
+        with self.assertRaises(ValueError):
+            predict(fixture(), "2026-11-20T15:01:00+09:00")
+
+if __name__ == "__main__":
+    unittest.main()
