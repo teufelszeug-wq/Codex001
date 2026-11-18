@@ -31,6 +31,10 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
     if timestamp(card['captured_at'])>locked:
         raise ValueError('racecard not available at prediction time')
     active=card['active_runners']
+    # Never manufacture a gate position from list order: source-backed position required.
+    for horse in active:
+        if type(horse.get('barrier_no')) is not int:
+            raise ValueError('official barrier position required; list order is not evidence')
     ids={str(r['horse_no']) for r in active}
     # A set comparison alone silently collapses duplicate official horse numbers.
     if len(ids)!=len(active):
@@ -126,7 +130,7 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         names[horse_id]=horse['horse_name']
         runners.append({'horse_id':horse_id,'horse_no':horse['horse_no'],
                         'frame_no':horse['frame_no'],
-                        'barrier_no':horse.get('barrier_no', idx),
+                        'barrier_no':horse['barrier_no'],
                         'carried_weight':entry.pop('carried_weight'),
                         'history':entry.pop('history'),**entry})
     raw={'schema':'prism.engine.raw/v1','mode':'PRE_AVAILABLE',
