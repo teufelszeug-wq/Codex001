@@ -68,6 +68,24 @@ class PreDayClockGateTests(unittest.TestCase):
             predict.assert_called_once()
             publish.assert_not_called()
 
+    def test_injected_precheck_clock_cannot_backdate_publication(self):
+        # A deterministic precheck timestamp must never become saved_at.
+        start = self.now
+        self.card["off_at"] = (start + timedelta(seconds=2)).isoformat()
+        with patch.object(runner, "validate_engine_input"), patch.object(
+            runner, "assemble_engine_input", return_value=({}, {"H1": "Test Horse"})
+        ), patch.object(runner, "predict", return_value={}) as predict, patch.object(
+            runner, "publish_engine_lock"
+        ) as publish, patch.object(runner, "datetime", wraps=datetime) as clock:
+            clock.now.return_value = start + timedelta(seconds=3)
+            with self.assertRaisesRegex(ValueError, "prediction completed after off time"):
+                runner.run(
+                    self.card, {}, locked_at=(start - timedelta(hours=1)).isoformat(),
+                    **self.kwargs
+                )
+            predict.assert_called_once()
+            publish.assert_not_called()
+
     def test_publication_at_off_time_is_rejected(self):
         self.card["off_at"] = self.now.isoformat()
         self.invoke((self.now - timedelta(hours=1)).isoformat())
