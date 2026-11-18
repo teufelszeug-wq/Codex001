@@ -125,7 +125,8 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
             raise ValueError('duplicate horse identity')
         names[horse_id]=horse['horse_name']
         runners.append({'horse_id':horse_id,'horse_no':horse['horse_no'],
-                        'frame_no':horse['frame_no'],'barrier_no':idx,
+                        'frame_no':horse['frame_no'],
+                        'barrier_no':horse.get('barrier_no', idx),
                         'carried_weight':entry.pop('carried_weight'),
                         'history':entry.pop('history'),**entry})
     raw={'schema':'prism.engine.raw/v1','mode':'PRE_AVAILABLE',
