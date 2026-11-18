@@ -107,7 +107,9 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
         if official_id is not None and str(official_id) != str(horse_id):
             raise ValueError('horse evidence identity conflicts with official racecard')
         entry.pop('source_url');entry.pop('available_at')
-        if horse_id in names:
+        # Normalize identities for uniqueness: 123 and '123' denote one horse.
+        # Keep the original ID type in the engine payload for compatibility.
+        if str(horse_id) in {str(existing_id) for existing_id in names}:
             raise ValueError('duplicate horse identity')
         names[horse_id]=horse['horse_name']
         runners.append({'horse_id':horse_id,'horse_no':horse['horse_no'],
