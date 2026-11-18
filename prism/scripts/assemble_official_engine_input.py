@@ -95,6 +95,12 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
             if isinstance(feature_data, dict):
                 for audit_field in ('occurred_at', 'captured_at', 'observed_at'):
                     feature_data.pop(audit_field, None)
+        # Audit-only history timestamps are checked above, but the engine's
+        # strict history contract accepts only occurred_at/available_at and
+        # numerical race features. Keep original evidence intact (deepcopy).
+        for observation in entry['history']:
+            for audit_field in ('captured_at', 'observed_at', 'race_date', 'off_at'):
+                observation.pop(audit_field, None)
         # Evidence must not overwrite racecard identities or the assigned barrier.
         reserved = {'horse_no', 'frame_no', 'barrier_no', 'race_id', 'mode', 'schema'}
         overlap = reserved.intersection(entry)
@@ -121,7 +127,7 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
     raw={'schema':'prism.engine.raw/v1','mode':'PRE_AVAILABLE',
          'race':{'race_id':card['race_id'],'venue':venue,'surface':surface,
                  'distance_m':distance_m,'direction':direction,
-                 'class_rating':class_rating,'cutoff':card['off_at'],
+                 'class_rating':class_rating,'cutoff':locked_at,
                  'barrier_count':barrier_count},
          'runners':runners,
          'source':{'source_id':official_url,'available_at':card['captured_at'],
