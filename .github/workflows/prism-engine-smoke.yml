@@ -18,4 +18,14 @@ jobs:
       - name: Compile engine and test
         run: python -m compileall -q prism/src/prism_engine prism/tests/test_engine_full_synthetic_smoke.py
       - name: Run direct synthetic engine tests
-        run: python -m unittest discover -s prism/tests -p 'test_engine_full_synthetic_smoke.py' -v
+        run: |
+          set -o pipefail
+          python -m unittest discover -s prism/tests -p 'test_engine_full_synthetic_smoke.py' -v 2>&1 | tee prism-engine-smoke.log
+      - name: Upload reproducible test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-engine-smoke-log
+          path: prism-engine-smoke.log
+          if-no-files-found: warn
+          retention-days: 30
