@@ -1,0 +1,24 @@
+name: PRISM prediction-to-preday regression
+on:
+  push:
+    branches: [prism/independent-forecasts]
+    paths:
+      - 'prism/src/**'
+      - 'prism/tests/**'
+      - '.github/workflows/prism-preday-regression.yml'
+  workflow_dispatch:
+jobs:
+  preday-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile engine and tests
+        run: python -m compileall -q prism/src prism/tests
+      - name: Run prediction-to-preday integration
+        run: python -m unittest discover -s prism/tests -p 'test_predict_to_preday_integration.py' -v
+      - name: Run persistence roundtrip regression
+        run: python -m unittest discover -s prism/tests -p 'test_preday_persistence_roundtrip.py' -v
