@@ -17,6 +17,13 @@ def validate(record):
         raise ValueError('prediction saved at or after cutoff')
     if record['stage']=='POST_RACE' and saved<cutoff:
         raise ValueError('post-race record predates cutoff')
+    # Use the race venue's local calendar date for stage classification.
+    race_day = cutoff.date()
+    saved_day = saved.astimezone(cutoff.tzinfo).date()
+    if record['stage'] == 'PRE_DAY' and saved_day >= race_day:
+        raise ValueError('PRE_DAY must be saved before race day')
+    if record['stage'] == 'DAY_DELTA' and saved_day != race_day:
+        raise ValueError('DAY_DELTA must be saved on race day')
     if 'source_available_at' in record and instant('source_available_at')>saved:
         raise ValueError('source unavailable when saved')
     return dict(record)
