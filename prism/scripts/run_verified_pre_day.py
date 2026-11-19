@@ -17,6 +17,7 @@ from prism.audit.official_input_gate import validate_engine_input
 from prism.audit.engine_publish import publish_engine_lock
 from prism.scripts.assemble_official_engine_input import assemble_engine_input
 from prism_engine import predict
+from prism_engine.pre_day_record import validate as validate_pre_day_record
 
 
 def run(card, evidence, *, venue, surface, distance_m, direction,
@@ -89,6 +90,22 @@ def run(card, evidence, *, venue, surface, distance_m, direction,
     published_at = datetime.now(timezone.utc)
     if published_at >= off_at:
         raise ValueError("prediction completed after off time")
+    # Validate per-runner provenance at the actual publication instant, not
+    # at the earlier model cutoff. DAY_DELTA is not mislabeled PRE_DAY.
+    stage = ("PRE_DAY" if published_at.astimezone(off_at.tzinfo).date()
+             < off_at.date() else "DAY_DELTA")
+    for runner in runners:
+        validate_pre_day_record({
+            "race_id": str(card["race_id"]),
+            "horse_id": str(runner["horse_id"]),
+            "horse_name": runner["horse_name"],
+            "predictor_id": predictor_id,
+            "source": source,
+            "saved_at": published_at.isoformat(),
+            "version": version,
+            "cutoff": off_at.isoformat(),
+            "stage": stage,
+        })
     return publish_engine_lock(
         output_dir, card, lock, predictor_id=predictor_id, version=version,
         source=source, evidence=source_evidence, saved_at=published_at.isoformat(), now=published_at.isoformat())
