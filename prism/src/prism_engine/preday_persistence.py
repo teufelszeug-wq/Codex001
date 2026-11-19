@@ -1,6 +1,7 @@
 """Immutable pre-day prediction records; experimental adapter, not an official-data claim."""
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from .pre_day_record import validate
 
@@ -13,6 +14,17 @@ def persist_prediction(lock, runners, *, predictor_id, source, saved_at, version
         raise ValueError("invalid prediction payload")
     if not isinstance(lock.get("win"), dict) or not lock.get("lock_hash"):
         raise ValueError("missing prediction lock")
+    # A prediction cannot be recorded as saved before its own model lock.
+    # A later persistence operation must retain its real save timestamp.
+    try:
+        saved_dt = datetime.fromisoformat(saved_at)
+        locked_dt = datetime.fromisoformat(lock["locked_at"])
+        if saved_dt.tzinfo is None or locked_dt.tzinfo is None:
+            raise ValueError("naive persistence timestamp")
+        if saved_dt < locked_dt:
+            raise ValueError("saved_at predates prediction lock")
+    except (TypeError, KeyError, AttributeError) as exc:
+        raise ValueError("invalid persistence timestamp") from exc
     if len(runners) != len(lock["win"]):
         raise ValueError("runner coverage mismatch")
     if not all(isinstance(x, dict) for x in runners):
