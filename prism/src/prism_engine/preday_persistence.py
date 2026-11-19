@@ -67,3 +67,16 @@ def persist_prediction(lock, runners, *, predictor_id, source, saved_at, version
         handle.flush()
         os.fsync(handle.fileno())
     return path
+
+
+def persist_prediction_now(lock, runners, *, predictor_id, source, version, output_dir):
+    """Production-facing entrypoint: capture the current UTC clock, never caller-supplied time.
+
+    This does not authenticate source timestamps or establish third-party time attestation.
+    Historical synthetic fixtures should continue using persist_prediction directly.
+    """
+    from datetime import timezone
+    saved_at = datetime.now(timezone.utc).isoformat()
+    return persist_prediction(lock, runners, predictor_id=predictor_id,
+                              source=source, saved_at=saved_at,
+                              version=version, output_dir=output_dir)
