@@ -11,7 +11,7 @@ class TestPreDayPersistence(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.lock = {"race_id": "SYNTH-20261121-01", "cutoff": "2026-11-21T12:00:00+09:00", "lock_hash": "synthetic-hash", "win": {"h1": 0.6, "h2": 0.4}}
+        self.lock = {"race_id": "SYNTH-20261121-01", "cutoff": "2026-11-21T12:00:00+09:00", "lock_hash": "synthetic-hash", "locked_at": "2026-11-20T16:00:00+09:00", "win": {"h1": 0.6, "h2": 0.4}}
         self.runners = [{"horse_id": "h1", "horse_name": "架空馬甲"}, {"horse_id": "h2", "horse_name": "架空馬乙"}]
 
     def save(self, **overrides):
