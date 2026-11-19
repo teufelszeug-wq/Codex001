@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from prism_engine.racecard_receipt import capture_racecard, save_receipt
-from prism_engine.racecard_binding import verify_racecard_binding
+from prism_engine.racecard_binding import verify_racecard_binding, run_verified
 
 
 class BindingTests(unittest.TestCase):
@@ -25,6 +25,10 @@ class BindingTests(unittest.TestCase):
                                 "source": {"source_id": receipt["sha256"]}},
                        "horse_names": {"a": "架空一号", "b": "架空二号"}}
             self.assertEqual(verify_racecard_binding(path, receipt_path, payload)["sha256"], receipt["sha256"])
+            # Even byte-identical unverified data must not create an operational prediction.
+            with self.assertRaisesRegex(ValueError, "official source authenticity unverified"):
+                run_verified(path, receipt_path, payload, root / "predictions")
+            self.assertFalse((root / "predictions").exists())
             payload["horse_names"]["a"] = "改変"
             with self.assertRaisesRegex(ValueError, "horse names mismatch"):
                 verify_racecard_binding(path, receipt_path, payload)
