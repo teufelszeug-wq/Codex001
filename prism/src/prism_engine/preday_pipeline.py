@@ -43,6 +43,11 @@ def run(payload, output_dir, *, now=None):
     if local_now.date() >= cutoff.date():
         raise ValueError("pre-day deadline passed; do not backdate")
     lock = predict(raw, instant.isoformat())
+    # Recheck the real clock after inference: a long prediction may cross
+    # the pre-day boundary even when it started before the deadline.
+    save_check = datetime.now(timezone.utc)
+    if save_check.astimezone(cutoff.tzinfo).date() >= cutoff.date():
+        raise ValueError("pre-day deadline passed during prediction; refuse save")
     mapped = [{"horse_id": i, "horse_name": names[i]} for i in ids]
     # No official/authenticity claim: source ID is preserved verbatim.
     return persist_prediction_now(
