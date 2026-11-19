@@ -43,6 +43,10 @@ def verify_racecard_binding(racecard_path, receipt_path, payload):
 
 def run_verified(racecard_path, receipt_path, payload, output_dir):
     """Verify binding first; existing pipeline retains pre-day cutoff and save guards."""
-    verify_racecard_binding(racecard_path, receipt_path, payload)
+    binding = verify_racecard_binding(racecard_path, receipt_path, payload)
+    # A matching digest proves identity, not that the source is official.
+    # Never emit an operational pre-day record from an unauthenticated receipt.
+    if binding["source_authenticity_verified"] is not True:
+        raise ValueError("official source authenticity unverified; refuse operational save")
     from .preday_pipeline import run
     return run(payload, output_dir)
