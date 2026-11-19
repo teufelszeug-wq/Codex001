@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from prism_engine.preday_persistence import persist_prediction
+from prism_engine.preday_persistence import persist_prediction, persist_prediction_now
 
 class TestPreDayPersistence(unittest.TestCase):
     def setUp(self):
@@ -53,6 +53,33 @@ class TestPreDayPersistence(unittest.TestCase):
     def test_post_cutoff_rejected(self):
         with self.assertRaises(ValueError):
             self.save(saved_at="2026-11-21T13:00:00+09:00")
+
+    def test_system_clock_entrypoint_records_actual_utc_time(self):
+        from datetime import datetime, timedelta, timezone
+        before = datetime.now(timezone.utc)
+        cutoff = before + timedelta(days=3)
+        locked = before - timedelta(minutes=1)
+        lock = {**self.lock, "cutoff": cutoff.isoformat(), "locked_at": locked.isoformat()}
+        path = persist_prediction_now(lock, self.runners, predictor_id="synthetic-ai",
+                                      source="synthetic-fixture", version="clock-v1",
+                                      output_dir=self.tmp.name)
+        after = datetime.now(timezone.utc)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        for record in payload["records"]:
+            actual = datetime.fromisoformat(record["saved_at"])
+            self.assertLessEqual(before, actual)
+            self.assertLessEqual(actual, after)
+
+    def test_system_clock_entrypoint_rejects_past_race(self):
+        from datetime import datetime, timedelta, timezone
+        past = datetime.now(timezone.utc) - timedelta(days=2)
+        lock = {**self.lock, "cutoff": past.isoformat(),
+                "locked_at": (past - timedelta(days=1)).isoformat()}
+        with self.assertRaises(ValueError):
+            persist_prediction_now(lock, self.runners, predictor_id="synthetic-ai",
+                                   source="synthetic-fixture", version="clock-v1",
+                                   output_dir=self.tmp.name)
+        self.assertEqual(list(Path(self.tmp.name).glob("*.json")), [])
 
 if __name__ == "__main__":
     unittest.main()
