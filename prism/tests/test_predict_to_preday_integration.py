@@ -39,6 +39,22 @@ class PredictToPersistence(unittest.TestCase):
                     version="v1", output_dir=directory)
             self.assertEqual(path.read_bytes(), before)
 
+    def test_backdated_save_is_rejected_without_file(self):
+        raw = fixture()
+        lock = predict(raw, LOCK)
+        runners = [
+            {"horse_id": r["horse_id"], "horse_name": "架空馬" + str(i)}
+            for i, r in enumerate(raw["runners"], 1)
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, "saved_at predates prediction lock"):
+                persist_prediction(
+                    lock, runners, predictor_id="synthetic-engine",
+                    source="SYNTHETIC-TEST-ONLY",
+                    saved_at="2026-11-18T23:59:59+09:00",
+                    version="v1", output_dir=directory)
+            self.assertEqual(list(Path(directory).iterdir()), [])
+
     def test_missing_runner_does_not_create_file(self):
         raw = fixture()
         lock = predict(raw, LOCK)
