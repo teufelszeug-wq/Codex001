@@ -37,6 +37,8 @@ def run(payload, output_dir, *, now=None):
     if instant.tzinfo is None or instant.utcoffset() is None:
         raise ValueError("naive execution clock")
     cutoff = datetime.fromisoformat(raw["race"]["cutoff"])
+    if cutoff.tzinfo is None or cutoff.utcoffset() is None:
+        raise ValueError("race cutoff must include a timezone offset")
     local_now = instant.astimezone(cutoff.tzinfo)
     if local_now.date() >= cutoff.date():
         raise ValueError("pre-day deadline passed; do not backdate")
