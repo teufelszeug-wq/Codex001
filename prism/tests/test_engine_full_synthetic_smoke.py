@@ -6,7 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from prism_engine.contracts import digest
-from prism_engine.engine import predict
+from prism_engine.engine import predict, post_market
+from prism_engine.market import settle
 
 LOCK = "2026-11-19T00:00:00+09:00"
 CUTOFF = "2026-11-20T15:00:00+09:00"
@@ -46,6 +47,46 @@ class FullEngineSmoke(unittest.TestCase):
         self.assertAlmostEqual(sum(output["win"].values()), 1.)
         self.assertFalse(output["performance_validated"])
         self.assertFalse(output["source_authenticity_verified"])
+
+    def test_synthetic_post_market_and_fixed_100_yen_settlement(self):
+        """End-to-end synthetic lock -> candidate -> settlement; not official racing data."""
+        lock = predict(fixture(), LOCK, config={
+            "half_life_days": 180., "cold_start_prior": 50.,
+            "score_temperature": 18., "runs": 100, "seed": 42,
+            "budget_yen": 100, "max_points": 1, "min_net_ev": 0.,
+            "max_quote_age_seconds": 300, "candidate_pool_limit": 20,
+            "max_exposure_per_leg": 3, "longshot_odds_min": 10.,
+        })
+        market = {
+            "race_id": lock["race_id"], "prediction_hash": lock["lock_hash"],
+            "observed_at": "2026-11-19T00:01:00+09:00",
+            "opened_at": "2026-11-19T00:02:00+09:00",
+            "place_slots": 1,
+            "quotes": [{"bet_type": "WIN", "legs": ["SYNTH-A"],
+                        "odds_low": 10., "odds_high": 10.}],
+        }
+        post = post_market(lock, market, config={
+            "half_life_days": 180., "cold_start_prior": 50.,
+            "score_temperature": 18., "runs": 100, "seed": 42,
+            "budget_yen": 100, "max_points": 1, "min_net_ev": 0.,
+            "max_quote_age_seconds": 300, "candidate_pool_limit": 20,
+            "max_exposure_per_leg": 3, "longshot_odds_min": 10.,
+        })
+        plan = post["plan"]
+        self.assertEqual(plan["stake_yen"], 100)
+        self.assertEqual(len(plan["tickets"]), 1)
+        result = {
+            "race_id": lock["race_id"], "prediction_hash": lock["lock_hash"],
+            "available_at": "2026-11-20T15:05:00+09:00",
+            "payouts": [{"bet_type": "WIN", "legs": ["SYNTH-A"],
+                         "payout_per_100_yen": 1000}],
+            "refund_keys": [], "complete_bet_types": ["WIN"],
+        }
+        settled = settle(plan, result, lock["race_id"], lock["cutoff"])
+        self.assertEqual(settled["gross_stake_yen"], 100)
+        self.assertEqual(settled["payout_yen"], 1000)
+        self.assertEqual(settled["profit_yen"], 900)
+        self.assertEqual(settled["roi"], 10.0)
 
     def test_future_source_rejected(self):
         raw = fixture()
