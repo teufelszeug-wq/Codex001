@@ -39,6 +39,15 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
             from math import isfinite
             if not isfinite(prediction):
                 raise ValueError("nonfinite prediction for " + hid)
+        # Reject malformed baseline probabilities before any batch write.
+        if isinstance(prediction, dict) and "win_probability" in prediction:
+            from math import isfinite
+            probability = prediction["win_probability"]
+            if (isinstance(probability, bool)
+                    or not isinstance(probability, (int, float))
+                    or not isfinite(probability)
+                    or not 0.0 <= probability <= 1.0):
+                raise ValueError("invalid win_probability for " + hid)
         seen.add(hid)
         records.append(dict(race_id=racecard["race_id"], horse_id=hid,
             horse_name=by_id[hid], forecaster_id=forecaster_id,
