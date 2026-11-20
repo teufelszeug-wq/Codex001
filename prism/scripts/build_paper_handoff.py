@@ -49,9 +49,23 @@ def inspect(history, race_id):
     discussion_data = load(discussion) if discussion.exists() else None
     if not discussion_data:
         errors.append("NO_SAVED_ROUNDTABLE")
-    # Never infer actual independent execution from a simulated transcript.
-    if final and final.get("metadata", {}).get("model_backend") == "local_rules":
-        errors.append("LOCAL_MODEL_NOT_INDEPENDENT_AI")
+    # Local/editorial predictions can be typeset, but are not independent AI runs.
+    execution_mode = "EDITORIAL_LOCAL" if final and final.get("metadata", {}).get("model_backend") == "local_rules" else "UNVERIFIED"
+    if discussion_data:
+        topics = discussion_data.get("topics", discussion_data.get("agenda", []))
+        if not isinstance(topics, list) or len(topics) < 5:
+            errors.append("ROUNDTABLE_FEWER_THAN_FIVE_TOPICS")
+        if discussion_data.get("race_id") != race_id:
+            errors.append("ROUNDTABLE_RACE_ID_MISMATCH")
+        if final:
+            discussion_at = discussion_data.get("completed_at") or discussion_data.get("saved_at")
+            if not discussion_at:
+                errors.append("ROUNDTABLE_COMPLETION_TIME_MISSING")
+            else:
+                end = datetime.fromisoformat(discussion_at.replace("Z", "+00:00"))
+                final_saved = datetime.fromisoformat(final["saved_at"].replace("Z", "+00:00"))
+                if end.tzinfo is None or final_saved.tzinfo is None or end >= final_saved:
+                    errors.append("ROUNDTABLE_NOT_BEFORE_FINAL")
     return {
         "schema": "prism.paper_handoff/v1",
         "race_id": race_id,
@@ -62,6 +76,8 @@ def inspect(history, race_id):
         "roundtable_path": str(discussion) if discussion_data else None,
         "status": "READY_FOR_LAYOUT" if not errors else "BLOCKED",
         "blocking_reasons": errors,
+        "execution_mode": execution_mode,
+        "independent_ai_verified": False,
         "paper_pdf_path": None,
         "paper_generated": False,
     }
