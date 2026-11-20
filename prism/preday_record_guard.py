@@ -27,7 +27,14 @@ def validate_preday_record(record, as_of=None):
         raise ValueError('official source not verified')
     saved = parse_aware(record['saved_at'])
     start = parse_aware(record['scheduled_start_at'])
-    observed = parse_aware(as_of) if isinstance(as_of, str) else (as_of or datetime.now(timezone.utc))
+    if as_of is None:
+        observed = datetime.now(timezone.utc)
+    elif isinstance(as_of, str):
+        observed = parse_aware(as_of)
+    elif isinstance(as_of, datetime):
+        observed = as_of
+    else:
+        raise ValueError('as_of must be an aware datetime or ISO timestamp')
     if observed.tzinfo is None or observed.utcoffset() is None:
         raise ValueError('as_of must have timezone')
     if saved > observed.astimezone(timezone.utc):
