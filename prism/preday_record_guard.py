@@ -1,9 +1,10 @@
 """Fail-closed validation for PRISM preday forecast record envelopes.
 Does not certify official racecard authenticity or predict a race.
 """
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 REQUIRED = ('race_id', 'horse_id', 'horse_name', 'forecaster_id', 'source_id', 'saved_at', 'version', 'scheduled_start_at')
+JST = timezone(timedelta(hours=9))
 
 def parse_aware(value):
     if not isinstance(value, str):
@@ -28,6 +29,8 @@ def validate_preday_record(record):
     start = parse_aware(record['scheduled_start_at'])
     if saved >= start:
         raise ValueError('saved_at must precede scheduled start')
+    if saved.astimezone(JST).date() >= start.astimezone(JST).date():
+        raise ValueError('preday forecast must be saved before race day in JST')
     if record.get('record_type') != 'preday_forecast':
         raise ValueError('not a preday forecast')
     return True
