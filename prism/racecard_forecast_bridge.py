@@ -57,4 +57,13 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
             prediction=forecast.get("prediction")))
     if seen != set(by_id):
         raise ValueError("all runners must be forecast")
+    # A full-field win market must be coherent, not just individually bounded.
+    probability_flags = [isinstance(r['prediction'], dict) and 'win_probability' in r['prediction'] for r in records]
+    if any(probability_flags):
+        if not all(probability_flags):
+            raise ValueError('partial win_probability coverage')
+        from math import fsum, isclose
+        total = fsum(float(r['prediction']['win_probability']) for r in records)
+        if not isclose(total, 1.0, rel_tol=0.0, abs_tol=1e-8):
+            raise ValueError('win_probability sum must equal 1')
     return records
