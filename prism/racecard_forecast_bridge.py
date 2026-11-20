@@ -32,6 +32,13 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
             raise ValueError("duplicate forecast horse")
         if "prediction" not in forecast or forecast["prediction"] is None:
             raise ValueError("missing prediction for " + hid)
+        prediction = forecast["prediction"]
+        if isinstance(prediction, bool) or (isinstance(prediction, (dict, list, str)) and not prediction):
+            raise ValueError("empty or invalid prediction for " + hid)
+        if isinstance(prediction, float):
+            from math import isfinite
+            if not isfinite(prediction):
+                raise ValueError("nonfinite prediction for " + hid)
         seen.add(hid)
         records.append(dict(race_id=racecard["race_id"], horse_id=hid,
             horse_name=by_id[hid], forecaster_id=forecaster_id,
