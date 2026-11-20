@@ -32,9 +32,15 @@ def normalize_candidate(source_path, metadata_path):
             raise ValueError("valid horse_number required")
         if horse_id in ids or number in numbers:
             raise ValueError("duplicate horse_id or horse_number")
+        frame = item.get("frame_no")
+        if frame is not None and (type(frame) is not int or not 1 <= frame <= 8):
+            raise ValueError("frame_no must be an integer from 1 to 8")
         ids.add(horse_id)
         numbers.add(number)
-        normalized.append({"horse_id": horse_id, "horse_name": name, "horse_number": number})
+        runner = {"horse_id": horse_id, "horse_name": name, "horse_number": number}
+        if frame is not None:
+            runner["frame_no"] = frame
+        normalized.append(runner)
     return {"schema": "prism.racecard.normalized/v1", "race_id": card["race_id"],
             "runners": sorted(normalized, key=lambda x: x["horse_number"]),
             "source_id": meta["sha256"], "source_url": meta.get("final_url"),
