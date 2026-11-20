@@ -56,3 +56,17 @@ class NormalizeTest(unittest.TestCase):
         self.meta.write_text(json.dumps(meta))
         with self.assertRaisesRegex(ValueError, "unverified"):
             normalize_candidate(self.source, self.meta)
+
+    def test_frame_preserved(self):
+        self.card["runners"][0]["frame_no"] = 2
+        self.write()
+        record = normalize_candidate(self.source, self.meta)
+        self.assertEqual(record["runners"][0]["frame_no"], 2)
+
+    def test_invalid_frame_rejected(self):
+        for invalid in (0, 9, True, "2"):
+            with self.subTest(invalid=invalid):
+                self.card["runners"][0]["frame_no"] = invalid
+                self.write()
+                with self.assertRaisesRegex(ValueError, "frame_no"):
+                    normalize_candidate(self.source, self.meta)
