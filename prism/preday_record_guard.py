@@ -17,7 +17,7 @@ def parse_aware(value):
         raise ValueError('timezone required')
     return dt.astimezone(timezone.utc)
 
-def validate_preday_record(record):
+def validate_preday_record(record, as_of=None):
     if not isinstance(record, dict):
         raise ValueError('record must be object')
     for key in REQUIRED:
@@ -27,6 +27,11 @@ def validate_preday_record(record):
         raise ValueError('official source not verified')
     saved = parse_aware(record['saved_at'])
     start = parse_aware(record['scheduled_start_at'])
+    observed = parse_aware(as_of) if isinstance(as_of, str) else (as_of or datetime.now(timezone.utc))
+    if observed.tzinfo is None or observed.utcoffset() is None:
+        raise ValueError('as_of must have timezone')
+    if saved > observed.astimezone(timezone.utc):
+        raise ValueError('saved_at cannot be in the future')
     if saved >= start:
         raise ValueError('saved_at must precede scheduled start')
     if saved.astimezone(JST).date() >= start.astimezone(JST).date():
