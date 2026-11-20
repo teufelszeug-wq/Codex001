@@ -30,6 +30,8 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
         hid = forecast["horse_id"]
         if hid in seen:
             raise ValueError("duplicate forecast horse")
+        if "prediction" not in forecast or forecast["prediction"] is None:
+            raise ValueError("missing prediction for " + hid)
         seen.add(hid)
         records.append(dict(race_id=racecard["race_id"], horse_id=hid,
             horse_name=by_id[hid], forecaster_id=forecaster_id,
