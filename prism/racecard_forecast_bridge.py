@@ -10,7 +10,7 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
     for key in ("race_id", "source_id", "scheduled_start_at"):
         if not isinstance(racecard.get(key), str) or not racecard[key].strip():
             raise ValueError("missing " + key)
-    horses = racecard.get("horses")
+    # The persistence contract requires a real source retrieval timestamp.\n    # Fail before forecast construction rather than producing unsavable records.\n    if not isinstance(racecard.get("source_retrieved_at"), str) or not racecard["source_retrieved_at"].strip():\n        raise ValueError("missing source_retrieved_at")\n    horses = racecard.get("horses")
     if not isinstance(horses, list) or not horses or not isinstance(forecasts, list) or not forecasts:
         raise ValueError("nonempty horses and forecasts required")
     if not all(isinstance(x, str) and x.strip() for x in (forecaster_id, version)):
