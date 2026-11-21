@@ -38,6 +38,12 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
     start_time = parse_aware(racecard["scheduled_start_at"], "scheduled_start_at")
     if saved_time >= start_time:
         raise ValueError("preday forecast must be saved before scheduled start")
+    # A preday edition must be committed on a calendar day preceding race day
+    # in Japan, not merely minutes before the scheduled start.
+    from datetime import timedelta
+    jst = timezone(timedelta(hours=9))
+    if saved_time.astimezone(jst).date() >= start_time.astimezone(jst).date():
+        raise ValueError("preday forecast must be saved before race day in JST")
     if saved_time > datetime.now(timezone.utc):
         raise ValueError("saved_at cannot be in the future")
     if "source_retrieved_at" in racecard:
