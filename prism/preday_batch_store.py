@@ -44,7 +44,9 @@ def persist_preday_batch(records, output_dir):
     for record in records:
         if "source_retrieved_at" in record and aware(record["source_retrieved_at"], "source_retrieved_at") > saved:
             raise ValueError("source retrieved after saved_at")
-        if "source_retrieved_at" in first and record.get("source_retrieved_at") != first["source_retrieved_at"]:
+        # Presence must agree as well as value: a missing timestamp in the
+        # first record previously allowed later records to supply one.
+        if record.get("source_retrieved_at") != first.get("source_retrieved_at"):
             raise ValueError("mixed source retrieval times")
     probabilities = [r.get("prediction", {}).get("win_probability")
                      if isinstance(r.get("prediction"), dict) else None for r in records]
