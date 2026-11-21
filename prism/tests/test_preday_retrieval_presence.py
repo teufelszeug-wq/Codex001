@@ -23,6 +23,7 @@ class RetrievalPresenceTests(unittest.TestCase):
                       source_retrieved_at=(now - timedelta(minutes=5)).isoformat(),
                       prediction={"win_probability": 0.4})
         for order in ([first, second], [second, first]):
-            with pytest.raises(ValueError, match="mixed source retrieval times"):
-                persist_preday_batch(order, tmp_path)
-            assert not list(tmp_path.glob("*.json"))
+            with tempfile.TemporaryDirectory() as directory:
+                with self.assertRaisesRegex(ValueError, "mixed source retrieval times"):
+                    persist_preday_batch(order, directory)
+                self.assertFalse(list(Path(directory).glob("*.json")))
