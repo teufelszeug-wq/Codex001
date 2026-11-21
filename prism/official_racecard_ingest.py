@@ -30,6 +30,17 @@ def stage_official_racecard(raw_bytes, *, source_url, retrieved_at, expected_rac
         raise ValueError("source must be UTF-8 JSON") from exc
     if not isinstance(payload, dict) or payload.get("race_id") != expected_race_id:
         raise ValueError("race identity mismatch")
+    scheduled = payload.get("scheduled_start_at")
+    if not isinstance(scheduled, str):
+        raise ValueError("scheduled start timestamp required")
+    try:
+        start = datetime.fromisoformat(scheduled.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("invalid scheduled start timestamp") from exc
+    if start.tzinfo is None or start.utcoffset() is None:
+        raise ValueError("scheduled start timezone required")
+    if timestamp.astimezone(timezone.utc) >= start.astimezone(timezone.utc):
+        raise ValueError("racecard retrieved at or after scheduled start")
     horses = payload.get("horses")
     if not isinstance(horses, list) or not horses:
         raise ValueError("nonempty runner list required")
