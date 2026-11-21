@@ -47,5 +47,17 @@ class RacecardStageTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             stage(sample(), retrieved_at="2026-11-21T00:00:00")
 
+    def test_missing_start_rejected(self):
+        with self.assertRaises(ValueError):
+            stage(sample(scheduled_start_at=None))
+
+    def test_naive_start_rejected(self):
+        with self.assertRaises(ValueError):
+            stage(sample(scheduled_start_at="2026-11-22T10:00:00"))
+
+    def test_post_start_retrieval_rejected(self):
+        with self.assertRaises(ValueError):
+            stage(sample(scheduled_start_at="2020-01-01T10:00:00+09:00"))
+
 if __name__ == "__main__":
     unittest.main()
