@@ -60,14 +60,12 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
         if "prediction" not in forecast or forecast["prediction"] is None:
             raise ValueError("missing prediction for " + hid)
         prediction = forecast["prediction"]
-        if isinstance(prediction, bool) or (isinstance(prediction, (dict, list, str)) and not prediction):
+        if not isinstance(prediction, dict) or not prediction:
             raise ValueError("empty or invalid prediction for " + hid)
-        if isinstance(prediction, float):
-            from math import isfinite
-            if not isfinite(prediction):
-                raise ValueError("nonfinite prediction for " + hid)
+        if "win_probability" not in prediction:
+            raise ValueError("missing win_probability for " + hid)
         # Reject malformed baseline probabilities before any batch write.
-        if isinstance(prediction, dict) and "win_probability" in prediction:
+        if "win_probability" in prediction:
             from math import isfinite
             probability = prediction["win_probability"]
             if (isinstance(probability, bool)
@@ -81,7 +79,9 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
             source_id=racecard["source_id"], saved_at=stamp, version=version,
             scheduled_start_at=racecard["scheduled_start_at"],
             source_authenticity_verified=True, record_type="preday_forecast",
-            prediction=forecast.get("prediction")))
+            prediction=forecast.get("prediction"),
+            **({"source_retrieved_at": racecard["source_retrieved_at"]}
+               if "source_retrieved_at" in racecard else {})))
     if seen != set(by_id):
         raise ValueError("all runners must be forecast")
     # A full-field win market must be coherent, not just individually bounded.
