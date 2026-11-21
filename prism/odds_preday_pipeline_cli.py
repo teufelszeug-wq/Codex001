@@ -30,13 +30,18 @@ def run(racecard_path, output_dir, *, cutoff_at, version):
         racecard, forecasts, forecaster_id=BASELINE_ID, version=version
     )
     # Do not silently re-label post-cutoff execution as an earlier snapshot.
-    from datetime import datetime, timezone
+    from datetime import datetime, timezone, timedelta
     cutoff = datetime.fromisoformat(cutoff_at.replace("Z", "+00:00"))
     now = datetime.now(timezone.utc)
     if cutoff.tzinfo is None or cutoff.utcoffset() is None:
         raise ValueError("cutoff_at must include timezone")
-    if now < cutoff.astimezone(timezone.utc):
+    age = now - cutoff.astimezone(timezone.utc)
+    if age.total_seconds() < 0:
         raise ValueError("future cutoff_at")
+    # A historical as-of calculation is research, not a newly saved preday snapshot.
+    # Keep this live CLI close to the actual calculation time.
+    if age > timedelta(hours=1):
+        raise ValueError("stale cutoff_at: historical replay must not be saved as live preday")
     path = persist_preday_batch(records, output_dir)
     return {"path": str(path), "race_id": racecard["race_id"],
             "forecaster_id": BASELINE_ID, "runner_count": len(records),
