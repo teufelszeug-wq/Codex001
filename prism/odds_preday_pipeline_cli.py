@@ -6,6 +6,27 @@ authenticate the racecard and odds; a boolean alone is not proof of authenticity
 import argparse
 import json
 from pathlib import Path
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+
+def validate_preday_calendar(scheduled_start_at, cutoff_at, executed_at):
+    """Reject same-day or later snapshots for Japanese racing (JRA/NAR)."""
+    jst = ZoneInfo("Asia/Tokyo")
+    def parse(value, field):
+        try:
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise ValueError(f"invalid {field}") from exc
+        if dt.tzinfo is None or dt.utcoffset() is None:
+            raise ValueError(f"{field} must include timezone")
+        return dt.astimezone(jst)
+    race_day = parse(scheduled_start_at, "scheduled_start_at").date()
+    if parse(cutoff_at, "cutoff_at").date() >= race_day:
+        raise ValueError("preday cutoff must precede Japanese race date")
+    if parse(executed_at, "executed_at").date() >= race_day:
+        raise ValueError("preday execution must precede Japanese race date")
+
 
 try:
     from .odds_baseline import odds_baseline
@@ -45,6 +66,7 @@ def run(racecard_path, output_dir, *, cutoff_at, version):
     # Keep this live CLI close to the actual calculation time.
     if age > timedelta(hours=1):
         raise ValueError("stale cutoff_at: historical replay must not be saved as live preday")
+    validate_preday_calendar(racecard["scheduled_start_at"], cutoff_at, now.isoformat())
     path = persist_preday_batch(records, output_dir)
     return {"path": str(path), "race_id": racecard["race_id"],
             "forecaster_id": BASELINE_ID, "runner_count": len(records),
