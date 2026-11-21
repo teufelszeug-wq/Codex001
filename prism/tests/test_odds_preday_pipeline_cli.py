@@ -52,3 +52,20 @@ def test_future_cutoff_rejected_without_write(tmp_path):
             cutoff_at=(datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
             version="synthetic-v1")
     assert not list((tmp_path / "out").glob("*.json")) if (tmp_path / "out").exists() else True
+
+
+def test_stale_cutoff_rejected_without_write(tmp_path):
+    card = _card()
+    input_path = tmp_path / "racecard.json"
+    input_path.write_text(json.dumps(card, ensure_ascii=False), encoding="utf-8")
+    # The synthetic card was retrieved 1 hour ago; an as-of cutoff 2 hours
+    # ago is invalid even before the live freshness gate is reached.
+    # Move the observation and retrieval further into the past to isolate it.
+    card["odds_observed_at"] = (datetime.now(timezone.utc) - timedelta(hours=4)).isoformat()
+    card["source_retrieved_at"] = (datetime.now(timezone.utc) - timedelta(hours=3)).isoformat()
+    input_path.write_text(json.dumps(card, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="stale cutoff_at"):
+        run(input_path, tmp_path / "out",
+            cutoff_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
+            version="synthetic-stale-v1")
+    assert not (tmp_path / "out").exists()
