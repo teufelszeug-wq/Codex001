@@ -1,0 +1,82 @@
+{
+  "schema": "prism.legacy.asset_inventory/v1",
+  "checked_on": "2026-11-12",
+  "policy": {
+    "originals_immutable": true,
+    "external_attestation_required": false,
+    "promote_to_live_forecasts": false
+  },
+  "assets": [
+    {
+      "title": "PRISM_RIO_legacy_preservation_register_20261108.md",
+      "library_file_id": "file_00000000a3a48206a6286418ccdd410b",
+      "category": "legacy_preservation_policy",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "20261108",
+      "source": "Library",
+      "use_by": [
+        "recovery",
+        "operations"
+      ],
+      "evidence_class": "DESIGN_OR_POLICY"
+    },
+    {
+      "title": "RIO_MASTER_20260921.md",
+      "library_file_id": "file_00000000d35081f58a70f06f0e7d5e17",
+      "category": "legacy_design",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "3.0-reconstruction.2",
+      "source": "Library",
+      "use_by": [
+        "engine",
+        "dialogue",
+        "paper"
+      ],
+      "evidence_class": "DESIGN_OR_POLICY"
+    },
+    {
+      "title": "PRISM_JANUARY_RESEARCH.html",
+      "library_file_id": "file_00000000527c81f58b94f19ab2aeee60",
+      "category": "historical_research",
+      "status": "LIBRARY_SNIPPETS_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": null,
+      "source": "Library",
+      "use_by": [
+        "engine"
+      ],
+      "evidence_class": "HISTORICAL_RECONSTRUCTION_NOT_LIVE"
+    },
+    {
+      "title": "RIO_AI_Keiba_Shimbun_2026-09-12_v2.pdf",
+      "library_file_id": "file_0000000020048206a26758b2b5864301",
+      "category": "newspaper_design",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "v2",
+      "source": "Library",
+      "use_by": [
+        "paper"
+      ],
+      "evidence_class": "DESIGN_OR_POLICY"
+    }
+  ],
+  "summary": {
+    "library_assets_identified": 4,
+    "originals_migrated": 0,
+    "live_preoff_forecasts_certified": 0,
+    "asset_duplicates_in_this_inventory": 0
+  },
+  "limitations": [
+    "Library search excerpts confirm discoverability, not full byte-for-byte archival recovery",
+    "No horse or jockey official ID resolution performed",
+    "No original asset overwritten",
+    "No inferred saved_at timestamps"
+  ]
+}

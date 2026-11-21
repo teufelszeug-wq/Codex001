@@ -1,0 +1,38 @@
+{
+  "schema": "prism.legacy.recovery_corrections/v1",
+  "date": "2026-11-11",
+  "supersedes": "prism/data/recovery/notion_snapshot_manifest_20261111.json",
+  "reason": "GitHub primary draft artifacts have canonical race IDs and author spellings; original manifest retained immutable",
+  "corrections": [
+    {
+      "source_race_id": "20261110-NAR-KAWASAKI-11",
+      "canonical_race_id": "NAR-20261110-21-11",
+      "forecaster_id": "EDITORIAL_SINGLE_MODEL",
+      "original_sha": "7701649b6fe172a14a17a81fcef2255b8233d417",
+      "original_path": "prism/runs/2026-11-10/kawasaki-11-editorial-pre-v1-2003.md",
+      "source_class": "GITHUB_DRAFT_ORIGINAL",
+      "saved_at": null
+    },
+    {
+      "source_race_id": "20261111-NAR-KAWASAKI-11",
+      "canonical_race_id": "NAR-20261111-KAWASAKI-11",
+      "forecaster_id": "editorial_single_model",
+      "original_sha": "961dc1463f0f4f783aa10e2f317bf9a6bc595b97",
+      "original_path": "prism/runs/2026-11-11/kawasaki-11-rozita-editorial-pre-v1-0205.md",
+      "source_class": "GITHUB_DRAFT_ORIGINAL",
+      "saved_at": null
+    }
+  ],
+  "summary": {
+    "github_original_drafts_read": 2,
+    "canonical_ids_reconciled": 2,
+    "blob_shas_recorded": 2,
+    "actual_saved_at_verified": 0,
+    "official_ids_verified": 0,
+    "originals_overwritten": 0
+  },
+  "policy": {
+    "never_promote_drafts_to_formal_pre": true,
+    "require_actual_commit_timestamp_verification": true
+  }
+}

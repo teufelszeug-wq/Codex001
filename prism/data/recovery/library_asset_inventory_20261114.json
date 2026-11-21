@@ -1,0 +1,65 @@
+{
+  "schema": "prism.legacy.asset_inventory/v1",
+  "checked_on": "2026-11-14",
+  "policy": {
+    "originals_immutable": true,
+    "external_attestation_required": false,
+    "promote_to_live_forecasts": false
+  },
+  "assets": [
+    {
+      "title": "RIO_RECONSTRUCTION.md",
+      "library_file_id": "file_000000001c4081fdb444274e7fbe4c0b",
+      "category": "legacy_code_reconstruction_audit",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "3.0-reconstruction.1 (report claim)",
+      "source": "Library",
+      "use_by": [
+        "engine",
+        "recovery",
+        "operations"
+      ],
+      "evidence_class": "DESIGN_OR_POLICY",
+      "details": "32,178-byte reconstruction report identifies legacy Python/SQL core and an original ZIP ID; ZIP itself not retrieved in this run"
+    },
+    {
+      "title": "V04_STATUS.md",
+      "library_file_id": "file_00000000387c8206a6295233ced8c60a",
+      "category": "legacy_db_migration_audit",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "v0.4",
+      "source": "Library",
+      "use_by": [
+        "recovery",
+        "engine",
+        "dialogue"
+      ],
+      "evidence_class": "HISTORICAL_RECONSTRUCTION_NOT_LIVE",
+      "details": "Claims 4 races and 6 runners migrated to a local SQLite from prism_integration_20261108.zip; underlying SQLite not inspected this run"
+    }
+  ],
+  "unverified_source_leads": [
+    {
+      "name": "rio_system_3_adaptive.zip",
+      "reported_library_file_id": "libfile_27a95bc988a88191aa49742caf9690fe",
+      "status": "REPORTED_IN_RECONSTRUCTION_NOT_RETRIEVED",
+      "source_report": "RIO_RECONSTRUCTION.md"
+    }
+  ],
+  "summary": {
+    "new_assets_identified": 2,
+    "originals_migrated": 0,
+    "live_preoff_forecasts_certified": 0,
+    "duplicates_against_20261112_and_20261113_inventories": 0
+  },
+  "limitations": [
+    "No original ZIP bytes or SHA-256 independently verified",
+    "No SQLite rows copied or counted as newly migrated",
+    "No saved_at inferred",
+    "No official horse or jockey IDs resolved"
+  ]
+}

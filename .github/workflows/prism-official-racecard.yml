@@ -1,0 +1,29 @@
+name: PRISM official JRA racecard acquisition
+on:
+  workflow_dispatch:
+    inputs:
+      official_url:
+        description: 'JRA JRADB official HTTPS racecard URL'
+        required: true
+        type: string
+jobs:
+  fetch_racecard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fetch and parse official JRA racecard
+        env:
+          PRISM_OFFICIAL_URL: ${{ inputs.official_url }}
+        run: python prism/scripts/fetch_jra_racecard.py --url "$PRISM_OFFICIAL_URL" --out official_racecard.json
+      - name: Preserve retrieved source metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-official-racecard
+          path: official_racecard.json
+          retention-days: 30

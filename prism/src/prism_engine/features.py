@@ -7,7 +7,7 @@ def weighted(rows,weight):
     return sum(r['performance_score']*weight(r) for r in rows)/mass if mass else None
 
 def features(raw,config):
-    race=raw['race'];cutoff=timestamp(race['cutoff']);runners=sorted(raw['runners'],key=lambda r:r['horse_no'])
+    race=raw['race'];cutoff=timestamp(race['cutoff']);runners=sorted(raw['runners'],key=lambda r:(r['horse_no'] is None,r['horse_no'] or 0,r['horse_id']))
     surface=race['surface'];special=surface in {'BANEI','JUMP'}
     pace_labels=('VERY_SLOW','SLOW','MIDDLE','HIGH','VERY_HIGH')
     style_rows=[r['style'] for r in runners if r.get('style')]
@@ -43,7 +43,7 @@ def features(raw,config):
             front=(style['escape']+.65*style['front']-.55*style['closer'])/sm
             contributions['pace']=fast*(.04*(style['resistance']-50)-3*front)+.01*(style['early_speed']-50)
         bias=raw.get('bias')
-        if bias is None:contributions['bias_tbi_ssi']=None
+        if bias is None or race.get('declaration_stage')=='ENTRIES_CONFIRMED' or r['barrier_no'] is None:contributions['bias_tbi_ssi']=None
         else:
             sign=1 if bias['positive_lane']=='OUTER' else -1
             gate=2*(r['barrier_no']-1)/(barrier_count-1)-1

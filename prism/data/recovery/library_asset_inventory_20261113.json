@@ -1,0 +1,72 @@
+{
+  "schema": "prism.legacy.asset_inventory/v1",
+  "checked_on": "2026-11-13",
+  "policy": {
+    "originals_immutable": true,
+    "external_attestation_required": false,
+    "promote_to_live_forecasts": false
+  },
+  "assets": [
+    {
+      "title": "PRISM_Practice_Newspaper_2026-09-28.pdf",
+      "library_file_id": "file_000000001240820980e19e88fdd66cda",
+      "category": "newspaper_practice",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "2026-09-28",
+      "source": "Library",
+      "use_by": [
+        "paper",
+        "dialogue"
+      ],
+      "evidence_class": "PRACTICE_NOT_LIVE",
+      "details": "7-page practice issue; ばんえい秋桜賞; full horse column, editorial predictions, 5–7 page discussion; final odds/weights/moisture not reflected"
+    },
+    {
+      "title": "RIO_AI_競馬新聞_夕刊_2026-09-27.pdf",
+      "library_file_id": "file_00000000be488209985443640c958e23",
+      "category": "newspaper_retrospective",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": "2026-09-27",
+      "source": "Library",
+      "use_by": [
+        "paper",
+        "dialogue",
+        "engine"
+      ],
+      "evidence_class": "POST_RACE_REVIEW",
+      "details": "Includes post-race reviews and hypotheses; do not treat review as pre-off forecast"
+    },
+    {
+      "title": "RIO SYSTEM 3.0／RIO AI競馬新聞「土曜朝刊」深化研究レポート",
+      "library_file_id": "file_00000000f9d0820cb931ef428b9a5ac1",
+      "category": "legacy_research",
+      "status": "LIBRARY_TEXT_CONFIRMED_NOT_IMPORTED",
+      "race_id": null,
+      "saved_at": null,
+      "version": null,
+      "source": "Library",
+      "use_by": [
+        "engine",
+        "paper"
+      ],
+      "evidence_class": "DESIGN_OR_POLICY",
+      "details": "Five-layer research architecture; proposals not implemented facts"
+    }
+  ],
+  "summary": {
+    "new_assets_identified": 3,
+    "originals_migrated": 0,
+    "live_preoff_forecasts_certified": 0,
+    "duplicates_against_20261112_inventory": 0
+  },
+  "limitations": [
+    "No PDF bytes or full text copied to GitHub",
+    "Library search excerpts do not establish completeness",
+    "No official horse/jockey ID resolution",
+    "No saved_at inferred"
+  ]
+}
