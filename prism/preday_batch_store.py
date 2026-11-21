@@ -6,6 +6,8 @@ This function does not authenticate a racecard or generate forecasts.
 import json
 import os
 import re
+from datetime import datetime, timezone, timedelta
+from math import fsum, isclose, isfinite
 from pathlib import Path
 
 _REQUIRED = ("race_id", "horse_id", "horse_name", "forecaster_id", "source_id", "saved_at", "version")
@@ -18,10 +20,40 @@ def persist_preday_batch(records, output_dir):
             raise ValueError("missing normalized forecast identity")
         if record.get("record_type") != "preday_forecast" or record.get("source_authenticity_verified") is not True:
             raise ValueError("only authenticated preday forecasts may be persisted")
+    def aware(value, field):
+        try:
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except (AttributeError, ValueError) as exc:
+            raise ValueError("invalid " + field) from exc
+        if dt.tzinfo is None or dt.utcoffset() is None:
+            raise ValueError(field + " requires timezone")
+        return dt.astimezone(timezone.utc)
+
     first = records[0]
+    saved = aware(first["saved_at"], "saved_at")
+    if saved > datetime.now(timezone.utc):
+        raise ValueError("future saved_at")
+    start = aware(first.get("scheduled_start_at"), "scheduled_start_at")
+    jst = timezone(timedelta(hours=9))
+    if saved >= start or saved.astimezone(jst).date() >= start.astimezone(jst).date():
+        raise ValueError("not a preday forecast in JST")
+
     for record in records:
-        if any(record[k] != first[k] for k in ("race_id", "forecaster_id", "version", "saved_at")):
+        if any(record[k] != first[k] for k in ("race_id", "forecaster_id", "version", "saved_at", "source_id", "scheduled_start_at")):
             raise ValueError("mixed forecast batch")
+    for record in records:
+        if "source_retrieved_at" in record and aware(record["source_retrieved_at"], "source_retrieved_at") > saved:
+            raise ValueError("source retrieved after saved_at")
+        if "source_retrieved_at" in first and record.get("source_retrieved_at") != first["source_retrieved_at"]:
+            raise ValueError("mixed source retrieval times")
+    probabilities = [r.get("prediction", {}).get("win_probability")
+                     if isinstance(r.get("prediction"), dict) else None for r in records]
+    if any(p is not None for p in probabilities):
+        if any(isinstance(p, bool) or not isinstance(p, (int, float))
+               or not isfinite(p) or not 0 <= p <= 1 for p in probabilities):
+            raise ValueError("invalid or partial win_probability")
+        if not isclose(fsum(probabilities), 1.0, rel_tol=0, abs_tol=1e-8):
+            raise ValueError("win_probability sum must equal 1")
     ids = [r["horse_id"] for r in records]
     if len(set(ids)) != len(ids):
         raise ValueError("duplicate horse_id")
