@@ -8,7 +8,7 @@ from prism.preday_batch_store import persist_preday_batch
 def record(hid="h1"):
     return dict(race_id="20261122-TOK-11", horse_id=hid, horse_name="試験馬",
         forecaster_id="editorial", source_id="fixture", saved_at="2026-11-21T10:00:00+09:00",
-        version="preday-v1", record_type="preday_forecast",
+        version="preday-v1", scheduled_start_at="2026-11-22T15:00:00+09:00", record_type="preday_forecast",
         source_authenticity_verified=True, prediction={"win_probability": 1.0})
 
 class BatchStoreTests(unittest.TestCase):
@@ -19,6 +19,35 @@ class BatchStoreTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 persist_preday_batch([record()], d)
             self.assertEqual(len(list(Path(d).glob("*.json"))), 1)
+
+    def test_reject_race_day_record(self):
+        with tempfile.TemporaryDirectory() as d:
+            r = record()
+            r["saved_at"] = "2026-11-22T08:00:00+09:00"
+            with self.assertRaises(ValueError):
+                persist_preday_batch([r], d)
+
+    def test_reject_incoherent_probabilities(self):
+        with tempfile.TemporaryDirectory() as d:
+            a, b = record("h1"), record("h2")
+            a["prediction"]["win_probability"] = 0.6
+            b["prediction"]["win_probability"] = 0.6
+            with self.assertRaises(ValueError):
+                persist_preday_batch([a, b], d)
+
+    def test_reject_mixed_source(self):
+        with tempfile.TemporaryDirectory() as d:
+            a, b = record("h1"), record("h2")
+            b["source_id"] = "different"
+            with self.assertRaises(ValueError):
+                persist_preday_batch([a, b], d)
+
+    def test_reject_late_source_retrieval(self):
+        with tempfile.TemporaryDirectory() as d:
+            r = record()
+            r["source_retrieved_at"] = "2026-11-21T11:00:00+09:00"
+            with self.assertRaises(ValueError):
+                persist_preday_batch([r], d)
 
     def test_reject_unverified(self):
         with tempfile.TemporaryDirectory() as d:
