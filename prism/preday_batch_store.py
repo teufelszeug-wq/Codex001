@@ -48,12 +48,13 @@ def persist_preday_batch(records, output_dir):
             raise ValueError("mixed source retrieval times")
     probabilities = [r.get("prediction", {}).get("win_probability")
                      if isinstance(r.get("prediction"), dict) else None for r in records]
-    if any(p is not None for p in probabilities):
-        if any(isinstance(p, bool) or not isinstance(p, (int, float))
-               or not isfinite(p) or not 0 <= p <= 1 for p in probabilities):
-            raise ValueError("invalid or partial win_probability")
-        if not isclose(fsum(probabilities), 1.0, rel_tol=0, abs_tol=1e-8):
-            raise ValueError("win_probability sum must equal 1")
+    # A formal preday forecast must contain a complete, normalized probability vector.
+    # Previously an all-missing vector bypassed validation and was persisted.
+    if any(isinstance(p, bool) or not isinstance(p, (int, float))
+           or not isfinite(p) or not 0 <= p <= 1 for p in probabilities):
+        raise ValueError("missing or invalid win_probability")
+    if not isclose(fsum(probabilities), 1.0, rel_tol=0, abs_tol=1e-8):
+        raise ValueError("win_probability sum must equal 1")
     ids = [r["horse_id"] for r in records]
     if len(set(ids)) != len(ids):
         raise ValueError("duplicate horse_id")
