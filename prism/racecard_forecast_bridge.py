@@ -22,7 +22,28 @@ def build_preday_records(racecard, forecasts, *, forecaster_id, version, saved_a
         if horse["horse_id"] in by_id:
             raise ValueError("duplicate racecard horse")
         by_id[horse["horse_id"]] = horse["horse_name"]
-    stamp = saved_at or datetime.now(timezone.utc).isoformat()
+    def parse_aware(value, label):
+        if not isinstance(value, str):
+            raise ValueError(label + " must be an ISO timestamp")
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("invalid " + label) from exc
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            raise ValueError(label + " must include timezone")
+        return parsed.astimezone(timezone.utc)
+
+    stamp = saved_at if saved_at is not None else datetime.now(timezone.utc).isoformat()
+    saved_time = parse_aware(stamp, "saved_at")
+    start_time = parse_aware(racecard["scheduled_start_at"], "scheduled_start_at")
+    if saved_time >= start_time:
+        raise ValueError("preday forecast must be saved before scheduled start")
+    if saved_time > datetime.now(timezone.utc):
+        raise ValueError("saved_at cannot be in the future")
+    if "source_retrieved_at" in racecard:
+        retrieved_time = parse_aware(racecard["source_retrieved_at"], "source_retrieved_at")
+        if retrieved_time > saved_time:
+            raise ValueError("source retrieved after forecast saved_at")
     seen, records = set(), []
     for forecast in forecasts:
         if not isinstance(forecast, dict) or forecast.get("horse_id") not in by_id:
