@@ -41,8 +41,11 @@ def persist_preday_batch(records, output_dir):
     for record in records:
         if any(record[k] != first[k] for k in ("race_id", "forecaster_id", "version", "saved_at", "source_id", "scheduled_start_at")):
             raise ValueError("mixed forecast batch")
+    # Provenance time is mandatory for a formal live preday edition.
+    # Missing timestamps previously passed whenever all records omitted them.
     for record in records:
-        if "source_retrieved_at" in record and aware(record["source_retrieved_at"], "source_retrieved_at") > saved:
+        retrieved = aware(record.get("source_retrieved_at"), "source_retrieved_at")
+        if retrieved > saved:
             raise ValueError("source retrieved after saved_at")
         # Presence must agree as well as value: a missing timestamp in the
         # first record previously allowed later records to supply one.
