@@ -84,3 +84,25 @@ def test_post_start_live_run_rejected_even_with_valid_past_cutoff(tmp_path):
             cutoff_at=(now - timedelta(minutes=30)).isoformat(),
             version="synthetic-post-start-v1")
     assert not (tmp_path / "out").exists()
+
+
+def test_jst_preday_calendar_rejects_same_day_cutoff_and_execution():
+    from prism.odds_preday_pipeline_cli import validate_preday_calendar
+    race = "2026-11-22T15:00:00+09:00"
+    with pytest.raises(ValueError, match="preday cutoff"):
+        validate_preday_calendar(race, "2026-11-22T00:01:00+09:00",
+                                 "2026-11-21T23:00:00+09:00")
+    with pytest.raises(ValueError, match="preday execution"):
+        validate_preday_calendar(race, "2026-11-21T23:00:00+09:00",
+                                 "2026-11-22T00:01:00+09:00")
+
+
+def test_jst_preday_calendar_accepts_previous_day_and_utc_boundary():
+    from prism.odds_preday_pipeline_cli import validate_preday_calendar
+    validate_preday_calendar("2026-11-22T15:00:00+09:00",
+                             "2026-11-21T14:00:00Z",
+                             "2026-11-21T14:30:00Z")
+    with pytest.raises(ValueError, match="preday execution"):
+        validate_preday_calendar("2026-11-22T15:00:00+09:00",
+                                 "2026-11-21T14:00:00Z",
+                                 "2026-11-21T15:01:00Z")
