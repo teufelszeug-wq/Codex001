@@ -35,6 +35,15 @@ class BridgeStoreContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"win_probability"):
             build([{"horse_id":"h1","prediction":{"rank":1}},
                    {"horse_id":"h2","prediction":{"win_probability":1.0}}])
+    def test_missing_retrieval_timestamp_rejected_before_build(self):
+        c = card()
+        del c["source_retrieved_at"]
+        predictions = [{"horse_id":"h1","prediction":{"win_probability":0.5}},
+                       {"horse_id":"h2","prediction":{"win_probability":0.5}}]
+        with self.assertRaisesRegex(ValueError, "source_retrieved_at"):
+            build_preday_records(c, predictions, forecaster_id="editorial",
+                                version="preday-v1", saved_at=STAMP)
+
     def test_source_after_saved_rejected(self):
         c=card()
         c["source_retrieved_at"]="2026-11-21T11:00:00+09:00"
