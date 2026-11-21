@@ -69,3 +69,18 @@ def test_stale_cutoff_rejected_without_write(tmp_path):
             cutoff_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
             version="synthetic-stale-v1")
     assert not (tmp_path / "out").exists()
+
+
+def test_post_start_live_run_rejected_even_with_valid_past_cutoff(tmp_path):
+    card = _card()
+    now = datetime.now(timezone.utc)
+    card["scheduled_start_at"] = (now - timedelta(minutes=10)).isoformat()
+    card["odds_observed_at"] = (now - timedelta(minutes=50)).isoformat()
+    card["source_retrieved_at"] = (now - timedelta(minutes=40)).isoformat()
+    input_path = tmp_path / "racecard.json"
+    input_path.write_text(json.dumps(card, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="race already started"):
+        run(input_path, tmp_path / "out",
+            cutoff_at=(now - timedelta(minutes=30)).isoformat(),
+            version="synthetic-post-start-v1")
+    assert not (tmp_path / "out").exists()
