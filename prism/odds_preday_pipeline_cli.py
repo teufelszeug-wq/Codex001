@@ -38,6 +38,9 @@ def run(racecard_path, output_dir, *, cutoff_at, version):
     age = now - cutoff.astimezone(timezone.utc)
     if age.total_seconds() < 0:
         raise ValueError("future cutoff_at")
+    start = datetime.fromisoformat(racecard["scheduled_start_at"].replace("Z", "+00:00"))
+    if now >= start.astimezone(timezone.utc):
+        raise ValueError("race already started: cannot save a live preday forecast")
     # A historical as-of calculation is research, not a newly saved preday snapshot.
     # Keep this live CLI close to the actual calculation time.
     if age > timedelta(hours=1):
