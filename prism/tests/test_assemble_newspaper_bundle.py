@@ -23,7 +23,7 @@ class AssembleBundleTests(unittest.TestCase):
             folder.mkdir()
             (folder / "racecard.json").write_text(json.dumps({
                 "race_id": RACE, "race_name": "検証競走", "off_at": "2026-11-23T15:30:00+09:00",
-                "runners": [{"horse_no": 1, "horse_name": "架空試験馬", "frame_no": 1}]
+                "runners": [{"horse_no": 1, "horse_name": "架空試験馬", "frame_no": 1, "horse_id": "2020000001"}]
             }), encoding="utf-8")
             final_payload = {
                 "race_id": RACE, "saved_at": "2026-11-22T18:00:00+09:00",
@@ -50,6 +50,22 @@ class AssembleBundleTests(unittest.TestCase):
             self.assertEqual(result["race"]["runners"][0]["name"], "架空試験馬")
             self.assertEqual(result["final"]["HONSHI"]["tickets"][0]["stake_yen"], 100)
             self.assertEqual(result["mode"], "single_model_simulation")
+            self.assertEqual(result["race"]["runners"][0]["horse_id"], "2020000001")
+            self.assertEqual(result["final"]["HONSHI"]["diagnoses"][0]["horse_id"], "2020000001")
+            self.assertEqual(result["preliminary"]["HONSHI"]["saved_at"], "2026-11-22T16:00:00+09:00")
+            self.assertEqual(result["final"]["HONSHI"]["saved_at"], "2026-11-22T18:00:00+09:00")
+            discussion_path = folder / "roundtable-v1.json"
+            discussion = json.loads(discussion_path.read_text(encoding="utf-8"))
+            discussion["recorded_at"] = "2026-11-22T15:59:00+09:00"
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "preliminary forecast must precede"):
+                assemble(Path(tmp), RACE)
+            discussion["recorded_at"] = "2026-11-22T17:30:00+09:00"
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
+            final_payload["records"].append(final_payload["records"][0])
+            (folder / "v2.json").write_text(json.dumps(final_payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "duplicate forecaster IDs"):
+                assemble(Path(tmp), RACE)
 
 
 if __name__ == "__main__":
