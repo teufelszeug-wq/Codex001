@@ -16,9 +16,10 @@ def card(numbers):
         "race_id": "TEST-20261118-01",
         "off_at": "2026-11-18T12:00:00+09:00",
         "captured_at": "2026-11-17T12:00:00+09:00",
+        "source_url": "https://example.invalid/official",
         "official_url": "https://example.invalid/official",
         "active_runners": [
-            {"horse_no": n, "horse_name": f"horse-{i}", "frame_no": 1}
+            {"horse_no": n, "horse_name": f"horse-{i}", "frame_no": 1, "barrier_no": i + 1}
             for i, n in enumerate(numbers)
         ],
     }
