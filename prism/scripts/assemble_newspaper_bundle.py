@@ -66,12 +66,12 @@ def assemble(history: Path, race_id: str) -> dict:
          "carried_weight": r.get("carried_weight"), "status": r.get("status")}
         for r in active
     ]
-    def record_to_paper(record):
+    def record_to_paper(record, saved_at):
         diagnoses = record.get("diagnoses", [])
         if {d.get("horse_no") for d in diagnoses} != set(by_no):
             raise ValueError("incomplete all-runner diagnosis")
         return {
-            "saved_at": final["saved_at"], "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
+            "saved_at": saved_at, "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
             "summary": record.get("summary", ""),
             "diagnoses": [{"horse_id": str(d["horse_no"]), "reason": d["reason"],
                            "win_probability": d.get("win_probability")} for d in diagnoses],
@@ -80,8 +80,8 @@ def assemble(history: Path, race_id: str) -> dict:
                       if p.get("horse_no") in by_no],
             "tickets": record.get("tickets", []), "skip_reason": record.get("skip_reason"),
         }
-    forecasts = {r["forecaster_id"]: record_to_paper(r) for r in final["records"]}
-    preliminary_forecasts = {r["forecaster_id"]: record_to_paper(r) for r in preliminary["records"]}
+    forecasts = {r["forecaster_id"]: record_to_paper(r, final["saved_at"]) for r in final["records"]}
+    preliminary_forecasts = {r["forecaster_id"]: record_to_paper(r, preliminary["saved_at"]) for r in preliminary["records"]}
     people = discussion.get("character_registry", {}).get("participants", [])
     characters = {p["speaker_id"]: {"name": p["name"], "role": "editor" if p["speaker_id"] == discussion.get("facilitator_id") else "specialist"} for p in people}
     for r in final["records"]:
