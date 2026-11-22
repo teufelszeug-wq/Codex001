@@ -95,14 +95,20 @@ def assemble(history: Path, race_id: str) -> dict:
         diagnoses = record.get("diagnoses", [])
         if len(diagnoses) != len(by_no) or {d.get("horse_no") for d in diagnoses} != set(by_no):
             raise ValueError("incomplete all-runner diagnosis")
+        if any(not isinstance(d.get("reason"), str) or not d["reason"].strip() for d in diagnoses):
+            raise ValueError("all-runner diagnosis requires a substantive reason")
+        picks = record.get("picks", [])
+        if any(not isinstance(p, dict) or p.get("horse_no") not in by_no for p in picks):
+            raise ValueError("forecast pick references an unknown or scratched horse")
+        if len({p["horse_no"] for p in picks}) != len(picks):
+            raise ValueError("duplicate horse picks")
         return {
             "saved_at": saved_at, "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
             "summary": record.get("summary", ""),
             "diagnoses": [{"horse_id": horse_ref(d["horse_no"]), "reason": d["reason"],
                            "win_probability": d.get("win_probability")} for d in diagnoses],
             "picks": [{"horse_id": horse_ref(p["horse_no"]), "mark": p.get("mark", "印未記録"),
-                       "reason": p.get("reason", "")} for p in record.get("picks", [])
-                      if p.get("horse_no") in by_no],
+                       "reason": p.get("reason", "")} for p in picks],
             "tickets": record.get("tickets", []), "skip_reason": record.get("skip_reason"),
         }
     forecasts = {r["forecaster_id"]: record_to_paper(r, final["saved_at"]) for r in final["records"]}
