@@ -101,6 +101,23 @@ class AssembleBundleTests(unittest.TestCase):
             card["captured_at"] = "2026-11-22T15:59:00+09:00"
             card_path.write_text(json.dumps(card), encoding="utf-8")
             self.assertEqual(assemble(Path(tmp), RACE)["final"]["HONSHI"]["saved_at"], "2026-11-22T18:00:00+09:00")
+            final_path = folder / "v2.json"
+            final_payload["records"][0]["picks"] = [{"horse_no": 99, "mark": "◎"}]
+            final_path.write_text(json.dumps(final_payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unknown or scratched horse"):
+                assemble(Path(tmp), RACE)
+            final_payload["records"][0]["picks"] = [{"horse_no": 1, "mark": "◎"}, {"horse_no": 1, "mark": "○"}]
+            final_path.write_text(json.dumps(final_payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "duplicate horse picks"):
+                assemble(Path(tmp), RACE)
+            final_payload["records"][0]["picks"] = [{"horse_no": 1, "mark": "◎"}]
+            final_payload["records"][0]["diagnoses"][0]["reason"] = " "
+            final_path.write_text(json.dumps(final_payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "substantive reason"):
+                assemble(Path(tmp), RACE)
+            final_payload["records"][0]["diagnoses"][0]["reason"] = "人工試験用"
+            final_path.write_text(json.dumps(final_payload), encoding="utf-8")
+            self.assertEqual(len(assemble(Path(tmp), RACE)["final"]["HONSHI"]["picks"]), 1)
 
 
 if __name__ == "__main__":
