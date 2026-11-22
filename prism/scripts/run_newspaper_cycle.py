@@ -16,6 +16,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 BATCH = ROOT / "scripts" / "run_forecast_batch.py"
+ASSEMBLER = ROOT / "scripts" / "assemble_newspaper_bundle.py"
+BUILTIN_PUBLISHER = ROOT / "scripts" / "publish_newspaper.py"
 
 
 def write_json(path: Path, value: dict) -> None:
@@ -83,15 +85,20 @@ def run(urls: list[str], out: Path, publisher: list[str], model: str = "local") 
             raise RuntimeError("no verified forecast races")
         status["state"] = "FORECAST_READY"
         write_json(status_path, status)
-        if not publisher:
-            status["state"] = "AWAITING_PUBLISHER"
-            status["errors"].append("newspaper publisher command not configured; PNG/PDF not issued")
-            write_json(status_path, status)
-            return status
         for race in races:
             race_id = race["race_id"]
+            bundle_path = out / race_id / "newspaper-bundle.json"
+            assemble = subprocess.run(
+                [sys.executable, str(ASSEMBLER), "--history", str(out), "--race-id", race_id, "--out", str(bundle_path)],
+                capture_output=True, text=True, timeout=60,
+            )
+            if assemble.returncode:
+                status["errors"].append({"race_id": race_id, "stage": "ASSEMBLE", "error": assemble.stderr[-2000:]})
+                write_json(status_path, status)
+                continue
+            publisher_command = publisher or [sys.executable, str(BUILTIN_PUBLISHER)]
             result = subprocess.run(
-                [*publisher, "--race-id", race_id, "--out", str(out)],
+                [*publisher_command, "--bundle", str(bundle_path), "--race-id", race_id, "--out", str(out)],
                 capture_output=True, text=True, timeout=900,
             )
             if result.returncode:
@@ -117,7 +124,7 @@ def main() -> int:
     parser.add_argument("--url", action="append", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--model", choices=("local", "openai"), default="local")
-    parser.add_argument("--publisher", default="", help="Existing publisher executable and fixed arguments")
+    parser.add_argument("--publisher", default="", help="Optional publisher executable; default is built-in M-PAPER renderer")
     args = parser.parse_args()
     report = run(args.url, args.out, shlex.split(args.publisher), args.model)
     print(json.dumps(report, ensure_ascii=False, indent=2))
