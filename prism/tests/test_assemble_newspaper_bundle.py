@@ -68,6 +68,17 @@ class AssembleBundleTests(unittest.TestCase):
                 assemble(Path(tmp), RACE)
             final_payload["records"].pop()
             (folder / "v2.json").write_text(json.dumps(final_payload), encoding="utf-8")
+            discussion["topics"][1]["id"] = discussion["topics"][0]["id"]
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "topic IDs must be nonempty and unique"):
+                assemble(Path(tmp), RACE)
+            discussion["topics"][1]["id"] = "1"
+            discussion["topics"][2]["turns"] = []
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "require attributed substantive turns"):
+                assemble(Path(tmp), RACE)
+            discussion["topics"][2]["turns"] = [{"speaker_id": "HONSHI", "text": "人工議論2"}]
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
             discussion["opened_at"] = "2026-11-22T17:31:00+09:00"
             discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "roundtable timestamps must be ordered"):
