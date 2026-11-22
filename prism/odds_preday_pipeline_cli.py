@@ -5,6 +5,7 @@ authenticate the racecard and odds; a boolean alone is not proof of authenticity
 """
 import argparse
 import json
+import hashlib
 from pathlib import Path
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -71,7 +72,10 @@ def run(racecard_path, output_dir, *, cutoff_at, version):
         racecard, forecasts, forecaster_id=BASELINE_ID, version=version
     )
     path = persist_preday_batch(records, output_dir)
-    return {"path": str(path), "race_id": racecard["race_id"],
+    snapshot_sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    return {"path": str(path), "snapshot_sha256": snapshot_sha256,
+            "source_verification": "upstream_assertion_only",
+            "race_id": racecard["race_id"],
             "forecaster_id": BASELINE_ID, "runner_count": len(records),
             "version": version, "baseline_only": True}
 
