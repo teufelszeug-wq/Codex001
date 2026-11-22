@@ -1,0 +1,49 @@
+{
+  "run_id": "PRISM-20261107T110850+0900",
+  "run_at": "2026-11-07T11:08:50+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_1000_JST.json",
+  "official_denominator": {
+    "JRA_scheduled": 36,
+    "NAR": null,
+    "total": null
+  },
+  "verified_pre_new": 0,
+  "verified_pre_total": null,
+  "unverified_total": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "previous_races": [
+    {
+      "race_id": "202605050101",
+      "scheduled_off": "2026-11-07T09:55:00+09:00",
+      "status": "UNVERIFIED_PRE_FORECAST"
+    },
+    {
+      "race_id": "202605050102",
+      "scheduled_off": "2026-11-07T10:25:00+09:00",
+      "status": "NO_VERIFIED_PRE"
+    }
+  ],
+  "next_candidate": {
+    "race_id": "202605050103",
+    "scheduled_off": "2026-11-07T10:55:00+09:00",
+    "status": "PAST_OFF_NO_NEW_PRE",
+    "source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0105202605010320261107%2F4D"
+  },
+  "new_race_id_progress": [],
+  "ledger_full_reconciliation": "NOT_VERIFIED",
+  "agent_financials": "N/A",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "PAPER_PENDING"
+  ],
+  "next_queue": "Verify future-off official JRA/NAR entries, required agent roster and full ledger; do not generate PRE after off",
+  "note": "Audit only. No forward snapshot, no settlement, no independently executed agents. Notion Master located but full contents not reconciled."
+}

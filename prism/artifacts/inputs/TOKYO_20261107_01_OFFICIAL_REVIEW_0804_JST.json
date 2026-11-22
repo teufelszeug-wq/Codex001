@@ -1,0 +1,107 @@
+{
+  "run_id": "PRISM-20261107T080412+0900",
+  "race_id": "202605050101",
+  "race": "2026-11-07 東京1R 2歳牝未勝利 ダ1600",
+  "scheduled_post_jst": "2026-11-07T09:55:00+09:00",
+  "source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0105202605010120261107%2FE3",
+  "source_odds_asof": "07:40 JST",
+  "data_status": "OFFICIAL_ENTRY_VERIFIED",
+  "prediction_status": "UNVERIFIED_PRE_FORECAST",
+  "official_forward_eligible": false,
+  "independent_ai_runs": 0,
+  "missing": [
+    "training",
+    "video",
+    "paddock",
+    "complete model registry",
+    "external timestamp attestation",
+    "all-agent picks"
+  ],
+  "horses": [
+    [
+      "1",
+      "ヴァルガルデーナ",
+      "前走東京ダ1600 6着"
+    ],
+    [
+      "2",
+      "エンドクレジット",
+      "東京ダ1600新馬10着"
+    ],
+    [
+      "3",
+      "ピトンピンク",
+      "東京ダ1400新馬13着"
+    ],
+    [
+      "4",
+      "アリアニコ",
+      "新潟ダ1800 3着"
+    ],
+    [
+      "5",
+      "ブリスブリンク",
+      "中山ダ1800新馬2着"
+    ],
+    [
+      "6",
+      "ハーモニープルーフ",
+      "中山ダ1800新馬11着"
+    ],
+    [
+      "7",
+      "ルージュロマーナ",
+      "芝1800 3着2回、ダート未経験"
+    ],
+    [
+      "8",
+      "アイファーエリース",
+      "東京ダ1600牝未勝利4着"
+    ],
+    [
+      "9",
+      "チャームドール",
+      "東京ダ1600新馬4着"
+    ],
+    [
+      "10",
+      "レヴフィリア",
+      "東京ダ1600新馬2着"
+    ],
+    [
+      "11",
+      "パネヴァ",
+      "新潟ダ1200新馬15着"
+    ]
+  ],
+  "single_model_provisional": {
+    "marks": {
+      "◎": "5 ブリスブリンク",
+      "○": "10 レヴフィリア",
+      "▲": "9 チャームドール",
+      "△": "8 アイファーエリース"
+    },
+    "rationale": "5はダ1800新馬2着、10は同コース新馬2着、9と8は東京ダ1600実績。能力指数・調教・当日映像は欠測。",
+    "tickets": [
+      {
+        "type": "馬連",
+        "numbers": [
+          5,
+          10
+        ],
+        "stake_yen": 100
+      },
+      {
+        "type": "ワイド",
+        "numbers": [
+          5,
+          10
+        ],
+        "stake_yen": 100
+      }
+    ],
+    "total_yen": 200,
+    "classification": "single-model exploratory; NOT official PRISM forecast"
+  },
+  "settlement_status": "NOT_ELIGIBLE_NO_VERIFIED_SNAPSHOT"
+}

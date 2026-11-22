@@ -1,0 +1,23 @@
+name: PRISM M4 regression
+on:
+  push:
+    branches:
+      - prism/forecast-completion-gate-20261106
+  pull_request:
+    paths:
+      - 'prism/**'
+      - '.github/workflows/prism-m4-regression.yml'
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test M4 modules
+        env:
+          PYTHONPATH: prism/src
+        run: python -m unittest discover -s prism/tests -p 'test_*.py' -v

@@ -1,0 +1,39 @@
+{
+  "run_id": "PRISM-20261107T070151+0900",
+  "run_at": "2026-11-07T07:01:51+09:00",
+  "status": "INCOMPLETE",
+  "official_denominator": {
+    "JRA": 36,
+    "NAR": null,
+    "all": null
+  },
+  "new_verified_pre_races": 0,
+  "verified_pre_total": null,
+  "unverified_races_total": null,
+  "all_agent_complete_new": 0,
+  "official_settlement_new": 0,
+  "financials": null,
+  "paper_complete_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "advanced_race_ids": [],
+  "candidate_race_id": "202605050101",
+  "candidate_off": "2026-11-07T09:55:00+09:00",
+  "official_source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0105202605010120261107%2FE3",
+  "github_pr_head": "12763bb47d25b799d8a4ffb295b129116e7a7e8a",
+  "ledger_completeness": "NOT_VERIFIED",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "PAPER_PENDING"
+  ],
+  "next_queue": [
+    "Read actual PRE ledger and validate immutable receipts",
+    "Validate Tokyo 1R complete official runner list and scratches",
+    "Run full agent forecast and pre-off immutable lock",
+    "Settle previously verified PRE snapshots only"
+  ],
+  "note": "Audit record only; no PRE forecast or external timestamp proof. Previous chat claims are not a ledger."
+}

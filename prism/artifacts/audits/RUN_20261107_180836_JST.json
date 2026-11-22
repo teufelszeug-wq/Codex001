@@ -1,0 +1,40 @@
+{
+  "run_id": "PRISM-20261107T180836+0900",
+  "run_at": "2026-11-07T18:08:36+09:00",
+  "status": "INCOMPLETE",
+  "prior_audit": "prism/artifacts/audits/RUN_20261107_170710_JST.json",
+  "official_denominator": {
+    "JRA_scheduled": 36,
+    "NAR": null,
+    "total": null
+  },
+  "new_verified_pre": 0,
+  "cumulative_verified_pre": null,
+  "uncompleted_races": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "agent_financials": null,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "next_queue": "2026-11-08 Fukushima 1R (09:45), Tokyo 1R (09:55), Kyoto 1R (10:05): verify official full cards and immutable PRE; reconcile existing Notion PRE-ODDS snapshot as NOT GOLDEN",
+  "notion_master_read": true,
+  "notion_snapshot_candidate": {
+    "title": "PRISM PRE-ODDS Snapshot v1 Kyoto 11R 2026-10-25 RUN93",
+    "id": "40276efc402981d7913fed712084e6dd",
+    "classification": "WORKING_NOT_GOLDEN",
+    "verified_settlement": false
+  },
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "phase_A_I": "A partial; B-I incomplete",
+  "phase_A_F": "production acceptance not verified",
+  "note": "No new PRE, settlement, or paper. Found earlier Notion working snapshot; do not promote to Golden without full immutable PRE provenance."
+}

@@ -1,0 +1,50 @@
+{
+  "run_id": "PRISM-20261107T160728+0900",
+  "run_at": "2026-11-07T16:07:28+09:00",
+  "status": "INCOMPLETE",
+  "official_denominator": {
+    "JRA_scheduled": 36,
+    "NAR": null,
+    "total": null
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "all_agents_complete_new": 0,
+  "official_settled_new": 0,
+  "paper_completed_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "financials": "N/A",
+  "new_race_id_progress": [],
+  "prior_audit": "prism/artifacts/audits/RUN_20261107_120358_JST.json",
+  "prior_audit_verified_read": true,
+  "prior_pre_ledger_fully_reconciled": false,
+  "official_schedule": "https://jra.jp/keiba/calendar2026/2026/11/1107.html",
+  "official_schedule_warning": "published schedule is preliminary and can differ from actual race card; verify actual entries and start time",
+  "remaining_JRA_scheduled_at_run": [
+    {
+      "track": "Tokyo",
+      "race": 12,
+      "off": "16:10"
+    },
+    {
+      "track": "Kyoto",
+      "race": 12,
+      "off": "16:25"
+    }
+  ],
+  "remaining_race_entries_verified": false,
+  "notion_master_this_run": "NOT_READ",
+  "forecast_gate_test_file_read": true,
+  "tests_executed": false,
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "next_queue": "Verify official 2026-11-08 cards and genuine PRE ledger before results; do not backdate 2026-11-07 races",
+  "note": "Audit-only. No verified PRE, independent agents, official settlement, learning or paper. No snapshot = no backtest."
+}

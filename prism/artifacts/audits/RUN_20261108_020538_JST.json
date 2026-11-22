@@ -1,0 +1,51 @@
+{
+  "run_id": "PRISM-20261108T020538+0900",
+  "run_at": "2026-11-08T02:05:38+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_230115_JST.json",
+  "official_denominator": {
+    "date": "2026-11-08",
+    "jra_scheduled": 36,
+    "jra_source": "https://www.jra.go.jp/keiba/calendar2026/2026/11/1108.html",
+    "jra_schedule_only": true,
+    "nar": null,
+    "total": null
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "uncompleted_races": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "agent_financials": null,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "persistence_readback": {
+    "previous_audit": true,
+    "forecast_gate_source": true,
+    "notion_master_body": false,
+    "pre_ledger_all": false
+  },
+  "code_review_findings": [
+    "forecast gate accepts input_hash without input_snapshot; authenticity cannot be inferred",
+    "external_timestamp_proof and immutable_ref only truthiness-checked, no verification/readback",
+    "settle_forecast requires supplied ticket_outcomes and does not itself establish official result provenance"
+  ],
+  "classification": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "next_queue": [
+    "2026-11-08 Fukushima 1R 09:45 JST",
+    "2026-11-08 Tokyo 1R 09:55 JST",
+    "2026-11-08 Kyoto 1R 10:05 JST"
+  ],
+  "phase_A_I": "A partial; B-I incomplete",
+  "phase_A_F": "production acceptance unverified",
+  "note": "Official race programme verified, not final racecard. No official runner names/withdrawals validated; no PRE/settlement/learning/paper. No independent agents run."
+}

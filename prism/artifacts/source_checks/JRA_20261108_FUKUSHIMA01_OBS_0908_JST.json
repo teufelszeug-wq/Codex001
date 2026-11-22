@@ -1,0 +1,29 @@
+{
+  "schema": "prism_live_source_observation_v1",
+  "run_id": "PRISM-20261108T090805+0900",
+  "observed_at": "2026-11-08T09:08:05+09:00",
+  "race_id": "JRA-20261108-FUKUSHIMA-01",
+  "source": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020120261108/1D",
+  "scheduled_off": "2026-11-08T09:45:00+09:00",
+  "observed": "Official JRA racecard accessible; 16 listed entries in previously stored snapshot; cloudy, dirt slightly heavy on live page; official page shows market odds; result not observed in inspected excerpt",
+  "source_time_certified": false,
+  "withdrawal_independently_verified": false,
+  "market_feature_isolation_required": true,
+  "previous_working_analysis": "prism/artifacts/working/JRA_20261108_FUKUSHIMA01_WORKING_ANALYSIS_0603_JST.json",
+  "previous_working_status": "UNVERIFIED_PRE_FORECAST",
+  "model_execution": "NOT_EXECUTED",
+  "new_pre_locked": 0,
+  "all_ai_complete": 0,
+  "official_settlement": 0,
+  "learning_adopted": 0,
+  "paper_complete": 0,
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "note": "Observation and prior preliminary marks are not certified immutable PRE. Do not promote or backtest."
+}

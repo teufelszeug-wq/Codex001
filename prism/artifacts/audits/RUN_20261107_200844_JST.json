@@ -1,0 +1,52 @@
+{
+  "run_id": "PRISM-20261107T200844+0900",
+  "run_at": "2026-11-07T20:08:44+09:00",
+  "status": "INCOMPLETE",
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_190410_JST.json",
+  "official_denominator": {
+    "JRA_nov7_prior_scheduled": 36,
+    "JRA_nov8_verified_total": null,
+    "NAR": null,
+    "total": null
+  },
+  "new_verified_pre": 0,
+  "verified_pre_total": null,
+  "uncompleted_races": null,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "agent_financials": null,
+  "paper_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "new_race_id_progress": [],
+  "official_nov8_verified_sources": [
+    {
+      "race": "Fukushima 3R",
+      "scheduled_off": "2026-11-08T10:45:00+09:00",
+      "url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020320261108%2F87"
+    },
+    {
+      "race": "Fukushima 4R",
+      "scheduled_off": "2026-11-08T11:15:00+09:00",
+      "url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020420261108%2F3C"
+    },
+    {
+      "race": "Kyoto 4R",
+      "scheduled_off": "2026-11-08T11:35:00+09:00",
+      "url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0108202605020420261108%2F10"
+    }
+  ],
+  "notion_master_found": "3ed76efc-4029-8187-abd8-fd105b2d5a76",
+  "next_queue": "Verify full Fukushima 1R official card and PRE ledger first, then Tokyo 1R and Kyoto 1R; run prediction and external timestamped PRE lock",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "SETTLEMENT_INCOMPLETE",
+    "PAPER_PENDING"
+  ],
+  "phase_A_I": "A partial; B-I incomplete",
+  "phase_A_F": "production acceptance not verified",
+  "note": "Prior GitHub audit read; Notion Master found by search; JRA official November 8 race cards verified for Fukushima 3R/4R and Kyoto 4R, not full runners/number verification. No model run, PRE, settlement, learning or paper."
+}

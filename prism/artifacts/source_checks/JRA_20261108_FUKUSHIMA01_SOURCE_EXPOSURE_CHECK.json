@@ -1,0 +1,23 @@
+{
+  "run_id": "PRISM-20261108T040533+0900",
+  "run_at": "2026-11-08T04:05:33+09:00",
+  "race_id": "JRA-20261108-FUKUSHIMA-01",
+  "source_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0103202603020120261108/1D",
+  "source_type": "JRA_RACECARD",
+  "source_access": "WEB_INDEXED_PAGE",
+  "observed": "Official racecard retrieved, but web-rendered content already includes odds, popularity, weather and track condition; snapshot publication/as-of time not proven.",
+  "entries_source_found": true,
+  "entries_fully_verified": false,
+  "withdrawals_verified": false,
+  "pre_result_exposure_excluded": false,
+  "pre_eligible": false,
+  "forecast_status": "UNVERIFIED_PRE_FORECAST",
+  "official_schedule_queue": "prism/artifacts/queues/JRA_20261108_SCHEDULE_ONLY.json",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED"
+  ],
+  "note": "Do not interpret search crawl date as authoritative source timestamp. Do not issue PRE forecast from this unversioned source without independent pre-off evidence and valid immutable lock."
+}

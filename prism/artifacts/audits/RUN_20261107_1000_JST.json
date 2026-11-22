@@ -1,0 +1,35 @@
+{
+  "run_id": "PRISM-20261107T1000JST",
+  "run_at_approx": "2026-11-07T10:00:00+09:00",
+  "status": "INCOMPLETE",
+  "official_denominator": {
+    "JRA_scheduled": 36,
+    "NAR": null,
+    "total": null
+  },
+  "previous_audit": "prism/artifacts/audits/RUN_20261107_090821_JST.json",
+  "previous_race_id": "202605050101",
+  "previous_race_scheduled_off": "2026-11-07T09:55:00+09:00",
+  "previous_forecast_status": "UNVERIFIED_PRE_FORECAST",
+  "new_verified_pre": 0,
+  "all_agents_complete_new": 0,
+  "settled_new": 0,
+  "paper_complete_new": 0,
+  "learning_adopted_new": 0,
+  "learning_validated_new": 0,
+  "upcoming_candidate": {
+    "race_id": "202605050102",
+    "scheduled_off": "2026-11-07T10:25:00+09:00",
+    "official_source": "https://jra.jp/JRADB/accessD.html?CNAME=pw01dde0105202605010220261107%2F98",
+    "status": "OFFICIAL_ENTRY_PARTIAL_NO_PRE"
+  },
+  "ledger_full_reconciliation": "NOT_VERIFIED",
+  "blockers": [
+    "OFFICIAL_DATA_MISSING",
+    "PREDICTION_INCOMPLETE",
+    "PRE_LOCK_FAILED",
+    "MODEL_INTEGRATION_BLOCKED",
+    "PAPER_PENDING"
+  ],
+  "note": "Audit only; no independently executed AI, no official settlement, no immutable pre-race snapshot. Do not classify previous Tokyo 1R provisional selection as verified PRE."
+}
