@@ -19,7 +19,7 @@ def card(numbers):
         "source_url": "https://example.invalid/official",
         "official_url": "https://example.invalid/official",
         "active_runners": [
-            {"horse_no": n, "horse_name": f"horse-{i}", "frame_no": 1, "barrier_no": i + 1}
+            {"horse_no": n, "horse_id": f"id-{n}", "horse_name": f"horse-{i}", "frame_no": 1, "barrier_no": i + 1}
             for i, n in enumerate(numbers)
         ],
     }
