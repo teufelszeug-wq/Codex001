@@ -68,7 +68,7 @@ def assemble(history: Path, race_id: str) -> dict:
     if len(by_no) != len(active):
         raise ValueError("duplicate horse numbers")
     runners = [
-        {"horse_id": str(r["horse_id"]) if r.get("horse_id") else None, "horse_no": r["horse_no"], "frame_no": r.get("frame_no"),
+        {"horse_id": str(r["horse_id"]) if r.get("horse_id") else f"horse-no:{r['horse_no']}", "horse_no": r["horse_no"], "frame_no": r.get("frame_no"),
          "name": r["horse_name"], "jockey_name": r.get("jockey_name"),
          "carried_weight": r.get("carried_weight"), "status": r.get("status")}
         for r in active
