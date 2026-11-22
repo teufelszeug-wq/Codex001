@@ -25,14 +25,18 @@ class AssembleBundleTests(unittest.TestCase):
                 "race_id": RACE, "race_name": "検証競走", "off_at": "2026-11-23T15:30:00+09:00",
                 "runners": [{"horse_no": 1, "horse_name": "架空試験馬", "frame_no": 1}]
             }), encoding="utf-8")
-            (folder / "v1.json").write_text(json.dumps({
+            final_payload = {
                 "race_id": RACE, "saved_at": "2026-11-22T18:00:00+09:00",
                 "metadata": {"phase": "FINAL", "model_backend": "local_rules"},
                 "records": [{"forecaster_id": "HONSHI", "display_name": "本紙",
                              "diagnoses": [{"horse_no": 1, "reason": "人工試験用"}],
                              "picks": [{"horse_no": 1, "mark": "◎"}],
                              "tickets": [{"type": "WIN", "horse_nos": [1], "stake_yen": 100}]}]
-            }), encoding="utf-8")
+            }
+            (folder / "v2.json").write_text(json.dumps(final_payload), encoding="utf-8")
+            preliminary_payload = {**final_payload, "saved_at": "2026-11-22T16:00:00+09:00",
+                                   "metadata": {"phase": "PRELIMINARY", "model_backend": "local_rules"}}
+            (folder / "v1.json").write_text(json.dumps(preliminary_payload), encoding="utf-8")
             (folder / "roundtable-v1.json").write_text(json.dumps({
                 "race_id": RACE, "opened_at": "2026-11-22T17:00:00+09:00",
                 "recorded_at": "2026-11-22T17:30:00+09:00",
