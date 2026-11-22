@@ -50,7 +50,7 @@ def check_publication(manifest: dict, out: Path, expected_races: set[str]) -> di
 
     return {
         "race_id": manifest["race_id"],
-        "png_files": [verify(p, b"\\x89PNG\\r\\n\\x1a\\n") for p in pngs],
+        "png_files": [verify(p, b"\x89PNG\r\n\x1a\n") for p in pngs],
         "pdf_file": verify(pdf, b"%PDF-"),
         "edition": manifest.get("edition", "UNVERIFIED"),
         "qa_status": manifest.get("qa_status", "UNVERIFIED"),
