@@ -118,6 +118,20 @@ class AssembleBundleTests(unittest.TestCase):
             final_payload["records"][0]["diagnoses"][0]["reason"] = "人工試験用"
             final_path.write_text(json.dumps(final_payload), encoding="utf-8")
             self.assertEqual(len(assemble(Path(tmp), RACE)["final"]["HONSHI"]["picks"]), 1)
+            original_tickets = final_payload["records"][0]["tickets"]
+            for bad_ticket, expected in (
+                ({"type": "WIN", "horse_nos": [99], "stake_yen": 100}, "unknown or scratched horse"),
+                ({"type": "WIN", "horse_nos": [1], "stake_yen": 150}, "100-yen multiple"),
+                ({"type": "WIN", "horse_nos": [1], "stake_yen": 0}, "100-yen multiple"),
+                ({"type": "WIN", "horse_nos": [1], "stake_yen": True}, "100-yen multiple"),
+            ):
+                final_payload["records"][0]["tickets"] = [bad_ticket]
+                final_path.write_text(json.dumps(final_payload), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, expected):
+                    assemble(Path(tmp), RACE)
+            final_payload["records"][0]["tickets"] = original_tickets
+            final_path.write_text(json.dumps(final_payload), encoding="utf-8")
+            self.assertEqual(assemble(Path(tmp), RACE)["final"]["HONSHI"]["tickets"][0]["stake_yen"], 100)
 
 
 if __name__ == "__main__":
