@@ -50,6 +50,13 @@ class AssembleBundleTests(unittest.TestCase):
             self.assertEqual(result["race"]["runners"][0]["name"], "架空試験馬")
             self.assertEqual(result["final"]["HONSHI"]["tickets"][0]["stake_yen"], 100)
             self.assertEqual(result["mode"], "single_model_simulation")
+            preliminary_path = folder / "v1.json"
+            preliminary_payload["records"] = []
+            preliminary_path.write_text(json.dumps(preliminary_payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "forecaster roster mismatch"):
+                assemble(Path(tmp), RACE)
+            preliminary_payload["records"] = final_payload["records"].copy()
+            preliminary_path.write_text(json.dumps(preliminary_payload), encoding="utf-8")
             self.assertEqual(result["race"]["runners"][0]["horse_id"], "2020000001")
             self.assertEqual(result["final"]["HONSHI"]["diagnoses"][0]["horse_id"], "2020000001")
             self.assertEqual(result["preliminary"]["HONSHI"]["saved_at"], "2026-11-22T16:00:00+09:00")
