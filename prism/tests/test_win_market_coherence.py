@@ -12,7 +12,8 @@ class WinMarketCoherenceTests(unittest.TestCase):
             "race_id": "TEST_MARKET_R01",
             "source_id": "synthetic_test_only",
             "source_authenticity_verified": True,
-            "scheduled_start_at": "2030-01-01T10:00:00+09:00",
+            "scheduled_start_at": "2026-11-22T10:00:00+09:00",
+            "source_retrieved_at": "2026-11-21T09:00:00+09:00",
             "horses": [
                 {"horse_id": "H1", "horse_name": "架空一号"},
                 {"horse_id": "H2", "horse_name": "架空二号"},
@@ -28,7 +29,7 @@ class WinMarketCoherenceTests(unittest.TestCase):
     def convert(self, rows):
         return build_preday_records(
             self.card, rows, forecaster_id="test_model",
-            version="test_v1", saved_at="2029-12-31T10:00:00+00:00")
+            version="test_v1", saved_at="2026-11-21T10:00:00+09:00")
 
     def test_normalized_market_passes(self):
         records = self.convert(self.rows(
@@ -41,13 +42,13 @@ class WinMarketCoherenceTests(unittest.TestCase):
                 {"win_probability": 0.2}, {"win_probability": 0.3}))
 
     def test_partial_probability_coverage_fails(self):
-        with self.assertRaisesRegex(ValueError, "partial"):
+        with self.assertRaisesRegex(ValueError, "missing win_probability"):
             self.convert(self.rows(
                 {"win_probability": 0.4}, {"rank": 2}))
 
-    def test_non_probability_forecasts_remain_compatible(self):
-        records = self.convert(self.rows({"rank": 1}, {"rank": 2}))
-        self.assertEqual(len(records), 2)
+    def test_non_probability_forecasts_rejected_by_current_contract(self):
+        with self.assertRaisesRegex(ValueError, "missing win_probability"):
+            self.convert(self.rows({"rank": 1}, {"rank": 2}))
 
 
 if __name__ == "__main__":
