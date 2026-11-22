@@ -15,7 +15,7 @@ class OfficialNumberNormalizationTests(unittest.TestCase):
                            direction="right", class_rating=1, barrier_count=8,
                            locked_at="2026-11-18T00:00:00+00:00", output_dir="/tmp/test",
                            predictor_id="test", version="test", source="test",
-                           source_evidence=[])
+                           source_evidence=[{"source_url": "https://example.invalid/synthetic-test", "retrieved_at": "2026-11-18T00:00:00+00:00"}])
             normalized = gate.call_args.args[0]["active_runners"][0]
             self.assertEqual(normalized["horse_number"], 7)
             self.assertEqual(normalized["horse_no"], 7)
@@ -28,7 +28,7 @@ class OfficialNumberNormalizationTests(unittest.TestCase):
                            direction="right", class_rating=1, barrier_count=8,
                            locked_at="2026-11-18T00:00:00+00:00", output_dir="/tmp/test",
                            predictor_id="test", version="test", source="test",
-                           source_evidence=[])
+                           source_evidence=[{"source_url": "https://example.invalid/synthetic-test", "retrieved_at": "2026-11-18T00:00:00+00:00"}])
             gate.assert_not_called()
 
 
