@@ -5,8 +5,9 @@ from assemble_official_engine_input import assemble_engine_input
 card={'schema':'prism.official_racecard/v1','source_verified':True,'race_id':'SYNTHETIC-JRA-1',
       'race_name':'架空競走','off_at':'2026-11-09T15:00:00+09:00',
       'captured_at':'2026-11-09T13:00:00+09:00','official_url':'https://www.jra.go.jp/JRADB/',
-      'active_runners':[{'horse_no':1,'horse_name':'架空馬A','frame_no':1},
-                        {'horse_no':2,'horse_name':'架空馬B','frame_no':1}]}
+      'source_url':'https://www.jra.go.jp/JRADB/',
+      'active_runners':[{'horse_id':'h1','horse_no':1,'horse_name':'架空馬A','frame_no':1,'barrier_no':1},
+                        {'horse_id':'h2','horse_no':2,'horse_name':'架空馬B','frame_no':1,'barrier_no':2}]}
 def history():
     return [{'occurred_at':'2026-10-01T10:00:00+09:00',
              'available_at':'2026-10-01T12:00:00+09:00',

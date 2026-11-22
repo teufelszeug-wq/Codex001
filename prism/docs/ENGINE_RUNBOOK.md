@@ -137,3 +137,37 @@ python3 prism/scripts/run_race_day.py --out ./forecasts --archive ./prism-histor
   バイト列を比較する。異なる版で上書きしない。完走前に失敗があった場合も実行結果と
   保存済み履歴をZIPに書き、エラーを返す。対象日を絞るには `--date YYYY-MM-DD`、
   精算だけ実行するには `--mode settle` を指定する。
+
+### 各AIによる全頭評価
+
+API実行の設定状態は次のコマンドで確認する。キーの内容は表示しない。
+
+```bash
+node prism/scripts/run_forecast_panel.mjs --check-runtime
+```
+
+実行環境の秘密情報として `OPENAI_API_KEY` と `PRISM_OPENAI_MODEL` を設定し、
+番号付き公式出馬表から次のコマンドで実行する。
+
+```bash
+node prism/scripts/run_forecast_panel.mjs --card ./racecard.json --out ./forecasts --model openai
+python3 prism/scripts/run_race_day.py --out ./forecasts --model openai --archive ./next-run.zip
+```
+
+- 本紙・りお・専門AI17担当を個別のリクエストで実行する。各担当には公式出馬表の
+  過去走、血統、騎手、距離・馬場とその担当に渡された追加資料を提供する。
+- APIは全頭の評価点、理由、参照した出典、上位5頭までの印、見送り理由を返す。
+  0〜100の担当別評価点を保存する。期待値担当は既存の市場比較も通し、買い目は1点100円。
+- 追加資料を使う場合は単体コマンドに `--evidence FILE.json` を渡す。一括・日次処理は
+  レース履歴フォルダーの `specialist-evidence.json` を読み込む。上記「外部専門資料」の
+  契約に従い、馬番・担当分野・評価・根拠・出典・利用可能日時を付ける。
+  映像、取材、馬場バイアス、気象、調教、成長評価は対応する資料がある馬だけ評価する。
+  この処理に追加資料の自動収集機能は含まれない。
+- 全頭の馬番・馬名、担当資料にある出典、取消・除外、発走前の保存時刻を検証する。
+  API拒否、不完全応答、401などは担当別エラーとして返す。一時的な通信障害、429、5xxは
+  Retry-Afterと締切を考慮して最大3回試行する。
+- 成功した担当は `executions/入力キー/担当ID.json` に保存する。中断後は同じ入力と
+  同じ出力先で再実行すると未完了の担当を処理する。ZIPへの保存・復元にも対応する。
+  全担当がそろった段階で一次版、五議題の自動編集座談会、最終版を作る。
+- 出力には `api_records` と `local_records`、各担当の応答ID・モデル・試行数・トークン数を
+  記録する。実APIへの接続と予測精度は、使用する実行環境で確認する。

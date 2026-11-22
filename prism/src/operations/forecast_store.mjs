@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { link, mkdir, open, readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createPreRaceLedger, appendRevision, verifyForecastRecord } from './forecast_history.mjs';
@@ -66,4 +66,29 @@ export async function persistDeclarations(directory, raceId, declaration, before
   const raceDir = join(directory, safeId(raceId));
   await mkdir(raceDir, { recursive: true });
   await exclusiveWrite(join(raceDir, 'declarations-v1.json'), declaration, beforePublish);
+}
+
+function executionPath(directory, raceId, inputKey, forecasterId) {
+  if (!/^[a-f0-9]{64}$/.test(inputKey)) throw new Error('invalid specialist input key');
+  return join(directory, safeId(raceId), 'executions', inputKey, safeId(forecasterId) + '.json');
+}
+
+export async function loadSpecialistExecution(directory, raceId, inputKey, forecasterId) {
+  const saved = JSON.parse(await readFile(executionPath(directory, raceId, inputKey, forecasterId), 'utf8'));
+  const { content_sha256, ...payload } = saved;
+  const actual = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+  if (content_sha256 !== actual || payload.schema !== 'prism.specialist_execution/v1' ||
+      payload.race_id !== raceId || payload.input_key !== inputKey ||
+      payload.record?.forecaster_id !== forecasterId) {
+    throw new Error('specialist execution identity or content hash mismatch');
+  }
+  return payload.record;
+}
+
+export async function persistSpecialistExecution(directory, raceId, inputKey, record, beforePublish) {
+  const payload = { schema: 'prism.specialist_execution/v1', race_id: raceId, input_key: inputKey, record };
+  const content_sha256 = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+  const path = executionPath(directory, raceId, inputKey, record.forecaster_id);
+  await mkdir(join(directory, safeId(raceId), 'executions', inputKey), { recursive: true });
+  await exclusiveWrite(path, { ...payload, content_sha256 }, beforePublish);
 }

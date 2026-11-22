@@ -11,8 +11,17 @@ async function main() {
     evidence: { type: 'string' },
     out: { type: 'string' },
     model: { type: 'string', default: 'local' },
+    'check-runtime': { type: 'boolean', default: false },
     'update-from': { type: 'string' },
   } });
+  if (options['check-runtime']) {
+    const required = ['OPENAI_API_KEY', 'PRISM_OPENAI_MODEL'];
+    const missing = required.filter(name => !process.env[name]?.trim());
+    console.log(JSON.stringify({ ready: missing.length === 0, missing,
+      model: process.env.PRISM_OPENAI_MODEL || null, provider_requests: 0 }, null, 2));
+    process.exitCode = missing.length ? 2 : 0;
+    return;
+  }
   if (!options.card || !options.out || !['local', 'openai'].includes(options.model)) {
     throw new Error('usage: node prism/scripts/run_forecast_panel.mjs --card CARD.json --out DIRECTORY [--evidence EVIDENCE.json] [--model local|openai] [--update-from VERSION]');
   }
@@ -30,6 +39,7 @@ async function main() {
     forecaster_id: record.forecaster_id, name: record.display_name, specialty: record.specialty, execution_id: record.execution_id,
     top_pick: record.picks[0] ?? null, tickets: record.tickets,
     skip_reason: record.skip_reason,
+    provider: record.execution.provider, response_id: record.execution.response_id ?? null,
   }));
   console.log(JSON.stringify({
     race_id: forecast.race_id, race_name: forecast.race_name, off_at: forecast.off_at, saved_at: forecast.saved_at,
@@ -37,6 +47,8 @@ async function main() {
     phase: final?.metadata.phase ?? 'DECLARATIONS',
     changes: final?.metadata.changes ?? null,
     model_backend: final?.metadata.model_backend ?? declarations.model_backend,
+    api_records: forecast.records.filter(record => record.execution.provider === 'openai').length,
+    local_records: forecast.records.filter(record => record.execution.provider === 'local_rules').length,
     review_topics: roundtable?.topics.length ?? final?.metadata.review.topics.length ?? 0,
     roundtable: roundtable ? {
       mode: roundtable.mode, recorded_at: roundtable.recorded_at,

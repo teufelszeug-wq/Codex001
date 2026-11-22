@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { verifyForecastRecord } from './forecast_history.mjs';
 import { normalizeOfficialRacecard } from './racecard_adapter.mjs';
 import { loadDeclarations, loadForecast, loadRoundtable, persistDeclarations, persistInitialForecast,
-  persistRevision, persistRoundtable } from './forecast_store.mjs';
+  persistRevision, persistRoundtable, loadSpecialistExecution, persistSpecialistExecution } from './forecast_store.mjs';
 import { buildRoundtable, compareFinalForecasts, runnerKey, validateRoundtable } from './roundtable.mjs';
 import { METHODS, forecastSpecialist, loadForecastRoster, restoreSupplementalEvidence,
   validateSupplementalEvidence } from './specialist_forecasts.mjs';
@@ -196,6 +196,13 @@ function checkRecords(records, card, roster, initial = null) {
   const responses = new Set(initial?.records.map(record => record.execution.response_id).filter(Boolean));
   for (const record of records) {
     const run = record.execution;
+    const diagnoses = record.diagnoses;
+    if (!Array.isArray(diagnoses) || diagnoses.length !== card.active_runners.length ||
+        new Set(diagnoses.map(row => row.horse_no)).size !== diagnoses.length ||
+        !diagnoses.every(row => card.active_runners.some(horse => horse.horse_no === row.horse_no &&
+          horse.horse_name === row.horse_name) && typeof row.reason === 'string' && row.reason.trim())) {
+      throw new Error(`incomplete specialist diagnoses: ${record.forecaster_id}`);
+    }
     if (executions.has(record.execution_id) || !record.execution_id ||
         !iso.test(run.started_at) || !iso.test(run.finished_at) ||
         Date.parse(run.started_at) < Date.parse(card.captured_at) ||
@@ -241,7 +248,8 @@ export async function runForecastPanel({
   if (Boolean(model) === (modelIdentity === 'local_rules')) throw new Error('model and model identity must agree');
   const roster = await loadForecastRoster();
   validateRoster(roster);
-  const inputHash = hash({ card, evidence, roster, modelIdentity });
+  const inputHash = hash({ card, evidence, roster, modelIdentity,
+    ...(model?.contract ? { model_contract: model.contract } : {}) });
   const runnerList = card.active_runners.map(({ horse_no, horse_name, frame_no, jockey_name, horse_id }) =>
     ({ horse_no, horse_name, frame_no, jockey_name, ...(horse_id ? { horse_id } : {}) }));
   const checkClock = () => {
@@ -254,13 +262,32 @@ export async function runForecastPanel({
     return timestamp;
   };
   const run = async (phase, review, initial, facts = evidence) => {
-    const results = await Promise.allSettled(roster.forecasters.map(async agent => ({
-      forecaster_id: agent.id,
-      ...await forecastSpecialist({
+    const inputKey = hash({ inputHash, phase, review, initial: initial?.content_sha256 ?? null, facts });
+    const results = await Promise.allSettled(roster.forecasters.map(async agent => {
+      const checkRecord = record => {
+        if (record.forecaster_id !== agent.id || record.execution.phase !== phase ||
+            (model && record.execution.provider !== 'openai')) throw new Error('specialist execution phase or provider mismatch');
+        checkRecords([record], card, { forecasters: [agent] }, initial);
+        return record;
+      };
+      if (model) {
+        const cached = await readIfPresent(() => loadSpecialistExecution(directory, card.race_id, inputKey, agent.id));
+        if (cached) return checkRecord(cached);
+      }
+      const record = checkRecord({ forecaster_id: agent.id, ...await forecastSpecialist({
         agent, card, evidence: facts, now: checkClock, phase, review, model,
         initial: initial?.records.find(record => record.forecaster_id === agent.id) ?? null,
-      }),
-    })));
+      }) });
+      if (model) {
+        try {
+          await persistSpecialistExecution(directory, card.race_id, inputKey, record, checkClock);
+        } catch (error) {
+          if (error.code !== 'EEXIST') throw error;
+          return checkRecord(await loadSpecialistExecution(directory, card.race_id, inputKey, agent.id));
+        }
+      }
+      return record;
+    }));
     const errors = results.flatMap((result, index) => result.status === 'rejected'
       ? [`${roster.forecasters[index].id}: ${result.reason.message}`] : []);
     if (errors.length) throw new Error(errors.join('\n'));

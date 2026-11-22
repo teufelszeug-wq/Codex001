@@ -83,6 +83,9 @@ def prepare(directory, url):
 
 def run_panel(directory, card_path, model, update_from=None):
     arguments = ['node', str(PANEL), '--card', str(card_path), '--out', str(directory), '--model', model]
+    evidence = card_path.parent / 'specialist-evidence.json'
+    if card_path.name != 'declarations-racecard.json' and evidence.is_file():
+        arguments.extend(('--evidence', str(evidence)))
     if update_from is not None:
         arguments.extend(('--update-from', str(update_from)))
     result = subprocess.run(arguments, capture_output=True, text=True, timeout=600, check=False)

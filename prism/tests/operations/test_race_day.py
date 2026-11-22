@@ -69,12 +69,16 @@ class RaceDayTests(unittest.TestCase):
             verified = '20261115-JRA-KYOTO-11/v2.json'
             (history / verified).parent.mkdir(parents=True)
             (history / verified).write_bytes(b'{ "forecast":1 }\n')
+            checkpoint = Path('20261115-JRA-KYOTO-11/executions') / ('a' * 64) / 'HONSHI.json'
+            (history / checkpoint).parent.mkdir(parents=True)
+            (history / checkpoint).write_bytes(b'{ "record":"retained-provider-response" }\n')
             archive = root / 'run.zip'
             export_history(history, archive, {'phase': 'FINAL'})
             restored = root / 'restored'
             restored.mkdir()
             restore_history(restored, archive)
             self.assertEqual((restored / verified).read_bytes(), (history / verified).read_bytes())
+            self.assertEqual((restored / checkpoint).read_bytes(), (history / checkpoint).read_bytes())
             restore_history(restored, archive)
             conflict = root / 'other.zip'
             with ZipFile(conflict, 'w') as package:

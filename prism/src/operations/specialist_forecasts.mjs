@@ -222,10 +222,38 @@ export function restoreSupplementalEvidence(initial) {
   return [...entries.values()];
 }
 
+function modelDiagnoses(decision, card, agent, evidence) {
+  const supplied = decision.diagnoses;
+  const horses = new Map(card.active_runners.map(row => [row.horse_no, row]));
+  const seen = new Set();
+  if (!Array.isArray(supplied) || supplied.length !== horses.size) throw new Error('model must assess every active runner');
+  for (const row of supplied) {
+    const horse = horses.get(row.horse_no);
+    const sources = evidence.filter(item => item.method === agent.method && item.horse_no === row.horse_no)
+      .map(item => item.source_url);
+    if (!REQUIRED_EVIDENCE.has(agent.method)) sources.push(card.official_url);
+    if (!horse || horse.horse_name !== row.horse_name || seen.has(row.horse_no) ||
+        typeof row.reason !== 'string' || !row.reason.trim() ||
+        !(row.score === null || Number.isFinite(row.score) && row.score >= 0 && row.score <= 100) ||
+        !Array.isArray(row.source_refs) || new Set(row.source_refs).size !== row.source_refs.length ||
+        !row.source_refs.every(source => sources.includes(source)) ||
+        (row.score !== null && row.source_refs.length === 0)) {
+      throw new Error(`invalid or unsupported model diagnosis: ${agent.id}:${row.horse_no}`);
+    }
+    seen.add(row.horse_no);
+  }
+  const byNumber = new Map(supplied.map(row => [row.horse_no, row]));
+  return card.active_runners.map(horse => {
+    const row = byNumber.get(horse.horse_no);
+    return { ...row, score: row.score === null ? null : round(row.score),
+      source_ref: row.source_refs[0] ?? null, mark: null };
+  });
+}
+
 export async function forecastSpecialist({ agent, card, evidence, now, phase, review, initial, model }) {
   const startedAt = now();
   const field = fieldContext(card, agent.method);
-  const diagnoses = card.active_runners.map((horse, index) => {
+  let diagnoses = card.active_runners.map((horse, index) => {
     const assessment = evaluate({ method: agent.method, card, horse, fact: field.facts[index], field, index, evidence });
     return {
       horse_no: horse.horse_no,
@@ -239,6 +267,7 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
   let ranked = diagnoses.filter(row => row.score !== null).sort((a, b) => b.score - a.score || a.horse_no - b.horse_no);
   const standard = ranked.length >= 2 && ranked[0].score !== ranked.at(-1).score;
   const hasRanking = ['value', 'longshot'].includes(agent.method) ? ranked.length > 0 : standard;
+  let canPick = hasRanking;
   let skipReason = null;
   let reviewReason = review ? '五議題の比較を確認し、担当分野の採点を維持。' : null;
   let modelTrace = null;
@@ -247,11 +276,24 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
   if (model) {
     const decision = await model({
       agent, card, diagnoses, eligible: hasRanking ? ranked.map(row => row.horse_no) : [],
+      evidence, researchRequired: REQUIRED_EVIDENCE.has(agent.method), phase,
       review: review?.topics ?? null, roundtable: review?.roundtable ?? null, initial, offAt: card.off_at,
     });
+    if (model.contract === 'prism.model_assessment/v2' && decision.contract !== model.contract) {
+      throw new Error('model assessment contract mismatch');
+    }
+    if (decision.contract === 'prism.model_assessment/v2') {
+      diagnoses = modelDiagnoses(decision, card, agent, evidence);
+      ranked = diagnoses.filter(row => row.score !== null).sort((a, b) => b.score - a.score || a.horse_no - b.horse_no);
+      canPick = ranked.length > 0;
+      if (!(decision.skip_reason === null || typeof decision.skip_reason === 'string' && decision.skip_reason.trim()) ||
+          (decision.horse_nos?.length > 0) === (decision.skip_reason !== null)) {
+        throw new Error('model must provide picks or a specific pass reason');
+      }
+    }
     const byNumber = new Map(ranked.map(row => [row.horse_no, row]));
     if (!Array.isArray(decision.horse_nos) || decision.horse_nos.length > MARKS.length ||
-        (!hasRanking && decision.horse_nos.length) ||
+        (!canPick && decision.horse_nos.length) ||
         new Set(decision.horse_nos).size !== decision.horse_nos.length ||
         !decision.horse_nos.every(number => byNumber.has(number)) ||
         typeof decision.reason !== 'string' || !decision.reason.trim() ||
@@ -263,13 +305,15 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
     if (ranked.length) ranked[0].reason = `${ranked[0].reason} モデル見解：${decision.reason}`;
     else {
       modelPassed = true;
-      skipReason = decision.reason;
+      skipReason = decision.skip_reason ?? decision.reason;
     }
     reviewReason = review ? decision.reason : null;
-    modelTrace = { provider: 'openai', response_id: decision.response_id, model: decision.model };
+    modelTrace = { provider: 'openai', response_id: decision.response_id, model: decision.model,
+      ...(decision.contract ? { assessment_contract: decision.contract, attempts: decision.attempts,
+        usage: decision.usage, score_scale: 'specialist_0_100' } : {}) };
   }
   let picks = [];
-  if (hasRanking && !modelPassed) {
+  if (canPick && !modelPassed) {
     picks = ranked.slice(0, MARKS.length).map((row, index) => {
       row.mark = MARKS[index];
       return { horse_no: row.horse_no, horse_name: row.horse_name, mark: row.mark };
@@ -279,8 +323,12 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
       ? `${SUPPLEMENTAL[agent.method]}が比較できる頭数に届かず見送り。`
       : '比較できる実測値が不足、または同点のため見送り。';
   }
-  if (agent.method === 'value' && picks.length && ranked[0].score <= 1) {
-    skipReason = '推定払戻倍率が1を超える単勝候補なし。';
+  if (agent.method === 'value' && picks.length) {
+    if (!field.probabilities.length) skipReason = '期待値の比較に必要な全頭の単勝オッズ・能力評価が不足。';
+    else if (!field.probabilities.some((probability, index) => card.active_runners[index].horse_no === picks[0].horse_no &&
+        probability * card.active_runners[index].win_odds > 1)) {
+      skipReason = '推定払戻倍率が1を超える単勝候補なし。';
+    }
   }
   const tickets = skipReason ? [] : [{ type: 'WIN', horse_nos: [picks[0].horse_no], stake_yen: 100 }];
   if (review && initial && !modelReason) {

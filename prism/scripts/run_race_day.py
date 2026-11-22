@@ -31,6 +31,12 @@ def saved_races(history):
     return sorted(path for path in history.iterdir() if path.is_dir() and RACE_ID.fullmatch(path.name))
 
 
+def specialist_checkpoint(name):
+    return (len(name.parts) == 4 and RACE_ID.fullmatch(name.parts[0])
+            and name.parts[1] == 'executions' and re.fullmatch(r'[a-f0-9]{64}', name.parts[2])
+            and re.fullmatch(r'[a-zA-Z0-9_-]{1,120}\.json', name.name))
+
+
 def restore_history(history, archive):
     with ZipFile(archive) as package:
         for info in package.infolist():
@@ -38,12 +44,12 @@ def restore_history(history, archive):
             valid_race = (len(name.parts) == 2 and RACE_ID.fullmatch(name.parts[0]) and name.name.endswith(('.json', '.md', '.txt')))
             valid_root = (len(name.parts) == 1 and name.name in ROOT_SIDECARS)
             valid_audit = (len(name.parts) == 2 and name.parts[0] == 'audit' and name.name.endswith('.json'))
-            if not (valid_race or valid_root or valid_audit) or '..' in name.parts:
+            if not (valid_race or valid_root or valid_audit or specialist_checkpoint(name)) or '..' in name.parts:
                 continue
             if info.file_size > 12_000_000:
                 raise ValueError(f'oversized history record: {name}')
             path = history.joinpath(*name.parts)
-            path.parent.mkdir(exist_ok=True)
+            path.parent.mkdir(parents=True, exist_ok=True)
             data = package.read(info)
             if save_bytes_once(path, data) != data:
                 raise ValueError(f'history archive disagrees with the saved record: {name}')
@@ -54,6 +60,9 @@ def export_history(history, archive, report):
         for directory in saved_races(history):
             for path in sorted(directory.iterdir()):
                 if path.is_file() and path.suffix in {'.json', '.md', '.txt'}:
+                    package.write(path, path.relative_to(history))
+            for path in sorted((directory / 'executions').glob('*/*.json')):
+                if path.is_file() and specialist_checkpoint(PurePosixPath(path.relative_to(history).as_posix())):
                     package.write(path, path.relative_to(history))
         audit = history / 'audit'
         if audit.is_dir():
