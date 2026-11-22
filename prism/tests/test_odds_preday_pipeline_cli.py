@@ -1,5 +1,6 @@
 """Regression checks for the odds-baseline to preday-store integration."""
 import json
+import hashlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -37,6 +38,8 @@ def test_baseline_pipeline_persists_and_rejects_overwrite(tmp_path):
     result = run(input_path, output, cutoff_at=cutoff, version="synthetic-v1")
     assert result["runner_count"] == 2
     assert result["baseline_only"] is True
+    assert result["source_verification"] == "upstream_assertion_only"
+    assert result["snapshot_sha256"] == hashlib.sha256(Path(result["path"]).read_bytes()).hexdigest()
     saved = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
     assert "試験一号" in json.dumps(saved, ensure_ascii=False)
     with pytest.raises((FileExistsError, ValueError, OSError)):
