@@ -39,6 +39,12 @@ def assemble_engine_input(card, evidence, *, venue, surface, distance_m,
     # A set comparison alone silently collapses duplicate official horse numbers.
     if len(ids)!=len(active):
         raise ValueError('duplicate horse number in official racecard')
+    # Reject ambiguous official identities before joining evidence by horse number.
+    official_ids = [str(r.get('horse_id', '')).strip() for r in active]
+    if any(not horse_id for horse_id in official_ids):
+        raise ValueError('official horse identity required for verified prediction')
+    if len(set(official_ids)) != len(official_ids):
+        raise ValueError('duplicate official horse identity')
     if set(evidence)!=ids:
         raise ValueError('complete evidence required for all active horses')
     runners=[];names={}
