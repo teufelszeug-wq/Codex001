@@ -54,11 +54,20 @@ def assemble(history: Path, race_id: str) -> dict:
     if not discussion.get("recorded_at"):
         raise ValueError("roundtable timestamp missing")
     discussed = datetime.fromisoformat(discussion["recorded_at"].replace("Z", "+00:00"))
-    if discussed.tzinfo is None or discussed >= saved:
-        raise ValueError("roundtable must precede final forecast")
+    opened_raw = discussion.get("opened_at")
+    if not opened_raw:
+        raise ValueError("roundtable opened_at missing")
+    opened = datetime.fromisoformat(opened_raw.replace("Z", "+00:00"))
+    if opened.tzinfo is None or discussed.tzinfo is None or not opened <= discussed < saved:
+        raise ValueError("roundtable timestamps must be ordered before final forecast")
     preliminary_saved = datetime.fromisoformat(preliminary["saved_at"].replace("Z", "+00:00"))
-    if preliminary_saved.tzinfo is None or not preliminary_saved < discussed:
+    if preliminary_saved.tzinfo is None or not preliminary_saved < opened:
         raise ValueError("preliminary forecast must precede the roundtable")
+    captured_at = card.get("captured_at")
+    if captured_at:
+        captured = datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+        if captured.tzinfo is None or captured > preliminary_saved:
+            raise ValueError("racecard captured after preliminary forecast; potential look-ahead leak")
     if preliminary_saved >= off:
         raise ValueError("preliminary forecast is not pre-race")
     active = [r for r in card.get("runners", []) if r.get("status") not in ("SCRATCHED", "EXCLUDED")]
