@@ -25,13 +25,13 @@ def check(obj,now):
     if any(not isinstance(h,dict) for h in horses): errors.append("horses:invalid_record"); horses=[h for h in horses if isinstance(h,dict)]
     nums=[h.get("horse_no") for h in horses]
     if len(set(map(str,nums)))!=len(nums): errors.append("duplicate_horse_no")
-    if any(not isinstance(n,int) or n<1 for n in nums): errors.append("invalid_horse_no")
+    if any(type(n) is not int or n<1 for n in nums): errors.append("invalid_horse_no")
     if any(not h.get("horse_name") or not h.get("diagnosis") for h in horses): errors.append("incomplete_full_field_diagnosis")
     h=obj.get("honshi")
     if not isinstance(h,dict): errors.append("honshi:invalid"); h={}
     marks=h.get("marks")
     if not isinstance(marks,dict) or not marks: errors.append("honshi:missing_marks")
-    elif any(not isinstance(n,int) or n not in nums for n in marks.values()): errors.append("honshi:unknown_horse_no")
+    elif any(type(n) is not int or n not in nums for n in marks.values()): errors.append("honshi:unknown_horse_no")
     bets=h.get("bets",[])
     if not isinstance(bets,list): errors.append("honshi:invalid_bets"); bets=[]
     if not bets and not h.get("pass_reason"): errors.append("honshi:missing_bets_or_pass")
@@ -45,7 +45,7 @@ def main():
     now=dt.datetime.now(JST); errors=check(obj,now)
     if errors:
         print(json.dumps({"saved":False,"errors":errors},ensure_ascii=False)); return 1
-    out=dict(obj,version=obj.get("version","pre-v1"),saved_at=now.isoformat(),record_type="pre_off_forecast",forecaster_id="honshi")
+    # Recheck at the actual write boundary; validation may have taken time.\n    write_now=dt.datetime.now(JST)\n    errors=check(obj,write_now)\n    if errors:\n        print(json.dumps({"saved":False,"errors":errors},ensure_ascii=False)); return 1\n    out=dict(obj,version=obj.get("version","pre-v1"),saved_at=write_now.isoformat(),record_type="pre_off_forecast",forecaster_id="honshi")
     path=pathlib.Path(a.output_dir)/(obj["race_id"]+"__"+out["version"]+".json")
     path.parent.mkdir(parents=True,exist_ok=True)
     with path.open("x",encoding="utf8") as f: json.dump(out,f,ensure_ascii=False,indent=2)
