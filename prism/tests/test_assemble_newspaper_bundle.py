@@ -66,6 +66,23 @@ class AssembleBundleTests(unittest.TestCase):
             (folder / "v2.json").write_text(json.dumps(final_payload), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "duplicate forecaster IDs"):
                 assemble(Path(tmp), RACE)
+            final_payload["records"].pop()
+            (folder / "v2.json").write_text(json.dumps(final_payload), encoding="utf-8")
+            discussion["opened_at"] = "2026-11-22T17:31:00+09:00"
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "roundtable timestamps must be ordered"):
+                assemble(Path(tmp), RACE)
+            discussion["opened_at"] = "2026-11-22T17:00:00+09:00"
+            discussion_path.write_text(json.dumps(discussion), encoding="utf-8")
+            card_path = folder / "racecard.json"
+            card = json.loads(card_path.read_text(encoding="utf-8"))
+            card["captured_at"] = "2026-11-22T16:01:00+09:00"
+            card_path.write_text(json.dumps(card), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "potential look-ahead leak"):
+                assemble(Path(tmp), RACE)
+            card["captured_at"] = "2026-11-22T15:59:00+09:00"
+            card_path.write_text(json.dumps(card), encoding="utf-8")
+            self.assertEqual(assemble(Path(tmp), RACE)["final"]["HONSHI"]["saved_at"], "2026-11-22T18:00:00+09:00")
 
 
 if __name__ == "__main__":
