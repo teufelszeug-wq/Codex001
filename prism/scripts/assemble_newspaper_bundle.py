@@ -27,6 +27,7 @@ def assemble(history: Path, race_id: str) -> dict:
     if not versions:
         raise FileNotFoundError("final forecast history missing")
     final = read(versions[-1][1])
+    preliminary = read(versions[0][1]) if len(versions) >= 2 else None
     discussion_path = directory / "roundtable-v1.json"
     if not discussion_path.is_file():
         raise FileNotFoundError("saved five-topic roundtable missing")
@@ -35,6 +36,8 @@ def assemble(history: Path, race_id: str) -> dict:
         raise ValueError("race identity mismatch")
     if len(discussion.get("topics", [])) < 5:
         raise ValueError("five roundtable topics required")
+    if preliminary is None or preliminary.get("race_id") != race_id or preliminary.get("metadata", {}).get("phase") != "PRELIMINARY":
+        raise ValueError("saved preliminary forecast missing")
     if not final.get("records"):
         raise ValueError("no final forecast records")
     if final.get("metadata", {}).get("phase") != "FINAL":
@@ -78,6 +81,7 @@ def assemble(history: Path, race_id: str) -> dict:
             "tickets": record.get("tickets", []), "skip_reason": record.get("skip_reason"),
         }
     forecasts = {r["forecaster_id"]: record_to_paper(r) for r in final["records"]}
+    preliminary_forecasts = {r["forecaster_id"]: record_to_paper(r) for r in preliminary["records"]}
     people = discussion.get("character_registry", {}).get("participants", [])
     characters = {p["speaker_id"]: {"name": p["name"], "role": "editor" if p["speaker_id"] == discussion.get("facilitator_id") else "specialist"} for p in people}
     for r in final["records"]:
@@ -95,7 +99,7 @@ def assemble(history: Path, race_id: str) -> dict:
         "mode": mode,
         "race": {"race_id": race_id, "race_name": card.get("race_name", final.get("race_name", race_id)),
                  "authority": race_id.split("-")[1], "off_at": card["off_at"], "runners": runners},
-        "characters": characters, "preliminary": {}, "final": forecasts,
+        "characters": characters, "preliminary": preliminary_forecasts, "final": forecasts,
         "discussions": topics, "source_refs": final.get("source_refs", []),
     }
 
