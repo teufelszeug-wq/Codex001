@@ -48,6 +48,20 @@ class WinMarketCoherenceTests(unittest.TestCase):
             self.convert(self.rows(
                 {"win_probability": 0.25}, {"win_probability": 0.75}))
 
+    def test_source_retrieval_same_instant_different_offset_allowed(self):
+        # 09:00 JST and 00:00 UTC are the same instant; compare instants, not text.
+        self.card["source_retrieved_at"] = "2026-11-21T00:00:00Z"
+        records = self.convert(self.rows(
+            {"win_probability": 0.25}, {"win_probability": 0.75}))
+        self.assertEqual(len(records), 2)
+
+    def test_source_retrieval_later_in_utc_rejected(self):
+        # 02:00 UTC is later than saved_at 10:00 JST (01:00 UTC).
+        self.card["source_retrieved_at"] = "2026-11-21T02:00:00Z"
+        with self.assertRaisesRegex(ValueError, "source retrieved after forecast saved_at"):
+            self.convert(self.rows(
+                {"win_probability": 0.25}, {"win_probability": 0.75}))
+
     def test_non_normalized_market_fails(self):
         with self.assertRaisesRegex(ValueError, "sum"):
             self.convert(self.rows(
