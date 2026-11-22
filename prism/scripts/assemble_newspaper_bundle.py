@@ -109,6 +109,8 @@ def assemble(history: Path, race_id: str) -> dict:
     preliminary_forecasts = {r["forecaster_id"]: record_to_paper(r, preliminary["saved_at"]) for r in preliminary["records"]}
     if len(forecasts) != len(final["records"]) or len(preliminary_forecasts) != len(preliminary["records"]):
         raise ValueError("duplicate forecaster IDs")
+    if set(preliminary_forecasts) != set(forecasts):
+        raise ValueError("preliminary/final forecaster roster mismatch")
     people = discussion.get("character_registry", {}).get("participants", [])
     characters = {p["speaker_id"]: {"name": p["name"], "role": "editor" if p["speaker_id"] == discussion.get("facilitator_id") else "specialist"} for p in people}
     for r in final["records"]:
