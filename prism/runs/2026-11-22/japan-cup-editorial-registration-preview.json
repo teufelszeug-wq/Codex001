@@ -1,0 +1,434 @@
+{
+  "schema": "prism.editorial_registration_preview/v1",
+  "race_id": "20261129-JRA-TOKYO-12",
+  "race_name": "ジャパンカップ",
+  "saved_at": "2026-11-22T22:28:42+09:00",
+  "stage": "REGISTRATION_PREVIEW",
+  "horse_numbers_assigned": false,
+  "mode": "single_assistant_editorial_role_preview",
+  "independent_execution": false,
+  "api_requests": 0,
+  "facilitator": {
+    "name": "篠宮 律",
+    "role": "編集長・司会"
+  },
+  "source_refs": [
+    "https://www.jra.go.jp/keiba/g1/jc.html",
+    "https://www.jra.go.jp/keiba/g1/jc/syutsuba.html",
+    "https://www.jra.go.jp/news/tokubetsu/2026jc.html",
+    "https://www.jra.go.jp/news/202611/112204.html",
+    "https://www.jra.go.jp/news/gaikokuba/2026/pdf/jc03.pdf",
+    "https://www.jra.go.jp/datafile/seiseki/g1/akiten/result/akiten2026.html",
+    "https://www.jra.go.jp/datafile/seiseki/g1/takara/result/takara2026.html",
+    "https://www.jra.go.jp/keiba/g1/akiten/horse.html"
+  ],
+  "forecasts": [
+    {
+      "forecaster_id": "HONSHI",
+      "display_name": "本紙",
+      "specialty": "総合",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "マスカレードボール"
+        }
+      ],
+      "reason": "昨年の同条件勝利と国際2400m実績を優先。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-REPORTER-01",
+      "display_name": "りお",
+      "specialty": "総合・取材",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "クロワデュノール"
+        }
+      ],
+      "reason": "秋の天皇賞で示した近況と東京の直線での伸びを優先。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-VIDEO-01",
+      "display_name": "三崎 レイ",
+      "specialty": "映像・不利",
+      "picks": [],
+      "reason": "映像を今回直接確認できていないため判断保留。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-ABILITY-01",
+      "display_name": "堂前 岳",
+      "specialty": "能力・馬体",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "オンブズマン"
+        }
+      ],
+      "reason": "東京2400mの実績と国際G1実績で評価。馬体診断は保留。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-COURSE-01",
+      "display_name": "宮坂 直矩",
+      "specialty": "コース",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "マスカレードボール"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        }
+      ],
+      "reason": "昨年の同コースでの僅差2着を評価。前走大敗の原因確認が必要。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-PACE-01",
+      "display_name": "早瀬 展",
+      "specialty": "展開",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "メイショウタバル"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "クロワデュノール"
+        }
+      ],
+      "reason": "先行争いが落ち着く展開を仮定。コスモキュランダとの兼ね合いで再評価。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-START-01",
+      "display_name": "戸倉 迅",
+      "specialty": "位置取り",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "クロワデュノール"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "メイショウタバル"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        }
+      ],
+      "reason": "好位で運べる展開を重視。ゲート評価は枠順確定後。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-SECTIONAL-01",
+      "display_name": "高梨 慧",
+      "specialty": "上がり・ラップ",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "マスカレードボール"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        }
+      ],
+      "reason": "秋の天皇賞の末脚を評価。各馬の統一ラップ比較は未実施。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-BLOOD-01",
+      "display_name": "白峰 遥",
+      "specialty": "血統",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "マスカレードボール"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "クロワデュノール"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        }
+      ],
+      "reason": "父ドゥラメンテと母父ディープインパクト、本人の東京実績を合わせて評価。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-JOCKEY-01",
+      "display_name": "桐生 駿",
+      "specialty": "騎手",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "ミニーホーク"
+        }
+      ],
+      "reason": "戸崎騎手との秋の天皇賞勝利を評価。今回の騎乗は正式発表で照合。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-VALUE-01",
+      "display_name": "御影 透",
+      "specialty": "期待値",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "メイショウタバル"
+        }
+      ],
+      "reason": "妙味候補。実売オッズと確率推定を確認するまで購入見送り。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-VALUE-01",
+      "display_name": "穴見 爆",
+      "specialty": "穴馬",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "ミニーホーク"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "メイショウタバル"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "オンブズマン"
+        }
+      ],
+      "reason": "外国牝馬の一角として比較候補。妙味は実売オッズで検証。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-STATE-01",
+      "display_name": "佐伯 恒一",
+      "specialty": "状態・ローテ",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "マスカレードボール"
+        }
+      ],
+      "reason": "秋の天皇賞勝利後の中3週を評価。直近の馬体・国内調教比較は保留。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-WORKOUT-01",
+      "display_name": "鷹取 美冬",
+      "specialty": "調教",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "ミニーホーク"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "テアオ"
+        }
+      ],
+      "reason": "11月22日公表の運動状況と馬体重回復のコメントからの暫定評価。最終追い切り未確認。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-REPORT-01",
+      "display_name": "牧野 俊介",
+      "specialty": "厩舎・取材",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "カランダガン"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "ミニーホーク"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "オンブズマン"
+        }
+      ],
+      "reason": "JRA公表の陣営コメントと輸送後の適応状況を参照。直接取材0件。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-WEATHER-01",
+      "display_name": "藤代 環",
+      "specialty": "気象",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "メイショウタバル"
+        }
+      ],
+      "reason": "雨で時計がかかる条件を仮定した候補。開催日の気象判断は保留。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-BIAS-01",
+      "display_name": "橘 潮",
+      "specialty": "馬場バイアス",
+      "picks": [],
+      "reason": "当該開催日の馬場傾向が未観測のため判断保留。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "PRISM-LEARNING-01",
+      "display_name": "児玉 栞",
+      "specialty": "学習・成長",
+      "picks": [],
+      "reason": "継続比較できる学習成績の不足により判断保留。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    },
+    {
+      "forecaster_id": "RIO-DATA-01",
+      "display_name": "黒川 統司",
+      "specialty": "統計",
+      "picks": [
+        {
+          "mark": "◎",
+          "horse_no": null,
+          "horse_name": "マスカレードボール"
+        },
+        {
+          "mark": "○",
+          "horse_no": null,
+          "horse_name": "ダノンデサイル"
+        },
+        {
+          "mark": "▲",
+          "horse_no": null,
+          "horse_name": "クロワデュノール"
+        }
+      ],
+      "reason": "日本馬の登録時レーティングを重視。外国馬との統一尺度・校正勝率は未計算。",
+      "bet_tickets": [],
+      "bet_status": "DEFERRED_UNTIL_DECLARATIONS_AND_ODDS"
+    }
+  ]
+}
