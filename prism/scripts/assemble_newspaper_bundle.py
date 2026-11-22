@@ -102,6 +102,19 @@ def assemble(history: Path, race_id: str) -> dict:
             raise ValueError("forecast pick references an unknown or scratched horse")
         if len({p["horse_no"] for p in picks}) != len(picks):
             raise ValueError("duplicate horse picks")
+        tickets = record.get("tickets", [])
+        if not isinstance(tickets, list):
+            raise ValueError("tickets must be a list")
+        for ticket in tickets:
+            if not isinstance(ticket, dict):
+                raise ValueError("ticket must be an object")
+            numbers = ticket.get("horse_nos")
+            if (not isinstance(numbers, list) or not numbers or
+                    any(type(number) is not int or number not in by_no for number in numbers)):
+                raise ValueError("ticket references an unknown or scratched horse")
+            stake = ticket.get("stake_yen")
+            if type(stake) is not int or stake <= 0 or stake % 100:
+                raise ValueError("ticket stake must be a positive 100-yen multiple")
         return {
             "saved_at": saved_at, "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
             "summary": record.get("summary", ""),
