@@ -36,8 +36,14 @@ def assemble(history: Path, race_id: str) -> dict:
     discussion = read(discussion_path)
     if any(doc.get("race_id") != race_id for doc in (card, final, discussion)):
         raise ValueError("race identity mismatch")
-    if len(discussion.get("topics", [])) < 5:
+    topics_input = discussion.get("topics", [])
+    if len(topics_input) < 5:
         raise ValueError("five roundtable topics required")
+    topic_ids = [topic.get("id") for topic in topics_input]
+    if any(not topic_id for topic_id in topic_ids) or len(set(topic_ids)) != len(topic_ids):
+        raise ValueError("roundtable topic IDs must be nonempty and unique")
+    if any(not topic.get("turns") or any(not turn.get("speaker_id") or not turn.get("text", "").strip() for turn in topic["turns"]) for topic in topics_input):
+        raise ValueError("roundtable topics require attributed substantive turns")
     if preliminary is None or preliminary.get("race_id") != race_id or preliminary.get("metadata", {}).get("phase") != "PRELIMINARY":
         raise ValueError("saved preliminary forecast missing")
     if not final.get("records"):
