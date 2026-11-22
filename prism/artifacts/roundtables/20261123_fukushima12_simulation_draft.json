@@ -1,0 +1,293 @@
+{
+  "schema": "prism.roundtable/v1",
+  "race_id": "20261123-JRA-FUKUSHIMA-12",
+  "race_name": "3歳以上1勝クラス",
+  "off_at": "2026-11-23T15:55:00+09:00",
+  "source_refs": [
+    "https://sp.jra.jp/JRADB/accessD.html?CNAME=sw01ddd0103202603061220261123%2FBA"
+  ],
+  "created_at": "2026-11-22T18:46:19+09:00",
+  "completed_at": "2026-11-22T18:46:19+09:00",
+  "mode": "SIMULATED_SINGLE_MODEL",
+  "publication_status": "TRAINING_DRAFT_NOT_FINAL",
+  "character_db": "https://app.notion.com/p/e4615cdcad494bf7a177c7708b5fe627",
+  "character_verified_at": "2026-11-22T18:46:19+09:00",
+  "official_runner_names": [
+    "アスクメークシェア",
+    "トクシージェネラル",
+    "ウインポセイドン",
+    "ポッドクロス",
+    "スーパーチャンド",
+    "カテドラルクォーツ",
+    "キューティリップ",
+    "ゼットエイト",
+    "サトノオラシオン",
+    "レッドレグルス",
+    "マジックファイヤー",
+    "マイネルダンク",
+    "シーギリヤロック",
+    "クラシカルカイザー",
+    "キングプロフィット",
+    "ラッキーベイ"
+  ],
+  "forecast_status": "NOT_FINALIZED",
+  "stake_yen": 0,
+  "limitations": [
+    "公式出馬表の馬名・馬番・レース条件のみ照合",
+    "近走詳細・調教・馬体・Bias・独立AI一次予想は未照合",
+    "全頭診断は確認待ちであり能力評価は未完成",
+    "本紙・専門AIの正式予想と新聞の発行を示さない"
+  ],
+  "topics": [
+    {
+      "title": "①全頭診断",
+      "speeches": [
+        {
+          "character_url": "https://app.notion.com/3f976efc40298167923fc558013d1d35",
+          "name": "篠宮 律",
+          "role": "司会・編集長",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "明日11月23日の福島12R、芝2000メートルの全16頭を確認します。まず馬番と馬名を一頭ずつ照合しましょう。今回の原稿は単一モデルによる模擬座談会です。能力評価の根拠が未取得の馬を高評価と断定しません。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "1番アスクメークシェア。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "2番トクシージェネラル。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "3番ウインポセイドン。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "4番ポッドクロス。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "5番スーパーチャンド。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "6番カテドラルクォーツ。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "7番キューティリップ。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "8番ゼットエイト。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "9番サトノオラシオン。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "10番レッドレグルス。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "11番マジックファイヤー。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "12番マイネルダンク。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "13番シーギリヤロック。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "14番クラシカルカイザー。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "15番キングプロフィット。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "16番ラッキーベイ。JRA出馬表で出走予定を確認しました。ただし前4走・調教・当日の馬場とオッズをこの原稿の入力として照合できていないため、現時点で能力順位や適性を確定できません。次の確認は近走の距離、着差、通過順と上がりです。"
+        }
+      ]
+    },
+    {
+      "title": "②コース馬場",
+      "speeches": [
+        {
+          "character_url": "https://app.notion.com/3f976efc40298167923fc558013d1d35",
+          "name": "篠宮 律",
+          "role": "司会・編集長",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "福島芝2000メートル。小回りでの位置取りとコーナーでのロスは検討項目です。ただし内外の有利不利や馬場Biasは、当日の実測を確認せず断定しません。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "先行馬が多いかどうかも、脚質履歴を全馬分確認してからですね。いまは展開を一つに決め打ちしない方針にします。"
+        }
+      ]
+    },
+    {
+      "title": "③調教・状態・取材",
+      "speeches": [
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "調教映像、馬体重、厩舎コメントは確認できていますか？"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298167923fc558013d1d35",
+          "name": "篠宮 律",
+          "role": "司会・編集長",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "この原稿には確認済みの一次資料がありません。『好調』『仕上がった』といった表現は避け、情報未取得として扱います。"
+        }
+      ]
+    },
+    {
+      "title": "④本命比較・反論",
+      "speeches": [
+        {
+          "character_url": "https://app.notion.com/3f976efc40298167923fc558013d1d35",
+          "name": "篠宮 律",
+          "role": "司会・編集長",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "独立専門AIの実行ID付き予想は本原稿にはありません。従って本命プレゼンや反論を実際に行ったと装うことはできません。候補選定は保留とします。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "それなら人気だけで本命を決めるのも違いますね。各馬の近走内容を揃えたあとで比較し、少数意見があれば残しましょう。"
+        }
+      ]
+    },
+    {
+      "title": "⑤買い目と根拠",
+      "speeches": [
+        {
+          "character_url": "https://app.notion.com/3f976efc40298167923fc558013d1d35",
+          "name": "篠宮 律",
+          "role": "司会・編集長",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "根拠となる全頭診断と独立一次予想が揃っていないため、編集部の模擬検討段階では買い目を見送ります。投資額は0円。100円単位の買い目を作った実績とは数えません。"
+        },
+        {
+          "character_url": "https://app.notion.com/3f976efc40298195b387e14cb4cde5a4",
+          "name": "りお",
+          "role": "新人記者・質問・最終見解",
+          "character_version": "Notion verified 2026-11-22 (confirmed fields only)",
+          "verified_at": "2026-11-22T18:46:19+09:00",
+          "execution_mode": "single_model_simulation",
+          "text": "わたしの最終見解も、今は◎を確定できません。見送り0円と明記し、明日の発走前に確認できた情報で正式な版を別保存する必要があります。"
+        }
+      ]
+    }
+  ]
+}
