@@ -47,9 +47,6 @@ def run(racecard_path, output_dir, *, cutoff_at, version):
         raise ValueError("racecard must be an object")
     # The cutoff is explicit and cannot be inferred from a later run time.
     forecasts = odds_baseline(racecard, cutoff_at=cutoff_at)
-    records = build_preday_records(
-        racecard, forecasts, forecaster_id=BASELINE_ID, version=version
-    )
     # Do not silently re-label post-cutoff execution as an earlier snapshot.
     from datetime import datetime, timezone, timedelta
     cutoff = datetime.fromisoformat(cutoff_at.replace("Z", "+00:00"))
@@ -69,6 +66,9 @@ def run(racecard_path, output_dir, *, cutoff_at, version):
     if age > timedelta(hours=1):
         raise ValueError("stale cutoff_at: historical replay must not be saved as live preday")
     validate_preday_calendar(racecard["scheduled_start_at"], cutoff_at, now.isoformat())
+    records = build_preday_records(
+        racecard, forecasts, forecaster_id=BASELINE_ID, version=version
+    )
     path = persist_preday_batch(records, output_dir)
     return {"path": str(path), "race_id": racecard["race_id"],
             "forecaster_id": BASELINE_ID, "runner_count": len(records),
