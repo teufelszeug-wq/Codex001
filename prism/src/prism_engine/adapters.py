@@ -7,9 +7,9 @@ def clip(value):return min(100.,max(0.,value))
 def normalize(observations):
     fields(observations,{'schema','mode','race','runners','bias','specialists','source'},
            {'schema','mode','race','runners','source'})
-    if observations['schema']!='prism.engine.observations/v1':raise ValueError('observation schema rejected')
+    if observations['schema'] not in {'prism.engine.observations/v1','prism.engine.observations/v2'}:raise ValueError('observation schema rejected')
     if observations['source']['content_hash']!=digest({k:v for k,v in observations.items() if k!='source'}):raise ValueError('raw observation hash mismatch')
-    raw=deepcopy(observations);raw['schema']='prism.engine.raw/v1'
+    raw=deepcopy(observations);raw['schema']=observations['schema'].replace('.observations/','.raw/')
     for runner in raw['runners']:
         converted=[]
         for h in runner['history']:

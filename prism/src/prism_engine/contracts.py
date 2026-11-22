@@ -26,15 +26,21 @@ def fields(value,allowed,required=()):
 
 def validate(raw):
     fields(raw,{'schema','mode','race','runners','bias','specialists','source'}, {'schema','mode','race','runners','source'})
-    if raw['schema']!='prism.engine.raw/v1' or raw['mode'] not in MODES:raise ValueError('schema or mode rejected')
-    fields(raw['race'],{'race_id','venue','surface','distance_m','direction','class_rating','cutoff','barrier_count'},
-           {'race_id','venue','surface','distance_m','direction','class_rating','cutoff','barrier_count'})
+    if raw['schema'] not in {'prism.engine.raw/v1','prism.engine.raw/v2'} or raw['mode'] not in MODES:raise ValueError('schema or mode rejected')
+    v2=raw['schema']=='prism.engine.raw/v2'
+    race_fields={'race_id','venue','surface','distance_m','direction','class_rating','cutoff','barrier_count'}
+    if v2:race_fields.add('declaration_stage')
+    fields(raw['race'],race_fields,race_fields)
     race=raw['race'];cutoff=timestamp(race['cutoff'])
+    stage=race.get('declaration_stage','DRAW_CONFIRMED')
+    if stage not in {'ENTRIES_CONFIRMED','DRAW_CONFIRMED'}:raise ValueError('declaration stage rejected')
     if not isinstance(race['race_id'],str) or not race['race_id']:raise ValueError('race identity required')
     if race['surface'] not in SURFACES or race['direction'] not in {'LEFT','RIGHT','STRAIGHT','MIXED'}:raise ValueError('course category rejected')
     numeric(race['distance_m'],100,10000);numeric(race['class_rating'],0,100)
     if type(race['barrier_count']) is not int or not 2<=race['barrier_count']<=24:raise ValueError('explicit barrier width required')
-    fields(raw['source'],{'source_id','available_at','content_hash'}, {'source_id','available_at','content_hash'})
+    source_fields={'source_id','available_at','content_hash'}
+    if v2:source_fields.add('racecard_sha256')
+    fields(raw['source'],source_fields,{'source_id','available_at','content_hash'})
     source=raw['source']
     if not source['source_id']:raise ValueError('source ID required')
     if source['available_at'] is None:
@@ -46,13 +52,25 @@ def validate(raw):
     seen=set();ids=set();barriers=set()
     for runner in raw['runners']:
         allowed={'horse_id','horse_no','frame_no','barrier_no','carried_weight','history','state','style','workout','condition','jockey','sectional','ban_ei','jump','path_position'}
+        if v2:allowed.add('provenance')
         fields(runner,allowed,{'horse_id','horse_no','frame_no','barrier_no','carried_weight','history'})
         if not isinstance(runner['horse_id'],str) or not runner['horse_id'] or runner['horse_id'] in ids:raise ValueError('horse identity ambiguous')
-        if type(runner['horse_no']) is not int or runner['horse_no']<1 or runner['horse_no'] in seen:raise ValueError('horse number duplicate/invalid')
-        if type(runner['frame_no']) is not int or not 1<=runner['frame_no']<=8:raise ValueError('frame number invalid')
-        numeric(runner['carried_weight'],1,2000);ids.add(runner['horse_id']);seen.add(runner['horse_no'])
-        if type(runner['barrier_no']) is not int or not 1<=runner['barrier_no']<=race['barrier_count'] or runner['barrier_no'] in barriers:raise ValueError('invalid barrier position')
-        barriers.add(runner['barrier_no'])
+        number=runner['horse_no'];frame=runner['frame_no'];barrier=runner['barrier_no']
+        undrawn=v2 and stage=='ENTRIES_CONFIRMED'
+        if not (undrawn and number is None):
+            if type(number) is not int or number<1 or number in seen:raise ValueError('horse number duplicate/invalid')
+            seen.add(number)
+        if not (undrawn and frame is None) and (type(frame) is not int or not 1<=frame<=8):raise ValueError('frame number invalid')
+        numeric(runner['carried_weight'],1,2000);ids.add(runner['horse_id'])
+        if not (undrawn and barrier is None):
+            if type(barrier) is not int or not 1<=barrier<=race['barrier_count'] or barrier in barriers:raise ValueError('invalid barrier position')
+            barriers.add(barrier)
+        provenance=runner.get('provenance')
+        if provenance is not None:
+            fields(provenance,{'source_url','available_at','content_hash'},{'source_url','available_at','content_hash'})
+            if not isinstance(provenance['source_url'],str) or not provenance['source_url'].startswith('https://'):raise ValueError('runner evidence source required')
+            if not isinstance(provenance['content_hash'],str) or len(provenance['content_hash'])!=64 or any(c not in '0123456789abcdef' for c in provenance['content_hash']):raise ValueError('runner evidence hash required')
+            if timestamp(provenance['available_at'])>cutoff:raise ValueError('future runner evidence')
         if runner.get('path_position') is not None:numeric(runner['path_position'],-1,1)
         if not isinstance(runner['history'],list):raise ValueError('history list required')
         for h in runner['history']:

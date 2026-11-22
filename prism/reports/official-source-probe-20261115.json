@@ -1,0 +1,158 @@
+{
+  "schema": "prism.official_source_probe/v1",
+  "observed_at": "2026-11-15T11:38:03.602848+00:00",
+  "scope": "Live official-source parsing and bounded navigation discovery, not a prediction or publication test",
+  "jra_result": {
+    "status": "EXECUTED_LIVE_FETCH_AND_PARSE",
+    "race_id": "JRA-20261108-03-11",
+    "purpose": "HISTORICAL_RESULT_PARSER_TEST",
+    "payout_rows": 12,
+    "complete_bet_types": [
+      "EXACTA",
+      "FRAME_QUINELLA",
+      "PLACE",
+      "QUINELLA",
+      "TRIFECTA",
+      "TRIO",
+      "WIDE",
+      "WIN"
+    ],
+    "published_at": null,
+    "first_observed_at": "2026-11-15T11:29:53.223335+00:00",
+    "official_settlements": 0
+  },
+  "jra_result_source": {
+    "official_url": "https://www.jra.go.jp/JRADB/accessS.html?CNAME=pw01sde1003202603021120261108/0A",
+    "captured_at": "2026-11-15T11:29:53.223335+00:00",
+    "source_sha256": "41b4edb89fd5ce0ed77a8b1e4cca75214e3cbf4e56a59f697114113e7a79a7ce"
+  },
+  "jra_discovery": {
+    "page_budget": 6,
+    "status": "DISCOVERED_LINKS_ONLY",
+    "candidate_count": 36,
+    "errors": [],
+    "source_provenance": [
+      {
+        "official_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dli00%2FF3",
+        "captured_at": "2026-11-15T11:37:45.053521+00:00",
+        "source_sha256": "bee61903b77ee9a80cc2b97a60be4653486173392af7be791f0730a88bbdb9fa",
+        "http_method": "POST",
+        "posted_cname": "pw01dli00/F3",
+        "response_url": "https://www.jra.go.jp/JRADB/accessD.html"
+      },
+      {
+        "official_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01drl00052026050420261115%2FBD",
+        "captured_at": "2026-11-15T11:37:49.298835+00:00",
+        "source_sha256": "68d1ec1d08d63972af3cfe6dec4d3a4559d906fe1538cea98956e4b65d5bc221",
+        "http_method": "POST",
+        "posted_cname": "pw01drl00052026050420261115/BD",
+        "navigation_source_sha256": "bee61903b77ee9a80cc2b97a60be4653486173392af7be791f0730a88bbdb9fa",
+        "response_url": "https://www.jra.go.jp/JRADB/accessD.html"
+      },
+      {
+        "official_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01drl00082026050420261115%2F9B",
+        "captured_at": "2026-11-15T11:37:54.325951+00:00",
+        "source_sha256": "541da8af6be6fc9a31aed44ef329408176f50cebc6b6984c744949506b2982d8",
+        "http_method": "POST",
+        "posted_cname": "pw01drl00082026050420261115/9B",
+        "navigation_source_sha256": "68d1ec1d08d63972af3cfe6dec4d3a4559d906fe1538cea98956e4b65d5bc221",
+        "response_url": "https://www.jra.go.jp/JRADB/accessD.html"
+      },
+      {
+        "official_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01drl00032026030420261115%2FC7",
+        "captured_at": "2026-11-15T11:37:58.975223+00:00",
+        "source_sha256": "5c75b878ffb5f633aad0017b60c929dc53379e2a5310a1a4ca3d7e88f36ff989",
+        "http_method": "POST",
+        "posted_cname": "pw01drl00032026030420261115/C7",
+        "navigation_source_sha256": "541da8af6be6fc9a31aed44ef329408176f50cebc6b6984c744949506b2982d8",
+        "response_url": "https://www.jra.go.jp/JRADB/accessD.html"
+      },
+      {
+        "official_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dde0108202605041120261115/4C",
+        "captured_at": "2026-11-15T11:38:03.576144+00:00",
+        "source_sha256": "2deb4cc6203b39d6584edf25710e1e4303ff3ae877688a333d4fc96f52754ba9"
+      }
+    ]
+  },
+  "nar_discovery": {
+    "page_budget": 6,
+    "status": "DISCOVERED_LINKS_ONLY",
+    "candidate_count": 56,
+    "venues": [
+      "佐賀",
+      "帯広",
+      "水沢",
+      "金沢",
+      "高知"
+    ],
+    "errors": [],
+    "source_provenance": [
+      {
+        "official_url": "https://www.keiba.go.jp/KeibaWeb/MonthlyConveneInfo/MonthlyConveneInfoTop?k_year=2026&k_month=11",
+        "captured_at": "2026-11-15T11:31:02.581788+00:00",
+        "source_sha256": "faf54b57a35422a725db283e8a38fbdd68204d58fcb5fbb6372aad4de8a92ad5"
+      },
+      {
+        "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_raceDate=2026%2F11%2F15&k_babaCode=3",
+        "captured_at": "2026-11-15T11:31:04.879013+00:00",
+        "source_sha256": "cfc34462843a3d922da24d7ff174c1cfb7c299e2f51f24a97c4f282ea639490f"
+      },
+      {
+        "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_raceDate=2026%2F11%2F15&k_babaCode=11",
+        "captured_at": "2026-11-15T11:31:08.428796+00:00",
+        "source_sha256": "f2a6cdc131791cbafb3847857d927fe1086cd65c9f8036023564d1c9c427a71c"
+      },
+      {
+        "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_raceDate=2026%2F11%2F15&k_babaCode=22",
+        "captured_at": "2026-11-15T11:31:10.862742+00:00",
+        "source_sha256": "53bc10520d75e2352d364b613c6cb9b94105dba9841ee44dfadd221ac6cc38b0"
+      },
+      {
+        "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_raceDate=2026%2F11%2F15&k_babaCode=31",
+        "captured_at": "2026-11-15T11:31:13.536701+00:00",
+        "source_sha256": "a8e5f2ab46c43399e1ac3e99557163d75c30dda6ed370be36b03b54dcd79081b"
+      },
+      {
+        "official_url": "https://www.keiba.go.jp/KeibaWeb/TodayRaceInfo/RaceList?k_raceDate=2026%2F11%2F15&k_babaCode=32",
+        "captured_at": "2026-11-15T11:31:14.820260+00:00",
+        "source_sha256": "8ab8669b89a1995690ea09d6b1261b77a65c8beddfac6a3630e9f909614e4be0"
+      }
+    ]
+  },
+  "limitations": [
+    "Discovered URLs are retrieval candidates; runner-card verification remains separate.",
+    "JRA result is a historical race newly fetched on 2026-11-15; it does not establish historical pre-off availability.",
+    "Unknown publication timestamps remain null; first_observed_at is the new collection time.",
+    "Earlier GET navigation redirects to HTTP error pages were rejected; no HTTPS downgrade or host expansion was allowed."
+  ],
+  "counts": {
+    "official_predictions": 0,
+    "independent_model_executions": 0,
+    "pre_day_publications": 0,
+    "official_settlements": 0
+  },
+  "prior_get_navigation": {
+    "observed_at": "2026-11-15T11:31:14.822705+00:00",
+    "status": "BLOCKED_HTTPS_DOWNGRADE",
+    "candidate_count": 0,
+    "errors": [
+      {
+        "code": "UNVERIFIED_OFFICIAL_DISCOVERY",
+        "official_url": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dli00%2FF3",
+        "detail": "only exact official HTTPS hosts without credentials are allowed"
+      },
+      {
+        "code": "NO_CONFIRMED_RACE_LINKS",
+        "race_date": "2026-11-15"
+      }
+    ],
+    "redirects": [
+      {
+        "from": "https://www.jra.go.jp/JRADB/accessD.html?CNAME=pw01dli00%2FF3",
+        "status": 301,
+        "to": "http://www.jra.go.jp/error/error013.html"
+      }
+    ],
+    "resolution": "Only the known index and source-observed doAction navigation were retried as lowercase cname POST; card retrieval stays GET."
+  }
+}

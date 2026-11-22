@@ -77,12 +77,14 @@ def predict(raw,locked_at,config=None,calibration=None,disabled_modules=()):
                               'Specialist and ability recheck diagnostics are retained; only specialist score addition is ablated.'],
                           'scenario_scores_include_pace_replacement':'pace' not in disabled and fit['pace_distribution'] is not None},
               'features':fit,'coverage':coverage,'win':win,'probabilities':probabilities,'rank_distribution':ranks,
-              'frames':{r['horse_id']:str(r['frame_no']) for r in data['runners']},
+              'frames':{r['horse_id']:(None if r['frame_no'] is None else str(r['frame_no'])) for r in data['runners']},
               'monte_carlo':mc,'model_version':'prism-core-engine-0.2-experimental',
               'rank_model':'CALIBRATED_PACE_MIXTURE_PL_NOT_PHYSICAL_RACE_SIMULATION',
               'scenario_win_uncalibrated':scenarios,
               'ability_rechecks':ability_recheck(data,fit),
               'performance_validated':False,'source_authenticity_verified':False}
+    if data['schema']=='prism.engine.raw/v2':
+        artifact['declaration_stage']=data['race']['declaration_stage']
     artifact['uncertainty']={'normalized_entropy':-sum(p*log(p) for p in win.values() if p)/log(len(win)),
                              'mc_standard_errors':{k:sqrt(p*(1-p)/cfg['runs']) for k,p in win.items()},
                              'missing_feature_count':sum(len(h['missing']) for h in fit['horses'].values()),

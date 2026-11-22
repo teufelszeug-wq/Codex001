@@ -10,6 +10,7 @@ description = "PRISM experimental prediction, evidence, research and entity reco
 
 [project.optional-dependencies]
 research = ["lxml"]
+operations = ["lxml==6.0.2", "playwright==1.56.0", "PyMuPDF==1.26.6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

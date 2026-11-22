@@ -1,0 +1,27 @@
+services:
+  worker:
+    build:
+      context: ../..
+      dockerfile: prism/deploy/Dockerfile
+    init: true
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - prism-data:/data
+      - ./config:/config:ro
+    shm_size: 512mb
+    security_opt:
+      - no-new-privileges:true
+  reader:
+    build:
+      context: ../..
+      dockerfile: prism/deploy/Dockerfile
+    init: true
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "prism_ops.reader", "--data", "/data", "--host", "0.0.0.0", "--port", "8787"]
+    volumes:
+      - prism-data:/data:ro
+    ports:
+      - "127.0.0.1:8787:8787"
+volumes:
+  prism-data:

@@ -1,0 +1,30 @@
+name: PRISM operational integration
+on:
+  pull_request:
+    paths: ['prism/**', '.github/workflows/prism-operations.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  software-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    container: python:3.11-bookworm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install paper runtime
+        run: |
+          python -m pip install playwright==1.56.0 lxml==6.0.2 PyMuPDF==1.26.6
+          apt-get update
+          apt-get install -y chromium fonts-noto-cjk poppler-utils
+      - name: Run all Python groups, pre-day gate and Node suites
+        run: python prism/scripts/verify_operations.py --out /tmp/prism-software-verification
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prism-software-verification
+          path: /tmp/prism-software-verification
+          retention-days: 30
