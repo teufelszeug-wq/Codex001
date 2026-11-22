@@ -22,7 +22,7 @@ class PreDayClockGateTests(unittest.TestCase):
             venue="TEST", surface="turf", distance_m=1600,
             direction="right", class_rating=1, barrier_count=1,
             output_dir="/tmp/prism-clock-test", predictor_id="test",
-            version="test", source="test", source_evidence={},
+            version="test", source="test", source_evidence=[{"source_url": "https://example.invalid/synthetic-clock-test", "retrieved_at": (self.now - timedelta(hours=2)).isoformat()}],
             now=self.now.isoformat(),
         )
 
