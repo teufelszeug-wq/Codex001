@@ -82,6 +82,8 @@ def assemble(history: Path, race_id: str) -> dict:
     by_no = {r["horse_no"]: r for r in active}
     if len(by_no) != len(active):
         raise ValueError("duplicate horse numbers")
+    if any(type(r["horse_no"]) is not int or r["horse_no"] <= 0 for r in active):
+        raise ValueError("horse numbers must be positive integers, not booleans")
     runners = [
         {"horse_id": str(r["horse_id"]) if r.get("horse_id") else f"horse-no:{r['horse_no']}", "horse_no": r["horse_no"], "frame_no": r.get("frame_no"),
          "name": r["horse_name"], "jockey_name": r.get("jockey_name"),
@@ -115,6 +117,8 @@ def assemble(history: Path, race_id: str) -> dict:
             stake = ticket.get("stake_yen")
             if type(stake) is not int or stake <= 0 or stake % 100:
                 raise ValueError("ticket stake must be a positive 100-yen multiple")
+            if len(set(numbers)) != len(numbers):
+                raise ValueError("ticket contains duplicate horse numbers")
         return {
             "saved_at": saved_at, "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
             "summary": record.get("summary", ""),
