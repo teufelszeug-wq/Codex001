@@ -36,6 +36,18 @@ class WinMarketCoherenceTests(unittest.TestCase):
             {"win_probability": 0.25}, {"win_probability": 0.75}))
         self.assertEqual(len(records), 2)
 
+    def test_source_retrieval_after_saved_at_rejected(self):
+        self.card["source_retrieved_at"] = "2026-11-21T11:00:00+09:00"
+        with self.assertRaisesRegex(ValueError, "source retrieved after forecast saved_at"):
+            self.convert(self.rows(
+                {"win_probability": 0.25}, {"win_probability": 0.75}))
+
+    def test_source_retrieval_requires_timezone(self):
+        self.card["source_retrieved_at"] = "2026-11-21T09:00:00"
+        with self.assertRaisesRegex(ValueError, "source_retrieved_at must include timezone"):
+            self.convert(self.rows(
+                {"win_probability": 0.25}, {"win_probability": 0.75}))
+
     def test_non_normalized_market_fails(self):
         with self.assertRaisesRegex(ValueError, "sum"):
             self.convert(self.rows(
