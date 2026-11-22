@@ -28,6 +28,8 @@ def assemble(history: Path, race_id: str) -> dict:
         raise FileNotFoundError("final forecast history missing")
     final = read(versions[-1][1])
     preliminary = read(versions[0][1]) if len(versions) >= 2 else None
+    if len(versions) < 2 or versions[0][0] != 1 or versions[-1][0] < 2:
+        raise ValueError("numbered preliminary and final versions required")
     discussion_path = directory / "roundtable-v1.json"
     if not discussion_path.is_file():
         raise FileNotFoundError("saved five-topic roundtable missing")
@@ -54,6 +56,11 @@ def assemble(history: Path, race_id: str) -> dict:
     discussed = datetime.fromisoformat(discussion["recorded_at"].replace("Z", "+00:00"))
     if discussed.tzinfo is None or discussed >= saved:
         raise ValueError("roundtable must precede final forecast")
+    preliminary_saved = datetime.fromisoformat(preliminary["saved_at"].replace("Z", "+00:00"))
+    if preliminary_saved.tzinfo is None or not preliminary_saved < discussed:
+        raise ValueError("preliminary forecast must precede the roundtable")
+    if preliminary_saved >= off:
+        raise ValueError("preliminary forecast is not pre-race")
     active = [r for r in card.get("runners", []) if r.get("status") not in ("SCRATCHED", "EXCLUDED")]
     if not active or any(not r.get("horse_name") or not isinstance(r.get("horse_no"), int) for r in active):
         raise ValueError("numbered official runner list required")
@@ -61,27 +68,32 @@ def assemble(history: Path, race_id: str) -> dict:
     if len(by_no) != len(active):
         raise ValueError("duplicate horse numbers")
     runners = [
-        {"horse_id": str(r["horse_no"]), "horse_no": r["horse_no"], "frame_no": r.get("frame_no"),
+        {"horse_id": str(r["horse_id"]) if r.get("horse_id") else None, "horse_no": r["horse_no"], "frame_no": r.get("frame_no"),
          "name": r["horse_name"], "jockey_name": r.get("jockey_name"),
          "carried_weight": r.get("carried_weight"), "status": r.get("status")}
         for r in active
     ]
+    official_ids = {r["horse_no"]: str(r["horse_id"]) if r.get("horse_id") else None for r in active}
+    def horse_ref(horse_no):
+        return official_ids[horse_no] or f"horse-no:{horse_no}"
     def record_to_paper(record, saved_at):
         diagnoses = record.get("diagnoses", [])
-        if {d.get("horse_no") for d in diagnoses} != set(by_no):
+        if len(diagnoses) != len(by_no) or {d.get("horse_no") for d in diagnoses} != set(by_no):
             raise ValueError("incomplete all-runner diagnosis")
         return {
             "saved_at": saved_at, "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
             "summary": record.get("summary", ""),
-            "diagnoses": [{"horse_id": str(d["horse_no"]), "reason": d["reason"],
+            "diagnoses": [{"horse_id": horse_ref(d["horse_no"]), "reason": d["reason"],
                            "win_probability": d.get("win_probability")} for d in diagnoses],
-            "picks": [{"horse_id": str(p["horse_no"]), "mark": p.get("mark", "印未記録"),
+            "picks": [{"horse_id": horse_ref(p["horse_no"]), "mark": p.get("mark", "印未記録"),
                        "reason": p.get("reason", "")} for p in record.get("picks", [])
                       if p.get("horse_no") in by_no],
             "tickets": record.get("tickets", []), "skip_reason": record.get("skip_reason"),
         }
     forecasts = {r["forecaster_id"]: record_to_paper(r, final["saved_at"]) for r in final["records"]}
     preliminary_forecasts = {r["forecaster_id"]: record_to_paper(r, preliminary["saved_at"]) for r in preliminary["records"]}
+    if len(forecasts) != len(final["records"]) or len(preliminary_forecasts) != len(preliminary["records"]):
+        raise ValueError("duplicate forecaster IDs")
     people = discussion.get("character_registry", {}).get("participants", [])
     characters = {p["speaker_id"]: {"name": p["name"], "role": "editor" if p["speaker_id"] == discussion.get("facilitator_id") else "specialist"} for p in people}
     for r in final["records"]:
