@@ -44,6 +44,18 @@ def run(c, e):
     )
 
 class OfficialInputGateTests(unittest.TestCase):
+    def test_duplicate_official_horse_identity_rejected(self):
+        c = card([1, 2])
+        c["active_runners"][1]["horse_id"] = c["active_runners"][0]["horse_id"]
+        with self.assertRaisesRegex(ValueError, "duplicate official horse identity"):
+            run(c, evidence([1, 2]))
+
+    def test_missing_official_horse_identity_rejected(self):
+        c = card([1])
+        c["active_runners"][0]["horse_id"] = ""
+        with self.assertRaisesRegex(ValueError, "official horse identity required"):
+            run(c, evidence([1]))
+
     def test_duplicate_horse_number_rejected(self):
         with patch("scripts.assemble_official_engine_input.timestamp", side_effect=ts):
             with self.assertRaisesRegex(ValueError, "duplicate horse number"):
