@@ -22,6 +22,11 @@ class TestBridge(unittest.TestCase):
   with self.assertRaises(ValueError): self.run_bridge([E,E])
  def test_no_mutation(self):
   self.run_bridge([E]);self.assertNotIn("video_evidence",BASE)
+ def test_review_page_only_not_playback(self):
+  e=dict(E,status="page_only",video_start=None,video_end=None,checked_at="2026-11-24T10:00:00+09:00")
+  out=self.run_bridge([e],phase="review")
+  self.assertEqual(out["video_evidence"],[])
+  self.assertEqual(out["video_evidence_withheld"],[{"evidence_id":"ev1","reason":"no_verified_playback"}])
  def test_review(self):
   e=dict(E,checked_at="2026-11-24T10:00:00+09:00")
   self.assertEqual(len(self.run_bridge([e],phase="review")["video_evidence"]),1)
