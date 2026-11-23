@@ -4,6 +4,7 @@ Pure validation: no video playback or external claims. Preserve unknown publicat
 times as null; post-race observations cannot become pre-race evidence.
 """
 from datetime import datetime
+from math import isfinite
 from urllib.parse import urlparse
 
 STATES = {"page_only", "partial_playback", "full_playback", "unpublished", "unplayable"}
@@ -46,6 +47,7 @@ def validate(item, *, forecast_saved_at=None, off_at=None, phase="pre_race"):
     played = item["status"] in ("partial_playback", "full_playback")
     if played and (not isinstance(start, (int, float)) or isinstance(start, bool) or
                    not isinstance(end, (int, float)) or isinstance(end, bool) or
+                   not isfinite(start) or not isfinite(end) or
                    start < 0 or end <= start):
         raise ValueError("playback requires valid timestamp range")
     if not played and (start is not None or end is not None):
