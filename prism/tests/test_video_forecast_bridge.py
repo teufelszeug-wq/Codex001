@@ -36,6 +36,12 @@ class TestBridge(unittest.TestCase):
  def test_unhashable_evidence_id(self):
   with self.assertRaisesRegex(ValueError,"duplicate or blank evidence_id"):
    self.run_bridge([dict(E,evidence_id=["bad"])])
+ def test_nonfinite_video_ranges_rejected(self):
+  for value in (float("nan"),float("inf"),float("-inf")):
+   for field in ("video_start","video_end"):
+    with self.subTest(value=value,field=field):
+     with self.assertRaisesRegex(ValueError,"playback requires valid timestamp range"):
+      self.run_bridge([dict(E,**{field:value})])
  def test_review(self):
   e=dict(E,checked_at="2026-11-24T10:00:00+09:00")
   self.assertEqual(len(self.run_bridge([e],phase="review")["video_evidence"]),1)
