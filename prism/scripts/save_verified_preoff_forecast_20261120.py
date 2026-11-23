@@ -45,7 +45,12 @@ def main():
     now=dt.datetime.now(JST); errors=check(obj,now)
     if errors:
         print(json.dumps({"saved":False,"errors":errors},ensure_ascii=False)); return 1
-    # Recheck at the actual write boundary; validation may have taken time.\n    write_now=dt.datetime.now(JST)\n    errors=check(obj,write_now)\n    if errors:\n        print(json.dumps({"saved":False,"errors":errors},ensure_ascii=False)); return 1\n    out=dict(obj,version=obj.get("version","pre-v1"),saved_at=write_now.isoformat(),record_type="pre_off_forecast",forecaster_id="honshi")
+    # Recheck at the actual write boundary; validation may have taken time.
+    write_now=dt.datetime.now(JST)
+    errors=check(obj,write_now)
+    if errors:
+        print(json.dumps({"saved":False,"errors":errors},ensure_ascii=False)); return 1
+    out=dict(obj,version=obj.get("version","pre-v1"),saved_at=write_now.isoformat(),record_type="pre_off_forecast",forecaster_id="honshi")
     path=pathlib.Path(a.output_dir)/(obj["race_id"]+"__"+out["version"]+".json")
     path.parent.mkdir(parents=True,exist_ok=True)
     with path.open("x",encoding="utf8") as f: json.dump(out,f,ensure_ascii=False,indent=2)
