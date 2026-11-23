@@ -95,12 +95,16 @@ def assemble(history: Path, race_id: str) -> dict:
         return official_ids[horse_no] or f"horse-no:{horse_no}"
     def record_to_paper(record, saved_at):
         diagnoses = record.get("diagnoses", [])
-        if len(diagnoses) != len(by_no) or {d.get("horse_no") for d in diagnoses} != set(by_no):
+        diagnosis_numbers = [d.get("horse_no") for d in diagnoses if isinstance(d, dict)]
+        if (len(diagnosis_numbers) != len(by_no) or
+                any(type(n) is not int for n in diagnosis_numbers) or
+                set(diagnosis_numbers) != set(by_no)):
             raise ValueError("incomplete all-runner diagnosis")
         if any(not isinstance(d.get("reason"), str) or not d["reason"].strip() for d in diagnoses):
             raise ValueError("all-runner diagnosis requires a substantive reason")
         picks = record.get("picks", [])
-        if any(not isinstance(p, dict) or p.get("horse_no") not in by_no for p in picks):
+        if any(not isinstance(p, dict) or type(p.get("horse_no")) is not int or
+               p["horse_no"] not in by_no for p in picks):
             raise ValueError("forecast pick references an unknown or scratched horse")
         if len({p["horse_no"] for p in picks}) != len(picks):
             raise ValueError("duplicate horse picks")
