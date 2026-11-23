@@ -16,6 +16,11 @@ class TestBridge(unittest.TestCase):
  def test_future(self):
   e=dict(E,checked_at="2026-11-23T10:00:00+09:00")
   self.assertEqual(self.run_bridge([e])["video_evidence_withheld"][0]["reason"],"post_snapshot_evidence")
+ def test_malformed_runner_is_not_silently_skipped(self):
+  for invalid in (None, 7, "horse"):
+   with self.subTest(invalid=invalid):
+    with self.assertRaisesRegex(ValueError,"runner records must be objects"):
+     attach_video_evidence({"race_id":BASE["race_id"],"runners":[{"horse_name":"TEST HORSE"},invalid]},[],saved_at=S,off_at=O)
  def test_wrong_horse(self):
   with self.assertRaises(ValueError): self.run_bridge([dict(E,horse_name="OTHER")])
  def test_duplicate(self):
