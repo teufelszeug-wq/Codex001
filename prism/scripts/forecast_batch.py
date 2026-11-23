@@ -3,6 +3,7 @@
 Never generates missing AI forecasts or backdates saved_at.
 """
 from datetime import datetime, timezone
+from pathlib import Path
 
 from forecast_snapshot_gate import validate_snapshot
 from forecast_snapshot_store import save_snapshot
@@ -31,7 +32,25 @@ def persist_forecaster_batch(root, race, decisions, *, now=None):
         keys.add(key)
         item = dict(decision, saved_at=now.isoformat())
         checked.append(validate_snapshot(item, off_at))
-    paths = [str(save_snapshot(root, item, off_at, now=now)) for item in checked]
+    # Best-effort rollback of this batch's files after a write failure.
+    # Not a fully atomic transaction: readers may briefly see partial output.
+    paths = []
+    try:
+        for item in checked:
+            paths.append(str(save_snapshot(root, item, off_at, now=now)))
+    except Exception as exc:
+        cleanup_errors = []
+        for path in paths:
+            try:
+                Path(path).unlink()
+            except OSError as cleanup_exc:
+                cleanup_errors.append(f"{path}: {cleanup_exc}")
+        if cleanup_errors:
+            raise RuntimeError(
+                "batch save failed and rollback was incomplete: "
+                + "; ".join(cleanup_errors)
+            ) from exc
+        raise
     return {
         "race_id": race["race_id"],
         "saved_count": len(paths),
