@@ -27,6 +27,15 @@ class TestBridge(unittest.TestCase):
   out=self.run_bridge([e],phase="review")
   self.assertEqual(out["video_evidence"],[])
   self.assertEqual(out["video_evidence_withheld"],[{"evidence_id":"ev1","reason":"no_verified_playback"}])
+ def test_empty_evidence_invalid_snapshot(self):
+  with self.assertRaisesRegex(ValueError,"pre-race forecast times invalid"):
+   attach_video_evidence(BASE,[],saved_at=O,off_at=S)
+ def test_empty_evidence_invalid_phase(self):
+  with self.assertRaisesRegex(ValueError,"invalid phase"):
+   self.run_bridge([],phase="unknown")
+ def test_unhashable_evidence_id(self):
+  with self.assertRaisesRegex(ValueError,"duplicate or blank evidence_id"):
+   self.run_bridge([dict(E,evidence_id=["bad"])])
  def test_review(self):
   e=dict(E,checked_at="2026-11-24T10:00:00+09:00")
   self.assertEqual(len(self.run_bridge([e],phase="review")["video_evidence"]),1)
