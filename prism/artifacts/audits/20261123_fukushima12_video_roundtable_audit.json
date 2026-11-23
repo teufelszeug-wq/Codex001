@@ -1,0 +1,63 @@
+{
+  "schema": "prism.roundtable_video_audit/v1",
+  "race_id": "20261123-JRA-FUKUSHIMA-12",
+  "audit_date": "2026-11-23",
+  "source_roundtable": "prism/artifacts/roundtables/20261123_fukushima12_simulation_draft.json",
+  "source_status": "TRAINING_DRAFT_NOT_FINAL",
+  "race_off_at": "2026-11-23T15:55:00+09:00",
+  "audit_timing": "POST_RACE",
+  "not_pre_race_forecast": true,
+  "character_db": "https://app.notion.com/p/e4615cdcad494bf7a177c7708b5fe627",
+  "character_db_rows_checked": 19,
+  "video_roles": [
+    {
+      "name": "三崎 レイ",
+      "character_url": "https://app.notion.com/3f976efc4029818dad21e7d42c0add70",
+      "specialty": "映像・不利",
+      "setting_status": "要照合"
+    },
+    {
+      "name": "鷹取 美冬",
+      "character_url": "https://app.notion.com/3f976efc4029812dbf0acfe53bf5e226",
+      "specialty": "調教",
+      "setting_status": "要照合"
+    }
+  ],
+  "video_evidence": {
+    "status": "NOT_VERIFIED",
+    "observations": [],
+    "evidence_ids": [],
+    "verified_playback_seconds": 0,
+    "source_urls": [],
+    "note": "映像の再生・該当場面の目視確認は行っていない。未確認の映像所見を追加しない。"
+  },
+  "roundtable": {
+    "topic_count": 5,
+    "runner_name_count": 16,
+    "mode": "SIMULATED_SINGLE_MODEL",
+    "substantive_five_topics_complete": false,
+    "defects": [
+      "全頭の近走能力評価が未照合",
+      "映像根拠未照合",
+      "独立一次予想なし",
+      "実質的な本命比較・反論なし",
+      "100円買い目は見送り0円"
+    ],
+    "status": "FAIL_SUBSTANTIVE_QA"
+  },
+  "forecast": {
+    "final_pre_race_version_verified": false,
+    "independent_ai_executions_verified": 0,
+    "stake_yen": 0,
+    "post_race_revision_must_not_count_as_pre_race": true
+  },
+  "newspaper": {
+    "published_pdf_verified": false,
+    "status": "NOT_PUBLISHED"
+  },
+  "next_actions": [
+    "公式結果と発走前保存版を照合し事後回顧として記録",
+    "次の未発走レースで映像evidence_idを保存、未取得なら保留で前日版発行",
+    "5議題の実質的反論と最終予想を経てM-PAPERレンダリング"
+  ]
+}
