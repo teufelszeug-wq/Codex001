@@ -39,7 +39,7 @@ def attach_video_evidence(forecast_input, evidence, *, saved_at, off_at, phase="
                 withheld.append({"evidence_id": eid, "reason": "post_snapshot_evidence"})
                 continue
             raise
-        if phase == "pre_race" and entry["status"] not in ("partial_playback", "full_playback"):
+        if entry["status"] not in ("partial_playback", "full_playback"):
             withheld.append({"evidence_id": eid, "reason": "no_verified_playback"})
             continue
         accepted.append(deepcopy(entry))
