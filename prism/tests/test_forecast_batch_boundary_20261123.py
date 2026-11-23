@@ -33,9 +33,10 @@ class BatchPersistenceTests(unittest.TestCase):
 
     def test_write_failure_not_reported_as_success(self):
         with tempfile.TemporaryDirectory() as root:
-            with patch("forecast_batch.save_snapshot", side_effect=OSError("disk full")):
-                with self.assertRaises(OSError):
-                    persist_forecaster_batch(root, self.race, [{"race_id": self.race["race_id"], "forecaster_id": "test", "horse_name": "test", "version": "v1"}], now=self.now)
+            with patch("forecast_batch.validate_snapshot", side_effect=lambda item, off_at: item):
+                with patch("forecast_batch.save_snapshot", side_effect=OSError("disk full")):
+                    with self.assertRaises(OSError):
+                        persist_forecaster_batch(root, self.race, [{"race_id": self.race["race_id"], "forecaster_id": "test", "horse_name": "test", "version": "v1"}], now=self.now)
 
 
 if __name__ == "__main__":
