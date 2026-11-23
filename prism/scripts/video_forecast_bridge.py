@@ -17,7 +17,9 @@ def attach_video_evidence(forecast_input, evidence, *, saved_at, off_at, phase="
     runners = forecast_input.get("runners")
     if not race_id or not isinstance(runners, list):
         raise ValueError("race_id and runner list required")
-    names = [r.get("horse_name") for r in runners if isinstance(r, dict)]
+    if any(not isinstance(r, dict) for r in runners):
+        raise ValueError("runner records must be objects")
+    names = [r.get("horse_name") for r in runners]
     if not names or any(not isinstance(n, str) or not n.strip() for n in names) or len(names) != len(set(names)):
         raise ValueError("unique named runners required")
     # Validate the forecast snapshot even when no video evidence is supplied.
