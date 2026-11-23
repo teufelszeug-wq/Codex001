@@ -33,8 +33,18 @@ def save_snapshot(root, snapshot, off_at, *, now=None):
             continue
     else:
         raise FileExistsError("could not allocate unique snapshot path")
-    with os.fdopen(fd, "wb") as stream:
-        stream.write(payload)
-        stream.flush()
-        os.fsync(stream.fileno())
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+    except BaseException:
+        # A failed write/fsync can leave a partial JSON file. Never publish it.
+        try:
+            target.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            raise RuntimeError(
+                f"snapshot write failed and partial file cleanup failed: {target}"
+            ) from cleanup_error
+        raise
     return target
