@@ -20,13 +20,21 @@ def attach_video_evidence(forecast_input, evidence, *, saved_at, off_at, phase="
     names = [r.get("horse_name") for r in runners if isinstance(r, dict)]
     if not names or any(not isinstance(n, str) or not n.strip() for n in names) or len(names) != len(set(names)):
         raise ValueError("unique named runners required")
+    # Validate the forecast snapshot even when no video evidence is supplied.
+    from video_evidence_gate import instant
+    if phase == "pre_race":
+        snapshot, off = instant(saved_at), instant(off_at)
+        if snapshot is None or off is None or snapshot >= off:
+            raise ValueError("pre-race forecast times invalid")
+    elif phase != "review":
+        raise ValueError("invalid phase")
     out = deepcopy(forecast_input)
     accepted, withheld, seen = [], [], set()
     for entry in evidence:
         if not isinstance(entry, dict):
             raise ValueError("evidence record must be object")
         eid = entry.get("evidence_id")
-        if not eid or eid in seen:
+        if not isinstance(eid, str) or not eid.strip() or eid in seen:
             raise ValueError("duplicate or blank evidence_id")
         seen.add(eid)
         if entry.get("race_id") != race_id or entry.get("horse_name") not in names:
