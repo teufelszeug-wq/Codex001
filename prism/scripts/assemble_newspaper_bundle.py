@@ -1,0 +1,181 @@
+"""Convert actual saved PRISM forecast + roundtable records to M-PAPER bundle.
+
+No invented forecast, commentary, or racecard fields. This is an adapter,
+not evidence that an external model was executed.
+"""
+import argparse
+import json
+from pathlib import Path
+import re
+import sys
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def assemble(history: Path, race_id: str) -> dict:
+    if not re.fullmatch(r"\d{8}-(?:JRA|NAR)-[A-Z]+-\d{2}", race_id):
+        raise ValueError("invalid race_id")
+    directory = history / race_id
+    cards = [directory / n for n in ("racecard.json", "declarations-racecard.json")]
+    card_path = next((p for p in cards if p.is_file()), None)
+    if card_path is None:
+        raise FileNotFoundError("official racecard missing")
+    card = read(card_path)
+    versions = sorted((int(p.stem[1:]), p) for p in directory.glob("v*.json") if re.fullmatch(r"v\d+", p.stem))
+    if not versions:
+        raise FileNotFoundError("final forecast history missing")
+    final = read(versions[-1][1])
+    preliminary = read(versions[0][1]) if len(versions) >= 2 else None
+    if len(versions) < 2 or versions[0][0] != 1 or versions[-1][0] < 2:
+        raise ValueError("numbered preliminary and final versions required")
+    discussion_path = directory / "roundtable-v1.json"
+    if not discussion_path.is_file():
+        raise FileNotFoundError("saved five-topic roundtable missing")
+    discussion = read(discussion_path)
+    if any(doc.get("race_id") != race_id for doc in (card, final, discussion)):
+        raise ValueError("race identity mismatch")
+    topics_input = discussion.get("topics", [])
+    if len(topics_input) < 5:
+        raise ValueError("five roundtable topics required")
+    topic_ids = [topic.get("id") for topic in topics_input]
+    if any(not topic_id for topic_id in topic_ids) or len(set(topic_ids)) != len(topic_ids):
+        raise ValueError("roundtable topic IDs must be nonempty and unique")
+    if any(not topic.get("turns") or any(not turn.get("speaker_id") or not turn.get("text", "").strip() for turn in topic["turns"]) for topic in topics_input):
+        raise ValueError("roundtable topics require attributed substantive turns")
+    if preliminary is None or preliminary.get("race_id") != race_id or preliminary.get("metadata", {}).get("phase") != "PRELIMINARY":
+        raise ValueError("saved preliminary forecast missing")
+    if not final.get("records"):
+        raise ValueError("no final forecast records")
+    if final.get("metadata", {}).get("phase") != "FINAL":
+        raise ValueError("not a final forecast")
+    if not final.get("saved_at") or not card.get("off_at"):
+        raise ValueError("missing timestamps")
+    from datetime import datetime
+    saved = datetime.fromisoformat(final["saved_at"].replace("Z", "+00:00"))
+    off = datetime.fromisoformat(card["off_at"].replace("Z", "+00:00"))
+    if saved.tzinfo is None or off.tzinfo is None or saved >= off:
+        raise ValueError("not a verified pre-race forecast")
+    if not discussion.get("recorded_at"):
+        raise ValueError("roundtable timestamp missing")
+    discussed = datetime.fromisoformat(discussion["recorded_at"].replace("Z", "+00:00"))
+    opened_raw = discussion.get("opened_at")
+    if not opened_raw:
+        raise ValueError("roundtable opened_at missing")
+    opened = datetime.fromisoformat(opened_raw.replace("Z", "+00:00"))
+    if opened.tzinfo is None or discussed.tzinfo is None or not opened <= discussed < saved:
+        raise ValueError("roundtable timestamps must be ordered before final forecast")
+    preliminary_saved = datetime.fromisoformat(preliminary["saved_at"].replace("Z", "+00:00"))
+    if preliminary_saved.tzinfo is None or not preliminary_saved < opened:
+        raise ValueError("preliminary forecast must precede the roundtable")
+    captured_at = card.get("captured_at")
+    if captured_at:
+        captured = datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+        if captured.tzinfo is None or captured > preliminary_saved:
+            raise ValueError("racecard captured after preliminary forecast; potential look-ahead leak")
+    if preliminary_saved >= off:
+        raise ValueError("preliminary forecast is not pre-race")
+    active = [r for r in card.get("runners", []) if r.get("status") not in ("SCRATCHED", "EXCLUDED")]
+    if not active or any(not r.get("horse_name") or not isinstance(r.get("horse_no"), int) for r in active):
+        raise ValueError("numbered official runner list required")
+    by_no = {r["horse_no"]: r for r in active}
+    if len(by_no) != len(active):
+        raise ValueError("duplicate horse numbers")
+    if any(type(r["horse_no"]) is not int or r["horse_no"] <= 0 for r in active):
+        raise ValueError("horse numbers must be positive integers, not booleans")
+    runners = [
+        {"horse_id": str(r["horse_id"]) if r.get("horse_id") else f"horse-no:{r['horse_no']}", "horse_no": r["horse_no"], "frame_no": r.get("frame_no"),
+         "name": r["horse_name"], "jockey_name": r.get("jockey_name"),
+         "carried_weight": r.get("carried_weight"), "status": r.get("status")}
+        for r in active
+    ]
+    official_ids = {r["horse_no"]: str(r["horse_id"]) if r.get("horse_id") else None for r in active}
+    def horse_ref(horse_no):
+        return official_ids[horse_no] or f"horse-no:{horse_no}"
+    def record_to_paper(record, saved_at):
+        diagnoses = record.get("diagnoses", [])
+        diagnosis_numbers = [d.get("horse_no") for d in diagnoses if isinstance(d, dict)]
+        if (len(diagnosis_numbers) != len(by_no) or
+                any(type(n) is not int for n in diagnosis_numbers) or
+                set(diagnosis_numbers) != set(by_no)):
+            raise ValueError("incomplete all-runner diagnosis")
+        if any(not isinstance(d.get("reason"), str) or not d["reason"].strip() for d in diagnoses):
+            raise ValueError("all-runner diagnosis requires a substantive reason")
+        picks = record.get("picks", [])
+        if any(not isinstance(p, dict) or type(p.get("horse_no")) is not int or
+               p["horse_no"] not in by_no for p in picks):
+            raise ValueError("forecast pick references an unknown or scratched horse")
+        if len({p["horse_no"] for p in picks}) != len(picks):
+            raise ValueError("duplicate horse picks")
+        tickets = record.get("tickets", [])
+        if not isinstance(tickets, list):
+            raise ValueError("tickets must be a list")
+        for ticket in tickets:
+            if not isinstance(ticket, dict):
+                raise ValueError("ticket must be an object")
+            numbers = ticket.get("horse_nos")
+            if (not isinstance(numbers, list) or not numbers or
+                    any(type(number) is not int or number not in by_no for number in numbers)):
+                raise ValueError("ticket references an unknown or scratched horse")
+            stake = ticket.get("stake_yen")
+            if type(stake) is not int or stake <= 0 or stake % 100:
+                raise ValueError("ticket stake must be a positive 100-yen multiple")
+            if len(set(numbers)) != len(numbers):
+                raise ValueError("ticket contains duplicate horse numbers")
+        return {
+            "saved_at": saved_at, "mode": record.get("execution", {}).get("provider", "UNVERIFIED"),
+            "summary": record.get("summary", ""),
+            "diagnoses": [{"horse_id": horse_ref(d["horse_no"]), "reason": d["reason"],
+                           "win_probability": d.get("win_probability")} for d in diagnoses],
+            "picks": [{"horse_id": horse_ref(p["horse_no"]), "mark": p.get("mark", "印未記録"),
+                       "reason": p.get("reason", "")} for p in picks],
+            "tickets": record.get("tickets", []), "skip_reason": record.get("skip_reason"),
+        }
+    forecasts = {r["forecaster_id"]: record_to_paper(r, final["saved_at"]) for r in final["records"]}
+    preliminary_forecasts = {r["forecaster_id"]: record_to_paper(r, preliminary["saved_at"]) for r in preliminary["records"]}
+    if len(forecasts) != len(final["records"]) or len(preliminary_forecasts) != len(preliminary["records"]):
+        raise ValueError("duplicate forecaster IDs")
+    if set(preliminary_forecasts) != set(forecasts):
+        raise ValueError("preliminary/final forecaster roster mismatch")
+    people = discussion.get("character_registry", {}).get("participants", [])
+    characters = {p["speaker_id"]: {"name": p["name"], "role": "editor" if p["speaker_id"] == discussion.get("facilitator_id") else "specialist"} for p in people}
+    for r in final["records"]:
+        characters.setdefault(r["forecaster_id"], {"name": r.get("display_name", r["forecaster_id"]), "role": "specialist"})
+    topics = [{
+        "topic_id": t.get("id"), "title": t.get("title"),
+        "moderator_id": discussion.get("facilitator_id"),
+        "started_at": discussion.get("opened_at"), "completed_at": discussion["recorded_at"],
+        "turns": [{"agent_id": turn.get("speaker_id"), "text": turn.get("text", ""),
+                   "evidence_refs": turn.get("evidence_refs", [])} for turn in t.get("turns", [])]
+    } for t in discussion["topics"]]
+    backend = final.get("metadata", {}).get("model_backend")
+    mode = "single_model_simulation" if backend == "local_rules" else "UNVERIFIED"
+    return {
+        "mode": mode,
+        "race": {"race_id": race_id, "race_name": card.get("race_name", final.get("race_name", race_id)),
+                 "authority": race_id.split("-")[1], "off_at": card["off_at"], "runners": runners},
+        "characters": characters, "preliminary": preliminary_forecasts, "final": forecasts,
+        "discussions": topics, "source_refs": final.get("source_refs", []),
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--history", type=Path, required=True)
+    parser.add_argument("--race-id", required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    try:
+        result = assemble(args.history, args.race_id)
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"state": "BUNDLE_READY", "race_id": args.race_id, "path": str(args.out)}, ensure_ascii=False))
+        return 0
+    except (ValueError, FileNotFoundError, KeyError, TypeError) as error:
+        print(json.dumps({"state": "BLOCKED", "error": str(error)}, ensure_ascii=False), file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
