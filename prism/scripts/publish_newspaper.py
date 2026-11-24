@@ -85,12 +85,13 @@ def publish(args):
         state["checklist"][stage] = True
         stage = STAGES[1]
         folder = history / args.race_id
-        if not (folder / "racecard.json").exists() and not (folder / "declarations-racecard.json").exists():
-            if not args.official_url:
+        if not (folder / "racecard.json").exists():
+            if args.official_url:
+                race, _ = prepare(history, args.official_url)
+                if race != args.race_id:
+                    raise ValueError("requested official racecard is a different race")
+            elif not (folder / "declarations-racecard.json").exists():
                 raise FileNotFoundError("official racecard absent; provide --official-url or --restore")
-            race, _ = prepare(history, args.official_url)
-            if race != args.race_id:
-                raise ValueError("requested official racecard is a different race")
         numbered = folder / "racecard.json"
         card_path = numbered if numbered.exists() else folder / "declarations-racecard.json"
         card = read(card_path)
