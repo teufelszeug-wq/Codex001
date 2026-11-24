@@ -10,6 +10,7 @@ description = "PRISM experimental prediction, evidence, research and entity reco
 
 [project.optional-dependencies]
 research = ["lxml"]
+paper = ["lxml", "PyMuPDF", "Pillow"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

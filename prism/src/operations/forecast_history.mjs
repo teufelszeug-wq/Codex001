@@ -37,10 +37,15 @@ export function createPreRaceLedger({ race_id, race_name, off_at, runners, recor
     if (!Array.isArray(rec.diagnoses) || rec.diagnoses.length !== runners.length || new Set(rec.diagnoses.map(d => d.horse_no)).size !== runners.length || !rec.diagnoses.every(d => horseNos.includes(d.horse_no) && typeof d.reason === 'string' && d.reason.trim())) fail('all-runner diagnosis required for every forecaster');
     if (!Array.isArray(rec.tickets)) fail('tickets array required; [] means pass');
     for (const t of rec.tickets) { requireTicket(t); if (!t.horse_nos.every(n => horseNos.includes(n))) fail('ticket refers to non-runner'); }
-    if (rec.independent_execution !== true) fail('independent execution must be explicitly evidenced');
+    if (rec.execution?.provider === 'local_rules') {
+      if (rec.independent_execution !== false || rec.mode !== 'local_rule_calculation') {
+        fail('local rule calculations must not claim independent execution');
+      }
+    } else if (rec.independent_execution !== true) fail('independent execution must be explicitly evidenced');
   }
   if (!Array.isArray(source_refs) || !source_refs.every(x => typeof x === 'string' && x.trim())) fail('source refs invalid');
-  const payload = { schema: 'prism.forecast_history/v1', race_id, race_name, off_at, runners, records, saved_at, source_refs, version: 1, status: 'PRE_UNATTESTED' };
+  const provisional = records.some(rec => rec.execution?.provider === 'local_rules');
+  const payload = { schema: 'prism.forecast_history/v1', race_id, race_name, off_at, runners, records, saved_at, source_refs, version: 1, status: provisional ? 'EDITORIAL_PROVISIONAL' : 'PRE_UNATTESTED' };
   if (metadata !== undefined) payload.metadata = metadata;
   return { ...payload, content_sha256: hash(payload) };
 }

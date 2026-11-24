@@ -10,3 +10,14 @@ test('full-field and independent AI evidence required',()=>{assert.throws(()=>cr
 test('100 yen and real runner ticket constraints',()=>{assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'WIN',horse_nos:[1],stake_yen:150}]}]}),/100-yen/);assert.throws(()=>createPreRaceLedger({...base,records:[{...rec,tickets:[{type:'WIN',horse_nos:[3],stake_yen:100}]}]}),/non-runner/);});
 test('append revision preserves linked hash and forbids backdated changes',()=>{const a=createPreRaceLedger(base);const b=appendRevision(a,{records:[rec],saved_at:'2026-11-09T14:59:30+09:00'});assert.equal(b.version,2);assert.equal(b.previous_sha256,a.content_sha256);assert.throws(()=>appendRevision(a,{records:[rec],saved_at:base.saved_at}),/later/);});
 test('post-race edits rejected',()=>{const a=createPreRaceLedger(base);assert.throws(()=>appendRevision(a,{records:[rec],saved_at:'2026-11-09T15:00:01+09:00'}),/before off/);});
+test('stores explicit local calculations as provisional and rejects false independent claims', () => {
+  const local = { ...rec, execution: { provider: 'local_rules' },
+    independent_execution: false, mode: 'local_rule_calculation' };
+  const stored = createPreRaceLedger({ ...base, records: [local] });
+  assert.equal(stored.status, 'EDITORIAL_PROVISIONAL');
+  assert.equal(stored.records[0].independent_execution, false);
+  for (const inconsistent of [{ ...local, independent_execution: true },
+    { ...local, mode: 'independent_execution' }, { ...rec, execution: local.execution }]) {
+    assert.throws(() => createPreRaceLedger({ ...base, records: [inconsistent] }), /must not claim independent/);
+  }
+});

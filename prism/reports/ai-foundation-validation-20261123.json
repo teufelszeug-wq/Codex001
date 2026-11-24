@@ -1,0 +1,40 @@
+{
+  "schema": "prism.ai_foundation_validation/v1",
+  "checked_at": "2026-11-22T16:26:38.212Z",
+  "scope": "ROLE_CONTRACTS_AND_SYNTHETIC_FORECAST_CONNECTION",
+  "canonical_character_count": 19,
+  "forecaster_count": 19,
+  "definition_version": "2026-11-23.1",
+  "checks": [
+    {
+      "command": "node --test prism/tests/operations/*.test.mjs prism/tests/foundation/*.test.mjs",
+      "passed": 45,
+      "failed": 0,
+      "scope": "synthetic_and_contract_regressions"
+    },
+    {
+      "command": "python -m pytest -q prism/tests/operations/test_forecast_batch.py prism/tests/operations/test_race_day.py",
+      "passed": 18,
+      "failed": 0,
+      "subtests_passed": 4,
+      "scope": "batch_and_day_operations_regressions"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "provider_requests": 0,
+  "real_race_independent_forecasts": 0,
+  "learning_rules_adopted": 0,
+  "missing_runtime": [
+    "OPENAI_API_KEY",
+    "PRISM_OPENAI_MODEL"
+  ],
+  "limitations": [
+    "Role definitions and diagnostic coverage do not certify forecast quality.",
+    "Specialist evidence collection and the review-to-next-forecast learning loop remain incomplete.",
+    "The complete repository suite was not rerun; unrelated previously recorded failures are not cleared by these scoped checks.",
+    "Remote CI status is tracked separately from local verification."
+  ]
+}

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { buildForecasterReadiness, FORECAST_CONTRACT_SHA256, getForecasterContract, validateForecasterContracts } from './forecaster_contracts.mjs';
 
 const DAY_MS = 86_400_000;
 const MARKS = ['◎', '○', '▲', '△', '☆'];
@@ -10,7 +11,7 @@ const SUPPLEMENTAL = {
   track_bias: '当該開催の馬場バイアスと各馬の適性評価',
   weather: '予報・含水率の観測と各馬の馬場適性評価',
   workout: '追い切り・調教の評価',
-  learning: '時系列検証済みの成長・改善評価',
+  learning: '各AIの振り返りから時系列検証した予想改善ルールと適用根拠',
 };
 const REQUIRED_EVIDENCE = new Set(['video', 'stable', 'track_bias', 'weather', 'workout', 'learning']);
 export const METHODS = new Set([
@@ -19,7 +20,9 @@ export const METHODS = new Set([
 ]);
 
 export async function loadForecastRoster() {
-  return JSON.parse(await readFile(new URL('../../data/operations/forecast_roster.json', import.meta.url), 'utf8'));
+  const roster = JSON.parse(await readFile(new URL('../../data/operations/forecast_roster.json', import.meta.url), 'utf8'));
+  validateForecasterContracts(roster);
+  return roster;
 }
 
 function average(values) {
@@ -250,10 +253,9 @@ function modelDiagnoses(decision, card, agent, evidence) {
   });
 }
 
-export async function forecastSpecialist({ agent, card, evidence, now, phase, review, initial, model }) {
-  const startedAt = now();
+export function diagnoseSpecialist({ agent, card, evidence = [] }) {
   const field = fieldContext(card, agent.method);
-  let diagnoses = card.active_runners.map((horse, index) => {
+  return card.active_runners.map((horse, index) => {
     const assessment = evaluate({ method: agent.method, card, horse, fact: field.facts[index], field, index, evidence });
     return {
       horse_no: horse.horse_no,
@@ -264,6 +266,14 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
       mark: null,
     };
   });
+}
+
+export async function forecastSpecialist({ agent, card, evidence, now, phase, review, initial, model }) {
+  const startedAt = now();
+  const roleContract = getForecasterContract(agent);
+  const field = fieldContext(card, agent.method);
+  let diagnoses = diagnoseSpecialist({ agent, card, evidence });
+  const inputReadiness = buildForecasterReadiness({ agent, card, diagnoses });
   let ranked = diagnoses.filter(row => row.score !== null).sort((a, b) => b.score - a.score || a.horse_no - b.horse_no);
   const standard = ranked.length >= 2 && ranked[0].score !== ranked.at(-1).score;
   const hasRanking = ['value', 'longshot'].includes(agent.method) ? ranked.length > 0 : standard;
@@ -275,7 +285,7 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
   let modelReason = null;
   if (model) {
     const decision = await model({
-      agent, card, diagnoses, eligible: hasRanking ? ranked.map(row => row.horse_no) : [],
+      agent, roleContract, card, diagnoses, eligible: hasRanking ? ranked.map(row => row.horse_no) : [],
       evidence, researchRequired: REQUIRED_EVIDENCE.has(agent.method), phase,
       review: review?.topics ?? null, roundtable: review?.roundtable ?? null, initial, offAt: card.off_at,
     });
@@ -344,7 +354,14 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
   }
   return {
     display_name: agent.name, specialty: agent.specialty, profile_status: agent.profile_status ?? null,
-    mode: 'independent_execution', independent_execution: true, execution_id: randomUUID(),
+    role_contract: { version: roleContract.version, sha256: FORECAST_CONTRACT_SHA256, canonical_source: roleContract.canonical_source,
+      canonical_role: roleContract.canonical_role, objective: roleContract.objective },
+    input_readiness: inputReadiness,
+    assessment_coverage: { runners: diagnoses.length, assessed_runners: diagnoses.filter(row => row.score !== null).length },
+    decision_status: picks.length ? 'PREDICTED' : 'PASSED_WITH_REASON',
+    ticket_status: tickets.length ? '100_YEN_TICKETS' : 'NO_BET',
+    mode: modelTrace ? 'independent_execution' : 'local_rule_calculation',
+    independent_execution: modelTrace !== null, execution_id: randomUUID(),
     execution: {
       method: agent.method, engine_version: 'prism-specialists/1', phase,
       started_at: startedAt, finished_at: now(), ...(modelTrace ?? { provider: 'local_rules' }),

@@ -1,0 +1,120 @@
+{
+  "schema": "prism.publication_validation/v1",
+  "date_jst": "2026-11-23",
+  "implementation_parent_commit": "93625187ad57051db715dc76d4d2b450a75439a3",
+  "tests": [
+    {
+      "suite": "node --test prism/tests/operations/*.test.mjs prism/tests/foundation/*.test.mjs",
+      "passed": 45
+    },
+    {
+      "suite": "prism/tests/paper/test_publication.py",
+      "passed": 3
+    },
+    {
+      "suite": "prism/tests/operations/test_forecast_batch.py prism/tests/operations/test_race_day.py prism/tests/paper/test_renderer.py",
+      "passed": 36
+    }
+  ],
+  "total_scoped_tests_passed": 84,
+  "full_repository_success_claimed": false,
+  "github_actions_run": false,
+  "real_race": {
+    "race_id": "20261123-JRA-TOKYO-11",
+    "status": "PROVISIONAL_PUBLISHED",
+    "scope": "EDITORIAL_PROVISIONAL",
+    "runners": 12,
+    "forecast_records_per_version": 19,
+    "versions": [
+      1,
+      2
+    ],
+    "independent_api_records": 0,
+    "roundtable_topics": 5,
+    "roundtable_kind": "EDITORIALLY_ASSEMBLED_FROM_LOCAL_RULE_RECORDS",
+    "pdf_pages": 6,
+    "png_count": 6,
+    "checklist": {
+      "LOAD_ASSETS": true,
+      "CALL_REQUIRED_WORK": true,
+      "SAVE_AI_ORIGINALS": true,
+      "NO_FABRICATION": true,
+      "LAYOUT_DIAGNOSIS_AND_ROUNDTABLE": true,
+      "TEXT_VERTICAL_QA": true,
+      "VERIFY_PNG_PDF": true,
+      "SAVE_RESUME": true
+    },
+    "visual_review": {
+      "reviewer": "assistant",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "note": "全6ページの全体画像と本文拡大を確認。右から左の縦組、12頭の馬名・枠番と馬番、全頭診断、担当別ルール計算と見送り、5議題の自動編集座談会、独立AI未実行の注記を確認。確認範囲で本文の重なり・はみ出し・欠落は見られない。紙面密度と対話の自然さは改善余地がある。",
+      "reviewed_at": "2026-11-22T17:53:01.052026+00:00",
+      "artifact_sha256s": [
+        "e36b2f33f5173a25854a39ab225dbc791709c72d81294bd3325bbfbcaad79d09",
+        "5682eca325bd34fc84fcd90b3e504820edfda34b2d500e254af8dc1ce57fef28",
+        "f4b0e685ea635f9aeec74b896e07429d480c6fb58c2b65c6e42d1bee8c584a82",
+        "5077e3190e419f64bc2c6d27c09af56df7db3e05d7e8572f3616e4a9da938911",
+        "a0cba319e07d9d067f2a030bc521946fdd14bedd7d082ff79731153d7ce045b7",
+        "565700d3999ae2ff3c8b888220fca6595a59727c07250b801d701c693b3d9503",
+        "24f7a0e2a261dbfe1242d76b3bc15d026a132bd29eacd19b60e122917cad0589"
+      ]
+    },
+    "artifacts": [
+      {
+        "bytes": 15972996,
+        "sha256": "e36b2f33f5173a25854a39ab225dbc791709c72d81294bd3325bbfbcaad79d09",
+        "filename": "PRISM_M_PAPER.pdf"
+      },
+      {
+        "bytes": 288143,
+        "sha256": "5682eca325bd34fc84fcd90b3e504820edfda34b2d500e254af8dc1ce57fef28",
+        "filename": "PRISM_M_PAPER_01.png"
+      },
+      {
+        "bytes": 671055,
+        "sha256": "f4b0e685ea635f9aeec74b896e07429d480c6fb58c2b65c6e42d1bee8c584a82",
+        "filename": "PRISM_M_PAPER_02.png"
+      },
+      {
+        "bytes": 609561,
+        "sha256": "5077e3190e419f64bc2c6d27c09af56df7db3e05d7e8572f3616e4a9da938911",
+        "filename": "PRISM_M_PAPER_03.png"
+      },
+      {
+        "bytes": 275046,
+        "sha256": "a0cba319e07d9d067f2a030bc521946fdd14bedd7d082ff79731153d7ce045b7",
+        "filename": "PRISM_M_PAPER_04.png"
+      },
+      {
+        "bytes": 672345,
+        "sha256": "565700d3999ae2ff3c8b888220fca6595a59727c07250b801d701c693b3d9503",
+        "filename": "PRISM_M_PAPER_05.png"
+      },
+      {
+        "bytes": 567535,
+        "sha256": "24f7a0e2a261dbfe1242d76b3bc15d026a132bd29eacd19b60e122917cad0589",
+        "filename": "PRISM_M_PAPER_06.png"
+      }
+    ]
+  },
+  "remaining": [
+    "Independent model API configuration and actual executions",
+    "PNG-first image-generation task remains a separate required production route",
+    "GitHub publication of local changes pending",
+    "Official settlement and learning not certified by this publication run"
+  ],
+  "failure_and_resume_tested": [
+    "Missing startup original",
+    "Missing pre-race forecast after off",
+    "Renderer failure then unchanged forecast originals on resume",
+    "Partial visual signoff rejected",
+    "Artifact modification after QA rejected"
+  ]
+}

@@ -63,6 +63,8 @@ test('runs the roster twice and retains an immutable, race-bound preliminary for
   assert.equal(final.records.find(row => row.forecaster_id === 'RIO-REPORTER-01').display_name, 'りお');
   assert.equal(final.records.find(row => row.forecaster_id === 'RIO-DATA-01').display_name, '黒川 統司');
   const all = [...initial.records, ...final.records];
+  assert.equal(final.status, 'EDITORIAL_PROVISIONAL');
+  assert.ok(all.every(row => row.independent_execution === false && row.mode === 'local_rule_calculation'));
   assert.equal(new Set(all.map(row => row.execution_id)).size, 38);
   for (const record of all) {
     assert.deepEqual(record.diagnoses.map(row => row.horse_name), ['架空馬1', '架空馬2', '架空馬3']);
@@ -116,6 +118,7 @@ test('isolates provider inputs, preserves v1 when v2 fails, and resumes from sav
   assert.equal(await readFile(v1, 'utf8'), original);
   assert.equal(await readFile(transcript, 'utf8'), savedDialogue);
   assert.equal(final.records.filter(row => row.execution.provider === 'openai').length, 19);
+  assert.ok(final.records.every(row => row.independent_execution === true && row.mode === 'independent_execution'));
   assert.equal(new Set(final.records.map(row => row.execution.response_id)).size, 19);
   assert.equal(finalCalls.get('HONSHI'), 2);
   assert.ok([...finalCalls].every(([id, count]) => count === (id === 'HONSHI' ? 2 : 1)));
@@ -225,6 +228,9 @@ test('model assesses every runner from source facts and may reverse the local ra
       const body = JSON.parse(options.body);
       const data = JSON.parse(body.input);
       assert.equal(data.horses.length, 3);
+      assert.equal(data.role_contract.forecaster_id, data.forecaster_id);
+      assert.equal(data.role_contract.method, data.method);
+      if (data.method === 'learning') assert.equal(data.role_contract.canonical_role, '専門AIの振り返りと学習ルールの監査');
       assert.equal(data.horses[0].history.length, 2);
       assert.equal(data.forecaster_id === 'HONSHI', data.method === 'editorial');
       assert.equal(data.horses.some(horse => horse.horse_no === 4), false);

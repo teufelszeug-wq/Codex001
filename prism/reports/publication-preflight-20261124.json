@@ -1,0 +1,19 @@
+{
+  "date_jst": "2026-11-24",
+  "scope": "Approved publication of AI role contracts and newspaper-driven execution to teufelszeug-wq/Codex001 PR #12",
+  "upstream_preserved": "895e1c6f7fc776894b19494403ba5325dabee021",
+  "local_sources": [
+    "93625187ad57051db715dc76d4d2b450a75439a3",
+    "123c86816e145288c1c415b5e06885452adad89a"
+  ],
+  "additional_fix": "New local_rules records use independent_execution=false, local_rule_calculation mode and EDITORIAL_PROVISIONAL status; inconsistent new records rejected. Existing originals unchanged.",
+  "verification": {
+    "node_tests_passed": 46,
+    "python_tests_passed": 39,
+    "total_scoped_tests_passed": 85,
+    "python_subtests_passed": 4,
+    "full_repository_success_claimed": false,
+    "github_actions_status": "To be checked after publication"
+  },
+  "api_executions_added": 0
+}

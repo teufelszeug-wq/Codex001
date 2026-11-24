@@ -6,6 +6,7 @@ import { loadDeclarations, loadForecast, loadRoundtable, persistDeclarations, pe
 import { buildRoundtable, compareFinalForecasts, runnerKey, validateRoundtable } from './roundtable.mjs';
 import { METHODS, forecastSpecialist, loadForecastRoster, restoreSupplementalEvidence,
   validateSupplementalEvidence } from './specialist_forecasts.mjs';
+import { FORECAST_CONTRACT_SHA256 } from './forecaster_contracts.mjs';
 
 const iso = /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/;
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -19,7 +20,7 @@ function jstDay(timestamp) {
   return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' }).format(new Date(timestamp));
 }
 
-function verifyRacecard(raw) {
+export function verifyRacecard(raw) {
   if (!raw || typeof raw !== 'object') throw new Error('racecard required');
   const declarations = raw.entry_stage === 'DECLARATIONS';
   const url = new URL(raw.official_url);
@@ -262,7 +263,8 @@ export async function runForecastPanel({
     return timestamp;
   };
   const run = async (phase, review, initial, facts = evidence) => {
-    const inputKey = hash({ inputHash, phase, review, initial: initial?.content_sha256 ?? null, facts });
+    const inputKey = hash({ inputHash, phase, review, initial: initial?.content_sha256 ?? null, facts,
+      forecaster_contract_sha256: FORECAST_CONTRACT_SHA256 });
     const results = await Promise.allSettled(roster.forecasters.map(async agent => {
       const checkRecord = record => {
         if (record.forecaster_id !== agent.id || record.execution.phase !== phase ||
