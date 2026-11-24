@@ -63,8 +63,6 @@ def prepare(directory, url):
     early = race_dir / 'declarations-racecard.json'
     if numbered.exists():
         card = read_json(numbered)
-    elif early.exists() and not (race_dir / 'declarations-roundtable-v1.json').exists():
-        card = read_json(early)
     else:
         try:
             card = fetch()
