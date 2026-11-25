@@ -96,14 +96,14 @@ export function verifyDeclarations(record, raceId) {
   return record;
 }
 
-function declarationRecord({ card, records, savedAt, inputHash, modelIdentity }) {
+function declarationRecord({ card, records, savedAt, inputHash, modelIdentity, evidence = [] }) {
   const horses = new Map(card.active_runners.map(horse => [horse.horse_no, horse]));
   function identity({ horse_no, ...row }) {
     return { ...row, horse_id: horses.get(horse_no).horse_id, horse_no: null };
   }
   const payload = {
     schema: 'prism.forecast_declarations/v1', race_id: card.race_id, race_name: card.race_name,
-    off_at: card.off_at, saved_at: savedAt, source_refs: [card.official_url], source_sha256: card.source_sha256,
+    off_at: card.off_at, saved_at: savedAt, source_refs: [...new Set([card.official_url, ...evidence.map(row => row.source_url)])], source_sha256: card.source_sha256,
     captured_at: card.captured_at, input_sha256: inputHash, model_backend: modelIdentity, course: card.course,
     runners: card.active_runners.map(({ horse_no, history, ...horse }) => ({ ...horse, horse_no: null })),
     records: records.map(record => ({
@@ -312,7 +312,7 @@ export async function runForecastPanel({
       if (await readVersion(directory, card.race_id, 1)) throw new Error('numbered forecast is already saved');
       checkClock();
       const records = await run('DECLARATIONS');
-      saved = declarationRecord({ card, records, savedAt: checkClock(), inputHash, modelIdentity });
+      saved = declarationRecord({ card, records, savedAt: checkClock(), inputHash, modelIdentity, evidence });
       try {
         await persistDeclarations(directory, card.race_id, saved, checkClock);
       } catch (error) {
