@@ -46,26 +46,31 @@ export async function loadForecast(directory, raceId, version = 1) {
   return JSON.parse(await readFile(join(directory, safeId(raceId), 'v' + version + '.json'), 'utf8'));
 }
 
-function roundtablePath(directory, raceId, declarations) {
-  return join(directory, safeId(raceId), declarations ? 'declarations-roundtable-v1.json' : 'roundtable-v1.json');
+function declarationVersion(version) {
+  if (!Number.isSafeInteger(version) || version < 1) throw new Error('invalid declaration version');
+  return version;
+}
+function roundtablePath(directory, raceId, declarations, version = 1) {
+  if (!declarations && version !== 1) throw new Error('numbered roundtable version must be 1');
+  return join(directory, safeId(raceId), declarations ? `declarations-roundtable-v${declarationVersion(version)}.json` : 'roundtable-v1.json');
 }
 
-export async function loadRoundtable(directory, raceId, { declarations = false } = {}) {
-  return JSON.parse(await readFile(roundtablePath(directory, raceId, declarations), 'utf8'));
+export async function loadRoundtable(directory, raceId, { declarations = false, version = 1 } = {}) {
+  return JSON.parse(await readFile(roundtablePath(directory, raceId, declarations, version), 'utf8'));
 }
 
-export async function persistRoundtable(directory, raceId, roundtable, beforePublish, { declarations = false } = {}) {
-  await exclusiveWrite(roundtablePath(directory, raceId, declarations), roundtable, beforePublish);
+export async function persistRoundtable(directory, raceId, roundtable, beforePublish, { declarations = false, version = 1 } = {}) {
+  await exclusiveWrite(roundtablePath(directory, raceId, declarations, version), roundtable, beforePublish);
 }
 
-export async function loadDeclarations(directory, raceId) {
-  return JSON.parse(await readFile(join(directory, safeId(raceId), 'declarations-v1.json'), 'utf8'));
+export async function loadDeclarations(directory, raceId, version = 1) {
+  return JSON.parse(await readFile(join(directory, safeId(raceId), `declarations-v${declarationVersion(version)}.json`), 'utf8'));
 }
 
-export async function persistDeclarations(directory, raceId, declaration, beforePublish) {
+export async function persistDeclarations(directory, raceId, declaration, beforePublish, version = 1) {
   const raceDir = join(directory, safeId(raceId));
   await mkdir(raceDir, { recursive: true });
-  await exclusiveWrite(join(raceDir, 'declarations-v1.json'), declaration, beforePublish);
+  await exclusiveWrite(join(raceDir, `declarations-v${declarationVersion(version)}.json`), declaration, beforePublish);
 }
 
 function executionPath(directory, raceId, inputKey, forecasterId) {
