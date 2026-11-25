@@ -302,42 +302,47 @@ export async function runForecastPanel({
     return records;
   };
 
-  const loadEarly = async () => {
-    const saved = await readIfPresent(() => loadDeclarations(directory, card.race_id));
+  const loadEarly = async (version = 1) => {
+    const saved = await readIfPresent(() => loadDeclarations(directory, card.race_id, version));
     return saved && verifyDeclarations(saved, card.race_id);
   };
   if (declarations) {
+    let version = 1;
     const readEarlyDiscussion = async saved => {
-      const dialogue = await readIfPresent(() => loadRoundtable(directory, card.race_id, { declarations: true }));
+      const dialogue = await readIfPresent(() => loadRoundtable(directory, card.race_id, { declarations: true, version }));
       return dialogue && validateRoundtable(dialogue, saved, roster);
     };
-    let saved = await loadEarly();
-    if (!saved) {
+    let saved;
+    for (;;) {
+      saved = await loadEarly(version);
+      if (saved?.input_sha256 === inputHash) break;
+      if (saved) { version++; continue; }
       if (await readVersion(directory, card.race_id, 1)) throw new Error('numbered forecast is already saved');
       checkClock();
       const records = await run('DECLARATIONS');
       saved = declarationRecord({ card, records, savedAt: checkClock(), inputHash, modelIdentity, evidence });
       try {
-        await persistDeclarations(directory, card.race_id, saved, checkClock);
+        await persistDeclarations(directory, card.race_id, saved, checkClock, version);
+        break;
       } catch (error) {
         if (error.code !== 'EEXIST') throw error;
-        saved = await loadEarly();
+        continue;
       }
     }
-    if (saved.input_sha256 !== inputHash) throw new Error('declaration forecast already saved with different inputs');
+    if (!saved || saved.input_sha256 !== inputHash) throw new Error('declaration version selection failed');
     let discussion = await readEarlyDiscussion(saved);
     if (!discussion) {
       discussion = validateRoundtable(buildRoundtable({
         initial: saved, comparison: comparePreliminary(card, roster, saved), roster, now: checkClock,
       }), saved, roster);
       try {
-        await persistRoundtable(directory, card.race_id, discussion, checkClock, { declarations: true });
+        await persistRoundtable(directory, card.race_id, discussion, checkClock, { declarations: true, version });
       } catch (error) {
         if (error.code !== 'EEXIST') throw error;
         discussion = await readEarlyDiscussion(saved);
       }
     }
-    return { declarations: saved, roundtable: discussion };
+    return { declarations: saved, roundtable: discussion, declaration_version: version };
   }
 
   if (updateFrom !== undefined) {
