@@ -6,6 +6,7 @@ import { loadDeclarations, loadForecast, loadRoundtable, persistDeclarations, pe
 import { buildRoundtable, compareFinalForecasts, runnerKey, validateRoundtable } from './roundtable.mjs';
 import { METHODS, forecastSpecialist, loadForecastRoster, restoreSupplementalEvidence,
   validateSupplementalEvidence } from './specialist_forecasts.mjs';
+import { mapDeclarationEvidence } from './declaration_evidence.mjs';
 import { FORECAST_CONTRACT_SHA256 } from './forecaster_contracts.mjs';
 
 const iso = /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/;
@@ -243,8 +244,8 @@ export async function runForecastPanel({
   const card = verifyRacecard(rawRacecard);
   const declarations = card.entry_stage === 'DECLARATIONS';
   if (!Array.isArray(evidence)) throw new Error('supplemental evidence must be an array');
-  if (declarations && (evidence.length || model || updateFrom !== undefined)) {
-    throw new Error('unframed declarations use local scoring from the official card; use numbered inputs for evidence and model calls');
+  if (declarations && (model || updateFrom !== undefined)) {
+    throw new Error('unframed declarations currently use local scoring; use numbered inputs for model calls');
   }
   if (Boolean(model) === (modelIdentity === 'local_rules')) throw new Error('model and model identity must agree');
   const roster = await loadForecastRoster();
@@ -262,7 +263,10 @@ export async function runForecastPanel({
     }
     return timestamp;
   };
-  const run = async (phase, review, initial, facts = evidence) => {
+  const declarationFacts = declarations && evidence.length
+    ? mapDeclarationEvidence(evidence, card, checkClock()) : evidence;
+  if (declarations && evidence.length) validateSupplementalEvidence(declarationFacts, card, checkClock());
+  const run = async (phase, review, initial, facts = declarationFacts) => {
     const inputKey = hash({ inputHash, phase, review, initial: initial?.content_sha256 ?? null, facts,
       forecaster_contract_sha256: FORECAST_CONTRACT_SHA256 });
     const results = await Promise.allSettled(roster.forecasters.map(async agent => {
