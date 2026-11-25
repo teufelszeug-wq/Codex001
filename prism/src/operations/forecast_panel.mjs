@@ -354,12 +354,23 @@ export async function runForecastPanel({
   let initial = await readVersion(directory, card.race_id, 1);
   validateSupplementalEvidence(evidence, card, initial?.saved_at ?? checkClock());
   if (!initial) {
-    const early = await loadEarly();
-    if (early && Date.parse(early.saved_at) > Date.parse(card.captured_at)) {
+    let early = null;
+    let earlyDialogue = null;
+    let earlyVersion = null;
+    for (let version = 1; ; version++) {
+      const candidate = await loadEarly(version);
+      if (!candidate) break;
+      if (Date.parse(candidate.saved_at) > Date.parse(card.captured_at)) continue;
+      const dialogue = await readIfPresent(() => loadRoundtable(directory, card.race_id, { declarations: true, version }));
+      if (dialogue) validateRoundtable(dialogue, candidate, roster);
+      if (dialogue && Date.parse(dialogue.recorded_at) > Date.parse(card.captured_at)) continue;
+      early = candidate;
+      earlyDialogue = dialogue;
+      earlyVersion = version;
+    }
+    if (!early && await loadEarly()) {
       throw new Error('numbered card predates the saved declarations forecast');
     }
-    const earlyDialogue = early && await readIfPresent(() => loadRoundtable(directory, card.race_id, { declarations: true }));
-    if (earlyDialogue) validateRoundtable(earlyDialogue, early, roster);
     const records = await run('PRELIMINARY');
     const input = {
       race_id: card.race_id, race_name: card.race_name, off_at: card.off_at, runners: runnerList,
@@ -369,7 +380,7 @@ export async function runForecastPanel({
         phase: 'PRELIMINARY', input_sha256: inputHash, source_sha256: card.source_sha256,
         captured_at: card.captured_at, source_verification: rawRacecard.source_verification,
         model_backend: modelIdentity, entry_status: card.runners,
-        ...(early ? { declarations_sha256: early.content_sha256 } : {}),
+        ...(early ? { declarations_sha256: early.content_sha256, declarations_version: earlyVersion } : {}),
         ...(earlyDialogue ? { declarations_roundtable_sha256: hash(earlyDialogue) } : {}),
       },
     };
