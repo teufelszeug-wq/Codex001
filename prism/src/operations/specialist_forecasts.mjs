@@ -340,6 +340,10 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
       skipReason = '推定払戻倍率が1を超える単勝候補なし。';
     }
   }
+  // Declaration numbers are provisional: preserve marks but never issue tickets.
+  if (card.entry_stage === 'DECLARATIONS' && !skipReason) {
+    skipReason = '枠順未確定のため買い目は保留。';
+  }
   const tickets = skipReason ? [] : [{ type: 'WIN', horse_nos: [picks[0].horse_no], stake_yen: 100 }];
   if (review && initial && !modelReason) {
     const before = initial.picks[0];
