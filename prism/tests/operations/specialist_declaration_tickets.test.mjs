@@ -12,7 +12,7 @@ const card = {
     history: [], pedigree: {},
   })),
 };
-for (const stage of ['DECLARATIONS', 'DRAW_CONFIRMED']) {
+for (const stage of ['DECLARATIONS', 'DRAW_CONFIRMED', undefined, 'UNKNOWN']) {
   for (const provider of ['local', 'mock']) {
     test(stage + ' / ' + provider + ': ticket safety at specialist boundary', async () => {
       const agent = (await loadForecastRoster()).forecasters.find(a => a.method === 'editorial');
@@ -24,7 +24,7 @@ for (const stage of ['DECLARATIONS', 'DRAW_CONFIRMED']) {
       });
       assert.ok(result.picks.length > 0);
       assert.equal(result.independent_execution, provider === 'mock');
-      if (stage === 'DECLARATIONS') {
+      if (stage !== 'DRAW_CONFIRMED') {
         assert.deepEqual(result.tickets, []);
         assert.equal(result.stake_yen, 0);
         assert.equal(result.ticket_status, 'NO_BET');
