@@ -341,8 +341,8 @@ export async function forecastSpecialist({ agent, card, evidence, now, phase, re
     }
   }
   // Declaration numbers are provisional: preserve marks but never issue tickets.
-  if (card.entry_stage === 'DECLARATIONS' && !skipReason) {
-    skipReason = '枠順未確定のため買い目は保留。';
+  if (card.entry_stage !== 'DRAW_CONFIRMED' && !skipReason) {
+    skipReason = '正式な枠順確定を確認できないため買い目は保留。';
   }
   const tickets = skipReason ? [] : [{ type: 'WIN', horse_nos: [picks[0].horse_no], stake_yen: 100 }];
   if (review && initial && !modelReason) {
